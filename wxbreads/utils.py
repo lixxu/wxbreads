@@ -254,25 +254,47 @@ def add_ok_buttons(parent, top_sizer, id=-1, size=(100, 40), ok_text='&Save',
 
 
 def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
-                    **kwargs):
+                    bold=False, italic=False, align=None, underline=False,
+                    ts_style=False, **kwargs):
     if clear:
         wgt.Clear()
 
     wgt.MoveEnd()
     pre_text = '[{}] '.format(datetime.now()) if ts else ''
-
-    if nl:
-        text = '{}\n'.format(text)
-
-    if pre_text:
+    if pre_text and not ts_style:
         wgt.WriteText(pre_text)
+
+    if bold:
+        wgt.BeginBold()
+
+    if italic:
+        wgt.BeginItalic()
+
+    if underline:
+        wgt.BeginUnderline()
 
     if color:
         wgt.BeginTextColour(color)
-        wgt.WriteText(text)
+
+    if pre_text and ts_style:
+        wgt.WriteText(pre_text)
+
+    wgt.WriteText('{}'.format(text))
+
+    if color:
         wgt.EndTextColour()
-    else:
-        wgt.WriteText(text)
+
+    if underline:
+        wgt.EndUnderline()
+
+    if italic:
+        wgt.EndItalic()
+
+    if bold:
+        wgt.EndBold()
+
+    if nl:
+        wgt.Newline()
 
     wgt.ShowPosition(wgt.GetLastPosition())
     obj.Refresh()
