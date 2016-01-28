@@ -349,7 +349,11 @@ def stop_timers(timers=[]):
 
 
 def update_clock_statusbar(sbar, ts_fmt='%d-%b-%Y %H:%M', idx=2):
-    sbar.SetStatusText(time.strftime(ts_fmt), idx)
+    set_status_text(sbar, time.strftime(ts_fmt), idx)
+
+
+def set_status_text(sbar, text, idx):
+    sbar.SetStatusText(text, idx)
 
 
 def get_copy_right(text=None):
@@ -357,8 +361,8 @@ def get_copy_right(text=None):
 
 
 def permission_login(parent=None, root_pass='guess',
-                     caption='Authorize required',
-                     msg='Please enter password to authorize'):
+                     caption='Security Check',
+                     msg='Please enter password:'):
     dlg = wx.PasswordEntryDialog(parent, msg, caption)
     size = dlg.GetClientSize()
     dlg.SetMinClientSize(size)
