@@ -6,7 +6,7 @@ from Crypto.Cipher import AES
 
 
 def encrypt(text, key, iv):
-    return AES.new(key, AES.MODE_CFB, iv).encrypt('{}'.format(text))
+    return AES.new(key, AES.MODE_CFB, iv).encrypt(text)
 
 
 def decrypt(text, key, iv):
