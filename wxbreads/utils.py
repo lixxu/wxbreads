@@ -334,7 +334,7 @@ def start_timer(timer, miliseconds=1000, one_shot=False):
     if timer.IsRunning():
         return
 
-    timer.Start(miliseconds, one_shot)
+    timer.Start(int(miliseconds), one_shot)
 
 
 def stop_timer(timer):
