@@ -259,11 +259,13 @@ def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
         wgt.Clear()
 
     wgt.MoveEnd()
-    if ts:
-        text = '[{}] {}'.format(datetime.now(), text)
+    pre_text = '[{}] '.format(datetime.now()) if ts else ''
 
     if nl:
         text = '{}\n'.format(text)
+
+    if pre_text:
+        wgt.WriteText(pre_text)
 
     if color:
         wgt.BeginTextColour(color)
