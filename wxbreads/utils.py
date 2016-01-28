@@ -191,28 +191,28 @@ def add_quick_sizer(top_sizer, wgts=[], orient='h', prop=0, border=5,
     return box
 
 
-def add_text_row(parent, top_sizer, label='Label', value='', width=-1,
+def add_text_row(parent, top_sizer, label='Text', value='', width=-1, border=5,
                  height=-1, tooltip='', font=None, fg=None, bg=None, **kwargs):
     nargs = dict(height=height, tooltip=tooltip, font=font, fg=fg, bg=bg)
     lbl = add_label_field(parent, label=label, width=width, **nargs)
     wgt = add_text_field(parent, value=value, **nargs)
-    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)])
+    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
     return lbl, wgt
 
 
 def add_checkbox_row(parent, top_sizer, label='', width=-1, height=-1,
                      tooltip='', value=True, cb_label='', font=None, fg=None,
-                     bg=None, **kwargs):
+                     bg=None, border=5, **kwargs):
     nargs = dict(height=height, tooltip=tooltip, font=font, fg=fg, bg=bg)
     lbl = add_label_field(parent, label=label, width=width, **nargs)
     wgt = add_checkbox_field(parent, label=cb_label, value=value, width=width,
                              **nargs)
-    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)])
+    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
     return lbl, wgt
 
 
 def add_open_dialog(parent, top_sizer, label='Select folder', value='',
-                    width=-1, height=-1, tooltip='',
+                    width=-1, height=-1, tooltip='', border=5,
                     btn_label='Browse', btn_id=None, fg=None, **kwargs):
     lbl = add_label_field(parent, label=label, width=width, height=height)
     txt = add_text_field(parent, value=value, height=height)
@@ -227,7 +227,8 @@ def add_open_dialog(parent, top_sizer, label='Select folder', value='',
     if tooltip:
         btn.SetToolTipString(tooltip)
 
-    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (txt, 1), (btn, 0)])
+    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (txt, 1), (btn, 0)],
+                    border=border)
     return lbl, txt, btn
 
 
