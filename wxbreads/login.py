@@ -54,28 +54,28 @@ class LoginWindow(wx.Dialog):
 
         label_style = wx.BORDER_DOUBLE | wx.ALIGN_CENTER
         # Name field
-        label = utils.add_label_field(self.panel, 'NT Name', width=tc_width,
-                                      style=label_style)
+        label = utils.add_label_field(self.panel, label='NT Name',
+                                      width=tc_width, style=label_style)
         label.SetForegroundColour("blue")
         self.name_tc = utils.add_text_field(self.panel, value=self.last_user)
         self.name_tc.Bind(wx.EVT_TEXT, self.on_enter_name)
-        utils.add_quick_sizer(sizer, label, self.name_tc)
+        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.name_tc, 1)])
 
         # Password field
-        label = utils.add_label_field(self.panel, 'Password', width=tc_width,
-                                      style=label_style)
+        label = utils.add_label_field(self.panel, label='Password',
+                                      width=tc_width, style=label_style)
         label.SetForegroundColour("blue")
 
         self.pwd_tc = utils.add_text_field(self.panel, style=wx.TE_PASSWORD)
-        utils.add_quick_sizer(sizer, label, self.pwd_tc)
+        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.pwd_tc, 1)])
 
         combo_style = wx.CB_DROPDOWN | wx.CB_SORT
         if self.domains[0] and self.servers[0] and self.base_dns[0]:
             combo_style = combo_style | wx.CB_READONLY
 
         # Domain field
-        label = utils.add_label_field(self.panel, 'Domain', width=tc_width,
-                                      style=label_style)
+        label = utils.add_label_field(self.panel, label='Domain',
+                                      width=tc_width, style=label_style)
         label.SetForegroundColour("blue")
         domain = self.config.get('last_domain', '')
         self.domain_cb = wx.ComboBox(self.panel, -1,
@@ -83,10 +83,10 @@ class LoginWindow(wx.Dialog):
                                      choices=self.domains,
                                      style=combo_style,
                                      )
-        utils.add_quick_sizer(sizer, label, self.domain_cb)
+        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.domain_cb, 1)])
 
         # LDAP server
-        label = utils.add_label_field(self.panel, 'LDAP Server',
+        label = utils.add_label_field(self.panel, label='LDAP Server',
                                       width=tc_width, style=label_style)
         label.SetForegroundColour("blue")
         server = self.config.get('last_server', '')
@@ -95,11 +95,11 @@ class LoginWindow(wx.Dialog):
                                      choices=self.servers,
                                      style=combo_style,
                                      )
-        utils.add_quick_sizer(sizer, label, self.server_cb)
+        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.server_cb, 1)])
 
         # Base DN
-        label = utils.add_label_field(self.panel, 'Base DN', width=tc_width,
-                                      style=label_style)
+        label = utils.add_label_field(self.panel, label='Base DN',
+                                      width=tc_width, style=label_style)
         label.SetForegroundColour("blue")
         base_dn = self.config.get('last_basedn', '')
         self.base_dn_cb = wx.ComboBox(self.panel, -1,
@@ -107,7 +107,7 @@ class LoginWindow(wx.Dialog):
                                       choices=self.base_dns,
                                       style=combo_style,
                                       )
-        utils.add_quick_sizer(sizer, label, self.base_dn_cb)
+        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.base_dn_cb, 1)])
 
         line = wx.StaticLine(self.panel, -1, style=wx.LI_HORIZONTAL)
         style = wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP

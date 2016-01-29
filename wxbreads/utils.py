@@ -6,6 +6,7 @@ import os
 import time
 from datetime import datetime
 import pickle
+import platform
 import wx
 try:
     from agw import genericmessagedialog as gmd
@@ -255,7 +256,7 @@ def add_ok_buttons(parent, top_sizer, id=-1, size=(100, 40), ok_text='&Save',
 
 def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
                     bold=False, italic=False, align=None, underline=False,
-                    ts_style=False, **kwargs):
+                    ts_style=False, log_file=False, **kwargs):
     if clear:
         wgt.Clear()
 
@@ -293,6 +294,15 @@ def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
     if bold:
         wgt.EndBold()
 
+    if log_file:
+        with open(log_file, 'a') as f:
+            if pre_text:
+                f.write(pre_text)
+
+            f.write('{}'.format(text))
+            if nl:
+                f.write('\n')
+
     if nl:
         wgt.Newline()
 
@@ -310,6 +320,12 @@ def init_statusbar(obj, widths=[-1, 170, 160], values=['', '', ''], **kwargs):
         sbar.SetStatusText(v, i)
 
     return sbar
+
+
+def get_platform_info():
+    return '{} ({})\n{}'.format(platform.platform(),
+                                platform.machine(),
+                                platform.processor())
 
 
 def about_box(name='name', version='1.0', description='description',
