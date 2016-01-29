@@ -13,13 +13,14 @@ class LoginWindow(wx.Dialog):
     def __init__(self, parent=None, title='LDAP User Login',
                  size=(660, 350),
                  style=wx.CAPTION | wx.STAY_ON_TOP,
+                 root_user='root',
                  root_pass='guess',
                  last_user='',
                  domains=[],
                  servers=[],
                  base_dns=[],
                  destroy=True,
-                 save_file=None):
+                 save_file=None,):
         super(LoginWindow, self).__init__(parent, title=title, size=size,
                                           style=style)
         self.panel = wx.Panel(self)
@@ -27,6 +28,7 @@ class LoginWindow(wx.Dialog):
         if save_file:
             self.config = utils.load_pickle(save_file, slient=True)
 
+        self.root_user = root_user
         self.root_pass = root_pass
         self.last_user = last_user or self.config.get('last_user', '')
 
@@ -162,7 +164,7 @@ class LoginWindow(wx.Dialog):
             self.Refresh()
             return
 
-        if self.login_name == 'root':
+        if self.login_name == self.root_user:
             if self.password == self.root_pass:
                 self.after_login(self.login_name)
                 return
