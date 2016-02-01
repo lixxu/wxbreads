@@ -26,6 +26,7 @@ class LoginWindow(wx.Dialog):
         self.root_user = root_user
         self.root_pass = root_pass
         self.last_user = last_user
+        self.current_user = None
 
         self.domains = domains or ['']
         self.server = server
