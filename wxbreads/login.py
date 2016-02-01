@@ -64,6 +64,9 @@ class LoginWindow(wx.Dialog):
         label.SetForegroundColour("blue")
 
         self.pwd_tc = utils.add_text_field(self.panel, style=wx.TE_PASSWORD)
+        if self.last_user:
+            self.pwd_tc.SetFocus()
+
         utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.pwd_tc, 1)])
 
         combo_style = wx.CB_DROPDOWN | wx.CB_SORT
