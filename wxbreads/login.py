@@ -168,13 +168,13 @@ class LoginWindow(wx.Dialog):
 
     def after_login(self):
         self.current_user = self.login_name
-        if self.destroy:
-            self.on_quit()
-        else:
-            self.Hide()
+        self.on_quit()
 
     def on_quit(self, event=None):
-        self.Destroy()
+        if self.destroy:
+            self.Destroy()
+        else:
+            self.Hide()
 
 
 def test_run():
