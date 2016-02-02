@@ -11,7 +11,7 @@ HIGHLIGHT_RED = '#F75D59'
 
 class LoginWindow(wx.Dialog):
     def __init__(self, parent=None, title='User Login',
-                 size=(500, 240),
+                 size=(500, 260),
                  style=wx.CAPTION | wx.STAY_ON_TOP,
                  root_user='root',
                  root_pass='guess',
