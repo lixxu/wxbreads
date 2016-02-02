@@ -254,16 +254,16 @@ def add_ok_buttons(parent, top_sizer, id=-1, size=(100, 40), ok_text='&Save',
     return ok_btn, cancel_btn
 
 
-def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
+def write_rich_text(wgt, text='', color=None, clear=False, ts=True, nl=True,
                     bold=False, italic=False, align=None, underline=False,
                     ts_style=False, log_file=False, **kwargs):
     if clear:
         wgt.Clear()
 
-    wgt.MoveEnd()
-    pre_text = '[{}] '.format(datetime.now()) if ts else ''
-    if pre_text and not ts_style:
-        wgt.WriteText(pre_text)
+    wgt.SetInsertionPointEnd()
+    ts_text = '[{}] '.format(datetime.now()) if ts else ''
+    if ts_text and not ts_style:
+        wgt.WriteText(ts_text)
 
     if bold:
         wgt.BeginBold()
@@ -277,8 +277,8 @@ def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
     if color:
         wgt.BeginTextColour(color)
 
-    if pre_text and ts_style:
-        wgt.WriteText(pre_text)
+    if ts_text and ts_style:
+        wgt.WriteText(ts_text)
 
     wgt.WriteText('{}'.format(text))
 
@@ -296,18 +296,17 @@ def write_rich_text(obj, wgt, text, color=None, clear=False, ts=True, nl=True,
 
     if log_file:
         with open(log_file, 'a') as f:
-            if pre_text:
-                f.write(pre_text)
+            if ts_text:
+                f.write(ts_text)
 
             f.write('{}'.format(text))
             if nl:
                 f.write('\n')
 
     if nl:
-        wgt.Newline()
+        wgt.WriteText('\n')
 
     wgt.ShowPosition(wgt.GetLastPosition())
-    obj.Refresh()
 
 
 def init_statusbar(obj, widths=[-1, 170, 160], values=['', '', ''], **kwargs):
