@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import os
 import time
 from datetime import datetime
-import platform
 import wx
 try:
     from agw import genericmessagedialog as gmd
@@ -296,12 +295,6 @@ def init_statusbar(obj, widths=[-1, 170, 160], values=['', '', ''], **kwargs):
         sbar.SetStatusText(v, i)
 
     return sbar
-
-
-def get_platform_info():
-    return '{} ({})\n{}'.format(platform.platform(),
-                                platform.machine(),
-                                platform.processor())
 
 
 def about_box(name='name', version='1.0', description='description',
