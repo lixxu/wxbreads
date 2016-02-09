@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import os
 import time
 from datetime import datetime
-import pickle
 import platform
 import wx
 try:
@@ -21,28 +20,6 @@ ICONS = dict(info=wx.ICON_INFORMATION,
              exclamation=wx.ICON_EXCLAMATION,
              )
 DEFAULT_WILDCARD = 'All files (*.*)|*.*'
-
-
-def dump_pickle(data, pk_file, silent=True):
-    try:
-        with open(pk_file, 'wb') as f:
-            pickle.dump(data, f)
-
-    except:
-        if not silent:
-            raise
-
-
-def load_pickle(pk_file, silent=True):
-    try:
-        with open(pk_file, 'rb') as f:
-            return pickle.load(f)
-
-    except:
-        if silent:
-            return {}
-
-        raise
 
 
 def popup_msgbox(parent=None, caption='caption', msg='', btn=wx.OK,
@@ -391,10 +368,6 @@ def update_clock_statusbar(sbar, ts_fmt='%d-%b-%Y %H:%M', idx=2):
 
 def set_status_text(sbar, text, idx):
     sbar.SetStatusText(text, idx)
-
-
-def get_copy_right(text=None):
-    return text if text else '(C) Nypro & Jabil Shanghai TE Support'
 
 
 def permission_login(parent=None, root_pass='guess',
