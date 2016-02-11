@@ -2,11 +2,31 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+import sys
 import wx
 from pyldaplite import ldap, PyLDAPLite
 import utils
 
 HIGHLIGHT_RED = '#F75D59'
+
+
+def ldap_login(server, base_dn, login_name, password, close=True):
+    p = PyLDAPLite(server=server, base_dn=base_dn)
+    try:
+        p.connect(login_name, password)
+    except ldap.SERVER_DOWN as e:
+        return 100, e
+    except ldap.INVALID_CREDENTIALS:
+        return 200, None
+    except:
+        return 300, sys.exc_info()[0]
+    else:
+        if close:
+            p.close()
+        else:
+            return 0, p
+
+    return 0, None
 
 
 class LoginWindow(wx.Dialog):
@@ -16,6 +36,7 @@ class LoginWindow(wx.Dialog):
                  root_user='root',
                  root_pass='guess',
                  last_user='',
+                 password='',
                  domains=[],
                  server='',
                  base_dn='',
@@ -26,6 +47,7 @@ class LoginWindow(wx.Dialog):
         self.root_user = root_user
         self.root_pass = root_pass
         self.last_user = last_user
+        self.pwd = password
         self.current_user = None
 
         self.domains = domains or ['']
@@ -63,9 +85,8 @@ class LoginWindow(wx.Dialog):
                                       width=label_width, style=label_style)
         label.SetForegroundColour("blue")
 
-        self.pwd_tc = utils.add_text_field(self.panel, style=wx.TE_PASSWORD)
-        if self.last_user:
-            self.pwd_tc.SetFocus()
+        self.pwd_tc = utils.add_text_field(self.panel, value=self.pwd,
+                                           style=wx.TE_PASSWORD)
 
         utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.pwd_tc, 1)])
 
@@ -102,6 +123,11 @@ class LoginWindow(wx.Dialog):
         sizer.Add(btnsizer, 1, style, 5)
 
         self.panel.SetSizer(sizer)
+        if self.last_user:
+            if self.pwd:
+                ok_btn.SetFocus()
+            else:
+                self.pwd_tc.SetFocus()
 
     def on_enter_name(self, evt=None):
         self.domain_cb.Enable('\\' not in self.name_tc.GetValue())
@@ -144,19 +170,15 @@ class LoginWindow(wx.Dialog):
         if '\\' in self.login_name:
             self.domain, self.login_name = self.login_name.split('\\', 1)
 
-        l = PyLDAPLite(server=self.server, base_dn=self.base_dn)
-        try:
-            l.connect('{}\\{}'.format(self.domain, self.login_name),
-                      self.password)
-            l.close()
-        except ldap.SERVER_DOWN as e:
-            utils.popup_msgbox(self,
-                               caption='Connection Error',
-                               msg=e,
+        ec, msg = ldap_login(self.server, self.base_dn,
+                             '{}\\{}'.format(self.domain, self.login_name),
+                             self.password)
+        if ec in (100, 300):
+            utils.popup_msgbox(self, caption='Connection Error', msg=msg,
                                icon='warn',
                                )
             return
-        except ldap.INVALID_CREDENTIALS:
+        elif ec == 200:
             utils.popup_msgbox(self, caption='Authentication Error',
                                msg='Username/password not match',
                                icon='error')
@@ -179,7 +201,7 @@ class LoginWindow(wx.Dialog):
 
 def test_run():
     app = wx.App()
-    LoginWindow(domains=['jabil'])
+    LoginWindow(domains=['jabil'], last_user='test', password='password')
     app.MainLoop()
 
 if __name__ == '__main__':
