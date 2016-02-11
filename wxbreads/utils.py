@@ -18,7 +18,7 @@ ICONS = dict(info=wx.ICON_INFORMATION,
              question=wx.ICON_QUESTION,
              exclamation=wx.ICON_EXCLAMATION,
              )
-DEFAULT_WILDCARD = 'All files (*.*)|*.*'
+DEFAULT_WILDCARD = 'All files|*'
 
 
 def popup_msgbox(parent=None, caption='caption', msg='', btn=wx.OK,
