@@ -169,22 +169,27 @@ def add_quick_sizer(top_sizer, wgts=[], orient='h', prop=0, border=5,
 
 
 def add_text_row(parent, top_sizer, label='Text', value='', width=-1, border=5,
-                 height=-1, tooltip='', font=None, fg=None, bg=None, **kwargs):
+                 height=-1, tooltip='', font=None, fg=None, bg=None,
+                 pack=True, **kwargs):
     nargs = dict(height=height, tooltip=tooltip, font=font, fg=fg, bg=bg)
     lbl = add_label_field(parent, label=label, width=width, **nargs)
     wgt = add_text_field(parent, value=value, **nargs)
-    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
+    if pack:
+        add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
+
     return lbl, wgt
 
 
 def add_checkbox_row(parent, top_sizer, label='', width=-1, height=-1,
                      tooltip='', value=True, cb_label='', font=None, fg=None,
-                     bg=None, border=5, **kwargs):
+                     bg=None, border=5, pack=True, **kwargs):
     nargs = dict(height=height, tooltip=tooltip, font=font, fg=fg, bg=bg)
     lbl = add_label_field(parent, label=label, width=width, **nargs)
     wgt = add_checkbox_field(parent, label=cb_label, value=value, width=width,
                              **nargs)
-    add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
+    if pack:
+        add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
+
     return lbl, wgt
 
 
