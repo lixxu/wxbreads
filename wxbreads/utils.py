@@ -92,8 +92,7 @@ def add_label_field(parent, id=-1, label='', font=None, width=-1, height=-1,
 def add_text_field(parent, id=-1, value='', width=-1, height=-1, font=None,
                    style=None, tooltip='', fg=None, bg=None, **kwargs):
     nargs = dict(size=(width, height))
-    if style:
-        nargs.update(style=style)
+    nargs.update(style=style if style else wx.TE_MULTILINE)
 
     wgt = wx.TextCtrl(parent, id, '{}'.format(value), **nargs)
     if tooltip:
