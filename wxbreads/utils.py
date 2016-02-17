@@ -35,6 +35,19 @@ def popup_msgbox(parent=None, caption='caption', msg='', btn=wx.OK,
     return result
 
 
+def pydate2wxdate(date):
+    tt = date.timetuple()
+    dmy = (tt[2], tt[1] - 1, tt[0])
+    return wx.DateTimeFromDMY(*dmy)
+
+
+def wxdate2pydate(date):
+    if date.IsValid():
+        return datetime.date(*(map(int, date.FormatISODate().split('-'))))
+
+    return None
+
+
 def add_button_field(parent, id=-1, label='Button', width=-1, height=-1,
                      style=wx.NO_BORDER, tooltip='', font=None,
                      fg=None, bg=None, **kwargs):
@@ -117,7 +130,7 @@ def add_checkbox_field(parent, id=-1, label='', width=-1, height=-1,
 
 def select_open_dir(parent, title='Choose a directory',
                     style=wx.DD_DEFAULT_STYLE, **kwargs):
-    dlg = wx.DirDialog(parent, title, style=style)
+    dlg = wx.DirDialog(parent, title, style=style, **kwargs)
     folder = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None
     dlg.Destroy()
     return folder
@@ -132,7 +145,7 @@ def select_open_file(parent, msg='Choose a file', default_dir=os.getcwd(),
 
     dlg = wx.FileDialog(parent, message=msg, defaultDir=default_dir,
                         defaultFile=default_file, wildcard=wildcard,
-                        style=style)
+                        style=style, **kwargs)
 
     paths = dlg.GetPaths() if dlg.ShowModal() == wx.ID_OK else []
     dlg.Destroy()
@@ -148,7 +161,7 @@ def select_save_file(parent, msg='Save file as...', default_dir=os.getcwd(),
                      **kwargs):
     dlg = wx.FileDialog(parent, message=msg, defaultDir=default_dir,
                         defaultFile=default_file, wildcard=wildcard,
-                        style=style)
+                        style=style, **kwargs)
     path = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None
     dlg.Destroy()
     return path
@@ -187,6 +200,20 @@ def add_checkbox_row(parent, top_sizer, label='', width=-1, height=-1,
     lbl = add_label_field(parent, label=label, width=width, **nargs)
     wgt = add_checkbox_field(parent, label=cb_label, value=value, width=width,
                              **nargs)
+    if pack:
+        add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
+
+    return lbl, wgt
+
+
+def add_datepicker(parent, top_sizer, label='Date', width=-1, height=-1,
+                   tooltip='', value='', font=None, fg=None, bg=None,
+                   style=wx.DP_DROPDOWN | wx.DP_SHOWCENTURY,
+                   border=5, pack=True, **kwargs):
+    nargs = dict(height=height, tooltip=tooltip, font=font, fg=fg, bg=bg)
+    lbl = add_label_field(parent, label=label, width=width, **nargs)
+    wgt = wx.DatePickerCtrl(parent, dt=value, size=(width, height),
+                            style=style)
     if pack:
         add_quick_sizer(top_sizer, wgts=[(lbl, 0), (wgt, 1)], border=border)
 
@@ -275,6 +302,11 @@ def write_rich_text(wgt, text='', color=None, clear=False, ts=True, nl=True,
     if bold:
         wgt.EndBold()
 
+    if nl:
+        wgt.Newline()
+
+    wgt.ShowPosition(wgt.GetLastPosition())
+
     if log_file:
         with open(log_file, 'a') as f:
             if ts_text:
@@ -283,11 +315,6 @@ def write_rich_text(wgt, text='', color=None, clear=False, ts=True, nl=True,
             f.write('{}'.format(text))
             if nl:
                 f.write('\n')
-
-    if nl:
-        wgt.WriteText('\n')
-
-    wgt.ShowPosition(wgt.GetLastPosition())
 
 
 def init_statusbar(obj, widths=[-1, 170, 160], values=['', '', ''], **kwargs):
