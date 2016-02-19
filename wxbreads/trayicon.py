@@ -3,20 +3,22 @@
 
 from __future__ import unicode_literals
 import wx
+import windbreads.utils as wdutils
 
 
 class TrayIcon(wx.TaskBarIcon):
     tbmenu_restore = wx.NewId()
     tbmenu_quit = wx.NewId()
 
-    def __init__(self, frame, icon=None, text='TrayIcon'):
+    def __init__(self, frame, icon=None, text='TrayIcon', **kwargs):
+        self.t = kwargs.pop('t', None)
         wx.TaskBarIcon.__init__(self)
         self.frame = frame
         if icon:
             if not isinstance(icon, basestring):
                 icon = self.make_icon(icon)
 
-            self.SetIcon(icon, text)
+            self.SetIcon(icon, wdutils.tr_text(text, self.t))
 
         self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_tb_activate)
         self.Bind(wx.EVT_MENU, self.on_tb_activate, id=self.tbmenu_restore)
@@ -24,9 +26,9 @@ class TrayIcon(wx.TaskBarIcon):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        menu.Append(self.tbmenu_restore, 'Restore')
+        menu.Append(self.tbmenu_restore, wdutils.tr_text('Restore', self.t))
         menu.AppendSeparator()
-        menu.Append(self.tbmenu_quit, 'Quit')
+        menu.Append(self.tbmenu_quit, wdutils.tr_text('Quit', self.t))
         return menu
 
     def make_icon(self, img):

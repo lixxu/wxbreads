@@ -2,10 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-import sys
 import wx
 from pyldaplite import ldap, PyLDAPLite
-import utils
+import windbreads.utils as wdutils
+import widgets
 
 HIGHLIGHT_RED = '#F75D59'
 
@@ -18,8 +18,8 @@ def ldap_login(server, base_dn, login_name, password, close=True):
         return 100, e
     except ldap.INVALID_CREDENTIALS:
         return 200, None
-    except:
-        return 300, sys.exc_info()[0]
+    except Exception as e:
+        return 300, e
     else:
         if close:
             p.close()
@@ -40,9 +40,11 @@ class LoginWindow(wx.Dialog):
                  domains=[],
                  server='',
                  base_dn='',
-                 destroy=True):
-        super(LoginWindow, self).__init__(parent, title=title, size=size,
-                                          style=style)
+                 destroy=True, **kwargs):
+        self.t = kwargs.get('t')
+        super(LoginWindow, self).__init__(parent,
+                                          title=wdutils.tr_text(title, self.t),
+                                          size=size, style=style)
         self.panel = wx.Panel(self)
         self.root_user = root_user
         self.root_pass = root_pass
@@ -69,58 +71,35 @@ class LoginWindow(wx.Dialog):
 
     def init_ui(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
-        label_width = 150
-
+        size = (150, 30)
         label_style = wx.BORDER_DOUBLE | wx.ALIGN_CENTER
+        kwargs = dict(fsize=size, fstyle=label_style, t=self.t)
+
         # Name field
-        label = utils.add_label_field(self.panel, label='NT Name',
-                                      width=label_width, style=label_style)
-        label.SetForegroundColour("blue")
-        self.name_tc = utils.add_text_field(self.panel, value=self.last_user)
+        _, self.name_tc = widgets.add_text_row(self.panel, sizer,
+                                               label='NT Name', fg='blue',
+                                               value=self.last_user,
+                                               **kwargs)
         self.name_tc.Bind(wx.EVT_TEXT, self.on_enter_name)
-        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.name_tc, 1)])
 
-        # Password field
-        label = utils.add_label_field(self.panel, label='Password',
-                                      width=label_width, style=label_style)
-        label.SetForegroundColour("blue")
+        # Password
+        _, self.pwd_tc = widgets.add_text_row(self.panel, sizer,
+                                              label='Password', fg='blue',
+                                              value=self.pwd,
+                                              sstyle=wx.TE_PASSWORD,
+                                              **kwargs)
 
-        self.pwd_tc = utils.add_text_field(self.panel, value=self.pwd,
-                                           style=wx.TE_PASSWORD)
+        _, wgt = widgets.add_combobox(self.panel, sizer, label='Domain',
+                                      fg='blue',
+                                      readonly=self.domains[0],
+                                      value=self.domains[0],
+                                      choices=self.domains,
+                                      **kwargs)
+        self.domain_cb = wgt
 
-        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.pwd_tc, 1)])
-
-        combo_style = wx.CB_DROPDOWN | wx.CB_SORT
-        if self.domains[0]:
-            combo_style = combo_style | wx.CB_READONLY
-
-        # Domain field
-        label = utils.add_label_field(self.panel, label='Domain',
-                                      width=label_width, style=label_style)
-        label.SetForegroundColour("blue")
-        self.domain_cb = wx.ComboBox(self.panel, -1,
-                                     self.domains[0],
-                                     choices=self.domains,
-                                     style=combo_style,
-                                     )
-        utils.add_quick_sizer(sizer, wgts=[(label, 0), (self.domain_cb, 1)])
-
-        line = wx.StaticLine(self.panel, -1, style=wx.LI_HORIZONTAL)
-        style = wx.GROW | wx.ALIGN_CENTER_VERTICAL | wx.RIGHT | wx.TOP
-        sizer.Add(line, 0, style, 5)
-        btnsizer = wx.StdDialogButtonSizer()
-        ok_btn = wx.Button(self.panel, wx.ID_OK, size=(100, -1))
-        ok_btn.SetDefault()
-        ok_btn.SetLabel('&Login')
-        btnsizer.AddButton(ok_btn)
-
-        cancel_btn = wx.Button(self.panel, wx.ID_CANCEL, size=(100, -1))
-        cancel_btn.SetLabel('&Cancel')
-        btnsizer.AddButton(cancel_btn)
-        btnsizer.Realize()
-
-        style = wx.ALIGN_CENTER_VERTICAL | wx.ALL | wx.ALIGN_CENTER_HORIZONTAL
-        sizer.Add(btnsizer, 1, style, 5)
+        ok_btn, cancel_btn = widgets.add_ok_buttons(self.panel, sizer,
+                                                    size=(100, -1),
+                                                    ok_text='&Login', t=self.t)
 
         self.panel.SetSizer(sizer)
         if self.last_user:
@@ -174,14 +153,13 @@ class LoginWindow(wx.Dialog):
                              '{}\\{}'.format(self.domain, self.login_name),
                              self.password)
         if ec in (100, 300):
-            utils.popup_msgbox(self, caption='Connection Error', msg=msg,
-                               icon='warn',
-                               )
+            widgets.popup(self, caption='Connection Error', msg=msg,
+                          icon='warn', t=self.t)
             return
         elif ec == 200:
-            utils.popup_msgbox(self, caption='Authentication Error',
-                               msg='Username/password not match',
-                               icon='error')
+            widgets.popup(self, caption='Authentication Error',
+                          msg='Username/password not match',
+                          icon='error', t=self.t)
             self.high_light(self.pwd_tc)
             self.Refresh()
             return
@@ -201,8 +179,19 @@ class LoginWindow(wx.Dialog):
 
 def test_run():
     app = wx.App()
-    LoginWindow(domains=['jabil'], last_user='test', password='password')
+    LoginWindow(domains=['domain'], last_user='test', password='password')
+    app.MainLoop()
+
+
+def test_i18n_run():
+    from functools import partial
+    mo = {'User Login': '用户登录', 'NT Name': '域用户名', 'Password': '密码',
+          'Domain': '域', '&Login': '登录 (&L)', '&Cancel': '取消 (&C)'}
+    t = partial(wdutils.tt, lang='zh', po=dict(zh=mo))
+    app = wx.App()
+    LoginWindow(domains=['domain'], last_user='test', password='password', t=t)
     app.MainLoop()
 
 if __name__ == '__main__':
     test_run()
+    test_i18n_run()
