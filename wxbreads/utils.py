@@ -1,10 +1,34 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 import time
 from datetime import datetime
 import wx
+import wx.richtext as rt
+
+import windbreads.utils as wdu
+
+
+def get_adjust_size(size=(-1, -1), **kwargs):
+    if size == (-1, -1):
+        return size
+
+    ratio_size = kwargs.get('ratio_size', (1600, 900))
+    w, h = size
+    rw, rh = ratio_size
+    dw, dh = wx.GetDisplaySize()
+    if rw == dw and rh == dh:
+        return size
+
+    bw, bh = -1, -1
+    if w != -1:
+        bw = int((w * dw) / rw)
+
+    if h != -1:
+        bh = int((h * dh) / rh)
+
+    return (bw, bh)
 
 
 def require_int(evt, min_value=1):
@@ -31,49 +55,59 @@ def wxdate2pydate(date):
     return None
 
 
-def echo_text(wgt, text='', color=None, clear=False, ts=True, nl=True,
-              bold=False, italic=False, align=None, underline=False,
-              ts_style=False, log_file=False, **kwargs):
+def echo_text(wgt, text='', fg=None, bg=None, ts=True, nl=True, bold=False,
+              italic=False, align=None, underline=False, clear=False,
+              ts_style=False, font=None, font_size=None, log_file=False,
+              **kwargs):
     if clear:
         wgt.Clear()
 
     t = kwargs.pop('t', None)
-    tff = kwargs.pop('tff', None)  # t for file
-    wgt.SetInsertionPointEnd()
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
     utext = '{}'.format(text)
+
+    wgt.SetInsertionPointEnd()
+    rta = rt.RichTextAttr()
+    rta.SetTextColour('black')
+    rta.SetBackgroundColour('white')
+    rta.SetFontStyle(wx.FONTSTYLE_NORMAL)
+    rta.SetFontWeight(wx.FONTWEIGHT_NORMAL)
+    rta.SetFontUnderlined(False)
+    wgt.SetDefaultStyle(rta)
     if ts_text and not ts_style:
         wgt.WriteText(ts_text)
 
-    if bold:
-        wgt.BeginBold()
+    if fg:
+        rta.SetTextColour(fg)
 
-    if italic:
-        wgt.BeginItalic()
+    if bg:
+        rta.SetBackgroundColour(bg)
 
-    if underline:
-        wgt.BeginUnderline()
+    if font:
+        rta.SetFontFaceName(font)
 
-    if color:
-        wgt.BeginTextColour(color)
+    if font_size:
+        rta.SetFontSize(font_size)
 
+    if bold is True:
+        rta.SetFontWeight(wx.FONTWEIGHT_BOLD)
+    elif bold is False:
+        rta.SetFontWeight(wx.FONTWEIGHT_NORMAL)
+
+    if italic is True:
+        rta.SetFontStyle(wx.FONTSTYLE_ITALIC)
+    elif italic is False:
+        rta.SetFontStyle(wx.FONTSTYLE_NORMAL)
+
+    if underline is not None:
+        rta.SetFontUnderlined(underline)
+
+    wgt.BeginStyle(rta)
     if ts_text and ts_style:
         wgt.WriteText(ts_text)
 
-    wgt.WriteText(tr_text(utext, t))
-
-    if color:
-        wgt.EndTextColour()
-
-    if underline:
-        wgt.EndUnderline()
-
-    if italic:
-        wgt.EndItalic()
-
-    if bold:
-        wgt.EndBold()
-
+    wgt.WriteText(wdu.ttt(utext, t))
+    wgt.EndStyle()
     if nl:
         wgt.Newline()
 
@@ -84,7 +118,13 @@ def echo_text(wgt, text='', color=None, clear=False, ts=True, nl=True,
             if ts_text:
                 f.write(ts_text)
 
-            f.write(tr_text(utext.encode('utf-8'), t if tff else None))
+            if kwargs.pop('tff') and t:  # t for file
+                text = wdu.ttt(utext, t)
+
+            if isinstance(text, unicode):
+                text = text.encode('utf-8')
+
+            f.write(text)
             if nl:
                 f.write('\n')
 
@@ -117,8 +157,18 @@ def permission_login(parent=None, root_pass='guess',
                      caption='Security Check',
                      msg='Please enter password:', **kwargs):
     t = kwargs.pop('t', None)
-    dlg = wx.PasswordEntryDialog(parent, tr_text(msg, t),
-                                 tr_text(caption, t))
+    dlg = wx.PasswordEntryDialog(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
+
+    # update button labels for i18n
+    try:
+        std_btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
+        items = std_btn_sizer.GetChildren()
+        ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
+        ok_btn.SetLabel(wdu.ttt(ok_btn.GetLabel(), t))
+        cancel_btn.SetLabel(wdu.ttt(cancel_btn.GetLabel(), t))
+    except:
+        pass
+
     size = dlg.GetClientSize()
     dlg.SetMinClientSize(size)
     dlg.SetMaxClientSize(size)
