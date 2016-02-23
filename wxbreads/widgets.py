@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+import sys
 import wx
 import wx.richtext as rt
 
@@ -62,6 +63,45 @@ def popup(parent=None, caption='caption', msg='', btn=wx.OK, icon='i',
     result = dlg.ShowModal()
     dlg.Destroy()
     return result
+
+
+def quick_quit(self, **kwargs):
+    """Quick handy method to ask for quit."""
+    running_caption = kwargs.pop('running_caption', 'Warning')
+    running_msg = kwargs.pop('running_msg', 'Please stop current running task')
+    running_icon = kwargs.pop('running_icon', 'w')
+
+    opened_caption = kwargs.pop('opened_caption', 'Warning')
+    opened_msg = kwargs.pop('opened_msg', 'Please close other dialogs')
+    opened_icon = kwargs.pop('opened_icon', 'w')
+
+    ask_caption = kwargs.pop('ask_caption', 'Confirmation')
+    ask_msg = kwargs.pop('ask_msg', 'Are you sure to quit?')
+    ask_icon = kwargs.pop('ask_icon', 'q')
+    ask_btn = wx.YES_NO | wx.NO_DEFAULT
+    if hasattr(self, 'is_running') and self.is_running:
+        popup(self, caption=running_caption, msg=running_msg,
+              icon=running_icon, **kwargs)
+        return
+
+    if hasattr(self, 'opened_dlg') and self.opened_dlg > 0:
+        popup(self, caption=opened_caption, msg=opened_msg, icon=opened_icon,
+              **kwargs)
+        return
+
+    answer = popup(self, caption=ask_caption, msg=ask_msg, icon=ask_icon,
+                   btn=ask_btn, **kwargs)
+    if answer == wx.ID_NO:
+        return
+
+    self.Hide()
+    if hasattr(self, 'stop_timers'):
+        self.stop_timers()
+
+    if hasattr(self, 'tbicon') and self.tbicon is not None:
+        self.tbicon.Destroy()
+
+    self.Destroy()
 
 
 def set_tooltip(wgt, tooltip='', t=None):
@@ -495,6 +535,24 @@ def about_box(name='name', version='1.0', description='description',
     [info.AddArtist(artist) for artist in artists]
     [info.AddTranslator(tranlator) for tranlator in tranlators]
     wx.AboutBox(info)
+
+
+def quick_about(*args, **kwargs):
+    fmt = kwargs.pop('fmt',
+                     '{}\n\nPlatform:\nPython {}\nwxPython {} ({})\n{}\n\n')
+    t = kwargs.get('t', None)
+    copyright = kwargs.pop('copyright', wdu.get_copy_right())
+    author = kwargs.pop('author', 'Author')
+    remark = kwargs.pop('remark', 'about this tool')
+    description = fmt.format(wdu.ttt(remark, t), sys.version.split()[0],
+                             wx.VERSION_STRING, ', '.join(wx.PlatformInfo[1:]),
+                             wdu.get_platform_info())
+    about_info = dict(description=description,
+                      copyright=copyright.replace('&', '&&'),
+                      developers=[author],
+                      doc_writers=[author],
+                      **kwargs)
+    about_box(**about_info)
 
 
 def init_timer(self, timer_id, timer_func, miliseconds=-1, one_shot=False):

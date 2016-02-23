@@ -129,6 +129,23 @@ def echo_text(wgt, text='', fg=None, bg=None, ts=True, nl=True, bold=False,
                 f.write('\n')
 
 
+def on_hide(self, evt=None):
+    self.Hide()
+
+
+def on_echoing(self, **kwargs):
+    """Default method for echoing text."""
+    if self.is_echoing or not self.echo_lines:
+        return
+
+    self.is_echoing = True
+    while self.echo_lines:
+        line = self.echo_lines.pop(0)
+        self.echo_text(line[0], **line[1])
+
+    self.is_echoing = False
+
+
 def start_timer(timer, miliseconds=1000, one_shot=False):
     if timer.IsRunning():
         return
