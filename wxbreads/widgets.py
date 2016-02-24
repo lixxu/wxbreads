@@ -67,34 +67,40 @@ def popup(parent=None, caption='caption', msg='', btn=wx.OK, icon='i',
 
 def quick_quit(self, **kwargs):
     """Quick handy method to ask for quit."""
-    running_caption = kwargs.pop('running_caption', 'Warning')
-    running_msg = kwargs.pop('running_msg', 'Please stop current running task')
-    running_icon = kwargs.pop('running_icon', 'w')
-
-    opened_caption = kwargs.pop('opened_caption', 'Warning')
-    opened_msg = kwargs.pop('opened_msg', 'Please close other dialogs')
-    opened_icon = kwargs.pop('opened_icon', 'w')
-
-    ask_caption = kwargs.pop('ask_caption', 'Confirmation')
-    ask_msg = kwargs.pop('ask_msg', 'Are you sure to quit?')
-    ask_icon = kwargs.pop('ask_icon', 'q')
-    ask_btn = wx.YES_NO | wx.NO_DEFAULT
     if hasattr(self, 'is_running') and self.is_running:
-        popup(self, caption=running_caption, msg=running_msg,
-              icon=running_icon, **kwargs)
+        caption = kwargs.pop('running_caption', 'Warning')
+        msg = kwargs.pop('running_msg', 'Please stop current running task')
+        icon = kwargs.pop('running_icon', 'w')
+        popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         return
 
     if hasattr(self, 'opened_dlg') and self.opened_dlg > 0:
-        popup(self, caption=opened_caption, msg=opened_msg, icon=opened_icon,
-              **kwargs)
+        caption = kwargs.pop('opened_caption', 'Warning')
+        msg = kwargs.pop('opened_msg', 'Please close other dialogs')
+        icon = kwargs.pop('opened_icon', 'w')
+        popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         return
 
-    answer = popup(self, caption=ask_caption, msg=ask_msg, icon=ask_icon,
-                   btn=ask_btn, **kwargs)
+    answer = popup(self,
+                   caption=kwargs.pop('ask_caption', 'Confirmation'),
+                   msg=kwargs.pop('ask_msg', 'Are you sure to quit?'),
+                   icon=kwargs.pop('ask_icon', 'q'),
+                   btn=kwargs.pop('btn', wx.YES_NO | wx.NO_DEFAULT),
+                   **kwargs)
     if answer == wx.ID_NO:
         return
 
     self.Hide()
+    try:
+        self.hm.UnhookKeyboard()
+    except:
+        pass
+
+    try:
+        self.hm.UnhookMouse()
+    except:
+        pass
+
     if hasattr(self, 'stop_timers'):
         self.stop_timers()
 

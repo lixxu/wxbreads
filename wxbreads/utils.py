@@ -9,6 +9,20 @@ import wx.richtext as rt
 
 import windbreads.utils as wdu
 
+RTC_ALIGNS = dict(default=wx.TEXT_ALIGNMENT_DEFAULT,
+                  left=wx.TEXT_ALIGNMENT_LEFT,
+                  centre=wx.TEXT_ALIGNMENT_CENTRE,
+                  center=wx.TEXT_ALIGNMENT_CENTER,
+                  right=wx.TEXT_ALIGNMENT_RIGHT,
+                  )
+
+
+def get_text_width(text, wgt):
+    font = wgt.GetFont()
+    dc = wx.WindowDC(wgt)
+    dc.SetFont(font)
+    return dc.GetTextExtent(text)
+
 
 def get_adjust_size(size=(-1, -1), **kwargs):
     if size == (-1, -1):
@@ -55,27 +69,31 @@ def wxdate2pydate(date):
     return None
 
 
-def echo_text(wgt, text='', fg=None, bg=None, ts=True, nl=True, bold=False,
-              italic=False, align=None, underline=False, clear=False,
-              ts_style=False, font=None, font_size=None, log_file=False,
-              **kwargs):
+def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
+              align=None, underline=False, bold=False, ts_style=False,
+              font=None, size=None, log_file=False, clear=False, **kwargs):
     if clear:
-        wgt.Clear()
+        rtc.Clear()
 
     t = kwargs.pop('t', None)
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
     utext = '{}'.format(text)
 
-    wgt.SetInsertionPointEnd()
+    rtc.SetInsertionPointEnd()
     rta = rt.RichTextAttr()
+    rta.SetAlignment(RTC_ALIGNS['default'])
     rta.SetTextColour('black')
     rta.SetBackgroundColour('white')
     rta.SetFontStyle(wx.FONTSTYLE_NORMAL)
     rta.SetFontWeight(wx.FONTWEIGHT_NORMAL)
     rta.SetFontUnderlined(False)
-    wgt.SetDefaultStyle(rta)
+    rtc.SetDefaultStyle(rta)
     if ts_text and not ts_style:
-        wgt.WriteText(ts_text)
+        rtc.WriteText(ts_text)
+
+    align = RTC_ALIGNS.get(align)
+    if align:
+        rta.SetAlignment(align)
 
     if fg:
         rta.SetTextColour(fg)
@@ -86,8 +104,8 @@ def echo_text(wgt, text='', fg=None, bg=None, ts=True, nl=True, bold=False,
     if font:
         rta.SetFontFaceName(font)
 
-    if font_size:
-        rta.SetFontSize(font_size)
+    if size:
+        rta.SetFontSize(size)
 
     if bold is True:
         rta.SetFontWeight(wx.FONTWEIGHT_BOLD)
@@ -102,16 +120,17 @@ def echo_text(wgt, text='', fg=None, bg=None, ts=True, nl=True, bold=False,
     if underline is not None:
         rta.SetFontUnderlined(underline)
 
-    wgt.BeginStyle(rta)
+    rtc.BeginStyle(rta)
+
     if ts_text and ts_style:
-        wgt.WriteText(ts_text)
+        rtc.WriteText(ts_text)
 
-    wgt.WriteText(wdu.ttt(utext, t))
-    wgt.EndStyle()
+    rtc.WriteText(wdu.ttt(utext, t))
+    rtc.EndStyle()
     if nl:
-        wgt.Newline()
+        rtc.Newline()
 
-    wgt.ShowPosition(wgt.GetLastPosition())
+    rtc.ShowPosition(rtc.GetLastPosition())
 
     if log_file:
         with open(log_file, 'a') as f:
