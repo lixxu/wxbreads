@@ -77,7 +77,14 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
 
     t = kwargs.pop('t', None)
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
-    utext = '{}'.format(text)
+    if isinstance(text, basestring):
+        if not isinstance(text, unicode):
+            utext = text.decode(wdu.detect_encoding(text)['encoding'])
+        else:
+            utext = text
+
+    else:
+        utext = '{}'.format(text)
 
     rtc.SetInsertionPointEnd()
     rta = rt.RichTextAttr()
@@ -133,11 +140,11 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
     rtc.ShowPosition(rtc.GetLastPosition())
 
     if log_file:
-        with open(log_file, 'a') as f:
+        with open(log_file, kwargs.pop('log_mode', 'a')) as f:
             if ts_text:
                 f.write(ts_text)
 
-            if kwargs.pop('tff') and t:  # t for file
+            if kwargs.pop('tff', None) and t:  # t for file
                 text = wdu.ttt(utext, t)
 
             if isinstance(text, unicode):
@@ -187,37 +194,3 @@ def update_clock_statusbar(sbar, ts_fmt='%d-%b-%Y %H:%M', idx=2):
 
 def set_status_text(sbar, text, idx, t=None):
     sbar.SetStatusText(t(text) if t else text, idx)
-
-
-def permission_login(parent=None, root_pass='guess',
-                     caption='Security Check',
-                     msg='Please enter password:', **kwargs):
-    t = kwargs.pop('t', None)
-    dlg = wx.PasswordEntryDialog(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
-
-    # update button labels for i18n
-    try:
-        std_btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
-        items = std_btn_sizer.GetChildren()
-        ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
-        ok_btn.SetLabel(wdu.ttt(ok_btn.GetLabel(), t))
-        cancel_btn.SetLabel(wdu.ttt(cancel_btn.GetLabel(), t))
-    except:
-        pass
-
-    size = dlg.GetClientSize()
-    dlg.SetMinClientSize(size)
-    dlg.SetMaxClientSize(size)
-    while 1:
-        dlg.SetFocus()
-        if dlg.ShowModal() == wx.ID_OK:
-            if dlg.GetValue() == root_pass:
-                dlg.Destroy()
-                return True
-
-            dlg.SetValue('')
-            dlg.SetFocus()
-            continue
-
-        dlg.Destroy()
-        return False

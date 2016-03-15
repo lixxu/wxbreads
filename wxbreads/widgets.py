@@ -39,11 +39,19 @@ def popup(parent=None, caption='caption', msg='', btn=wx.OK, icon='i',
           need_return=False, size=(-1, -1), **kwargs):
     icon = ICONS.get(icon, ICONS['i'])
     t = kwargs.get('t')
-    if t:
-        umsg = wdu.ttt('{}'.format(msg), t)
-        title = wdu.ttt(caption, t)
+    if isinstance(msg, basestring):
+        if not isinstance(msg, unicode):
+            umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
+        else:
+            umsg = msg
+
     else:
         umsg = '{}'.format(msg)
+
+    if t:
+        umsg = wdu.ttt(umsg, t)
+        title = wdu.ttt(caption, t)
+    else:
         title = caption
 
     dlg = gmd.GenericMessageDialog(parent, umsg, title, btn | icon, size=size)
@@ -380,6 +388,13 @@ def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
     return box
 
 
+def add_staticbox(parent, id=-1, label='', orient='v', **kwargs):
+    sbox = wx.StaticBox(parent, id, wdu.ttt(label, kwargs.pop('t', None)))
+    style = wx.VERTICAL if orient == 'v' else wx.HORIZONTAL
+    sbsizer = wx.StaticBoxSizer(sbox, style)
+    return sbox, sbsizer
+
+
 def add_text_row(parent, sizer=None, label='', value='', fsize=(-1, -1),
                  ssize=(-1, -1), tooltip='', font=None, fg=None,
                  bg=None, multiline=False, **kwargs):
@@ -478,10 +493,17 @@ def add_open_dialog(parent, sizer, label='Select folder', value='',
     return lbl, txt, btn
 
 
+def add_line(parent, id=-1, size=(-1, -1), orient='h'):
+    style = wx.LI_HORIZONTAL if orient == 'h' else wx.LI_VERTICAL
+    return wx.StaticLine(parent, id, size=(-1, -1), style=style)
+
+
 def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), ok_text='&OK',
                    cancel_text='&Cancel', border=5, **kwargs):
     t = kwargs.pop('t', None)
-    sl = wx.StaticLine(parent, id, size=(-1, -1), style=wx.LI_HORIZONTAL)
+    pack_line = kwargs.pop('pack_line', True)
+    if pack_line:
+        sl = add_line(parent, id)
 
     ok_btn = add_button(parent, wx.ID_OK, ok_text, size=size, t=t)
     ok_btn.SetDefault()
@@ -492,7 +514,9 @@ def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), ok_text='&OK',
     btn_sizer.AddButton(cancel_btn)
     btn_sizer.Realize()
 
-    pack(sl, sizer, flag='e,t', border=15)
+    if pack_line:
+        pack(sl, sizer, flag='e,t', border=15)
+
     pack(btn_sizer, sizer, prop=1, flag='ac,a', border=border)
     return ok_btn, cancel_btn
 
@@ -568,3 +592,55 @@ def init_timer(self, timer_id, timer_func, miliseconds=-1, one_shot=False):
         wxu.start_timer(timer, miliseconds, one_shot)
 
     return timer
+
+
+def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
+    entry_cls = wx.PasswordEntryDialog if password else wx.TextEntryDialog
+    t = kwargs.pop('t', None)
+    root_pass = kwargs.pop('root_pass', 'guess')
+    dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
+    # update button labels for i18n
+    try:
+        std_btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
+        items = std_btn_sizer.GetChildren()
+        ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
+        ok_btn.SetLabel(wdu.ttt(ok_btn.GetLabel(), t))
+        cancel_btn.SetLabel(wdu.ttt(cancel_btn.GetLabel(), t))
+    except:
+        pass
+
+    size = dlg.GetClientSize()
+    dlg.SetMinClientSize(size)
+    dlg.SetMaxClientSize(size)
+    while 1:
+        dlg.SetFocus()
+        if dlg.ShowModal() == wx.ID_OK:
+            text = dlg.GetValue()
+            if password:
+                if text == root_pass:
+                    dlg.Destroy()
+                    return True
+
+            else:
+                text = text.strip()
+                if text:
+                    dlg.Destroy()
+                    return text
+
+            dlg.SetValue('')
+            dlg.SetFocus()
+            continue
+
+        dlg.Destroy()
+        return False if password else ''
+
+
+def quick_password_entry(parent=None, caption='Security Check',
+                         msg='Please enter password:', **kwargs):
+    return quick_entry(parent, caption=caption, msg=msg, **kwargs)
+
+
+def quick_text_entry(parent=None, caption='Enter Something',
+                     msg='Please enter something: ', **kwargs):
+    return quick_entry(parent, caption=caption, msg=msg, password=False,
+                       **kwargs)
