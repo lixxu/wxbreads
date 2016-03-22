@@ -194,3 +194,49 @@ def update_clock_statusbar(sbar, ts_fmt='%d-%b-%Y %H:%M', idx=2):
 
 def set_status_text(sbar, text, idx, t=None):
     sbar.SetStatusText(t(text) if t else text, idx)
+
+
+def on_popup_lang(self, evt):
+    if not hasattr(self, 'english_id'):
+        self.english_id = wx.NewId()
+        self.chinese_id = wx.NewId()
+
+        self.Bind(wx.EVT_MENU, self.popup_lang, id=self.english_id)
+        self.Bind(wx.EVT_MENU, self.popup_lang, id=self.chinese_id)
+
+    menu = wx.Menu()
+    menu.Append(self.english_id, 'English', '', wx.ITEM_RADIO)
+    menu.Append(self.chinese_id, 'Chinese - 简体中文', '', wx.ITEM_RADIO)
+    if self.lang == 'zh':
+        menu.Check(self.chinese_id, True)
+    else:
+        menu.Check(self.english_id, True)
+
+    self.PopupMenu(menu)
+    menu.Destroy()
+
+
+def popup_lang(self, evt):
+    lang = 'zh' if evt.GetId() == self.chinese_id else 'en'
+    if lang != self.lang:
+        self.lang = lang
+        self.update_t()
+        self.update_ui_lang()
+        self.save_lang(lang)
+
+    evt.Skip()
+
+
+def update_ui_lang(self):
+    if hasattr(self, 'lang_wgts'):
+        for lwgt in self.lang_wgts:
+            tooltip = ''
+            if len(lwgt) == 2:
+                wgt, label = lwgt
+            else:
+                wgt, label, tooltip = lwgt
+
+            if tooltip:
+                wgt.SetToolTipString(self.tt(tooltip))
+
+            wgt.SetLabel(self.tt(label))
