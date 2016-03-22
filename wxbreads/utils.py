@@ -227,7 +227,7 @@ def popup_lang(self, evt):
     evt.Skip()
 
 
-def update_ui_lang(self):
+def update_ui_lang(self, refresh=True):
     if hasattr(self, 'lang_wgts'):
         for lwgt in self.lang_wgts:
             tooltip = ''
@@ -240,3 +240,9 @@ def update_ui_lang(self):
                 wgt.SetToolTipString(self.tt(tooltip))
 
             wgt.SetLabel(self.tt(label))
+
+    if refresh:
+        if getattr(self, 'panel'):
+            self.panel.Layout()
+
+        self.Refresh()
