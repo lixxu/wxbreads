@@ -109,6 +109,8 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
         utext = '{}'.format(text)
 
     write_echo_text(ts_text=ts_text, text=utext, nl=nl, **kwargs)
+    if kwargs.get('no_echo', False):
+        return
 
     rtc.SetInsertionPointEnd()
     rta = rt.RichTextAttr()
