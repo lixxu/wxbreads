@@ -69,13 +69,35 @@ def wxdate2pydate(date):
     return None
 
 
+def write_echo_text(**kwargs):
+    ts_text = kwargs.get('ts_text')
+    text = kwargs.get('text', '')
+    t = kwargs.get('t')
+    if kwargs.get('tff') and t:  # t for file
+        text = wdu.ttt(text, t)
+
+    if isinstance(text, unicode):
+        text = text.encode('utf-8')
+
+    nl = kwargs.get('nl', True)
+    log_mode = kwargs.get('log_mode', 'a')
+    for log_file in kwargs.get('log_files', []):
+        with open(log_file, log_mode) as f:
+            if ts_text:
+                f.write(ts_text)
+
+            f.write(text)
+            if nl:
+                f.write('\n')
+
+
 def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
               align=None, underline=False, bold=False, ts_style=False,
-              font=None, size=None, log_file=False, clear=False, **kwargs):
+              font=None, size=None, clear=False, **kwargs):
     if clear:
         rtc.Clear()
 
-    t = kwargs.pop('t', None)
+    t = kwargs.get('t', None)
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
     if isinstance(text, basestring):
         if not isinstance(text, unicode):
@@ -85,6 +107,8 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
 
     else:
         utext = '{}'.format(text)
+
+    write_echo_text(ts_text=ts_text, text=utext, nl=nl, **kwargs)
 
     rtc.SetInsertionPointEnd()
     rta = rt.RichTextAttr()
@@ -138,21 +162,6 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
         rtc.Newline()
 
     rtc.ShowPosition(rtc.GetLastPosition())
-
-    if log_file:
-        with open(log_file, kwargs.pop('log_mode', 'a')) as f:
-            if ts_text:
-                f.write(ts_text)
-
-            if kwargs.pop('tff', None) and t:  # t for file
-                text = wdu.ttt(utext, t)
-
-            if isinstance(text, unicode):
-                text = text.encode('utf-8')
-
-            f.write(text)
-            if nl:
-                f.write('\n')
 
 
 def on_hide(self, evt=None):

@@ -55,14 +55,24 @@ def popup(parent=None, caption='caption', msg='', btn=wx.OK, icon='i',
         title = caption
 
     dlg = gmd.GenericMessageDialog(parent, umsg, title, btn | icon, size=size)
+    help_label = kwargs.get('help_label', 'Help')
+    ok_label = kwargs.get('ok_label', 'OK')
+    cancel_label = kwargs.get('cancel_label', 'Cancel')
+    yes_label = kwargs.get('yes_label', 'Yes')
+    no_label = kwargs.get('no_label', 'No')
     if t:
-        dlg.SetHelpLabel(wdu.ttt('Help', t))
-        dlg.SetOKLabel(wdu.ttt('OK', t))
-        dlg.SetOKCancelLabels(wdu.ttt('OK', t), wdu.ttt('Cancel', t))
-        dlg.SetYesNoLabels(wdu.ttt('Yes', t), wdu.ttt('No', t))
-        dlg.SetYesNoCancelLabels(wdu.ttt('Yes', t), wdu.ttt('No', t),
-                                 wdu.ttt('Cancel', t))
-        dlg.SetMessage(umsg)
+        help_label = wdu.ttt(help_label, t)
+        ok_label = wdu.ttt(ok_label, t)
+        cancel_label = wdu.ttt(cancel_label, t)
+        yes_label = wdu.ttt(yes_label, t)
+        no_label = wdu.ttt(no_label, t)
+
+    dlg.SetHelpLabel(help_label)
+    dlg.SetOKLabel(ok_label)
+    dlg.SetOKCancelLabels(ok_label, cancel_label)
+    dlg.SetYesNoLabels(yes_label, no_label)
+    dlg.SetYesNoCancelLabels(yes_label, no_label, cancel_label)
+    dlg.SetMessage(umsg)
 
     if need_return:
         return dlg
@@ -598,14 +608,16 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
     entry_cls = wx.PasswordEntryDialog if password else wx.TextEntryDialog
     t = kwargs.pop('t', None)
     root_pass = kwargs.pop('root_pass', 'guess')
+    ok_label = kwargs.pop('ok_label', None)
+    cancel_label = kwargs.pop('cancel_label', None)
     dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
     # update button labels for i18n
     try:
         std_btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
         items = std_btn_sizer.GetChildren()
         ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
-        ok_btn.SetLabel(wdu.ttt(ok_btn.GetLabel(), t))
-        cancel_btn.SetLabel(wdu.ttt(cancel_btn.GetLabel(), t))
+        ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
+        cancel_btn.SetLabel(wdu.ttt(cancel_label or cancel_btn.GetLabel(), t))
     except:
         pass
 
