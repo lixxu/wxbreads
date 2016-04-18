@@ -49,7 +49,7 @@ class BaseWindow(wx.Frame):
         wxu.stop_timers(self.all_timers)
 
     def on_clock_tick(self, evt=None):
-        wxu.update_clock_statusbar(self.sbar, idx=2)
+        wxu.update_clock_statusbar(self.sbar, idx=len(self.get_sb_width() - 1))
 
     def setup_statusbar(self):
         self.sbar = wxw.init_statusbar(self, widths=self.get_sb_width(),
