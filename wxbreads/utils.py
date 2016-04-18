@@ -6,7 +6,6 @@ import time
 from datetime import datetime
 import wx
 import wx.richtext as rt
-
 import windbreads.utils as wdu
 
 RTC_ALIGNS = dict(default=wx.TEXT_ALIGNMENT_DEFAULT,
@@ -199,7 +198,7 @@ def stop_timers(timers=[]):
     [stop_timer(timer) for timer in timers]
 
 
-def update_clock_statusbar(sbar, ts_fmt='%d-%b-%Y %H:%M', idx=2):
+def update_clock_statusbar(sbar, ts_fmt='%Y-%b-%d %H:%M', idx=2):
     set_status_text(sbar, time.strftime(ts_fmt), idx)
 
 

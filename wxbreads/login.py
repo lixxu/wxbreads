@@ -42,6 +42,7 @@ class LoginWindow(wx.Dialog):
                  base_dn='',
                  destroy=True, **kwargs):
         self.t = kwargs.get('t')
+        self.enable_cancel = kwargs.get('enable_cancel', True)
         super(LoginWindow, self).__init__(parent,
                                           title=wdu.ttt(title, self.t),
                                           size=size, style=style)
@@ -101,6 +102,9 @@ class LoginWindow(wx.Dialog):
                                                 size=(100, -1),
                                                 ok_text='&Login', t=self.t)
 
+        self.ok_btn = ok_btn
+        self.cancel_btn = cancel_btn
+        cancel_btn.Enable(self.enable_cancel)
         self.panel.SetSizer(sizer)
         if self.last_user:
             if self.pwd:

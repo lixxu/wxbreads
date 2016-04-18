@@ -227,40 +227,53 @@ def add_checkbox(parent, id=-1, label='', size=(-1, -1), value=True,
 
 
 def add_path_picker(parent, id=-1, kind='dir', msg='Select a directory',
-                    size=(-1, -1), style=None, prop=2, use_tc=True, **kwargs):
+                    **kwargs):
     t = kwargs.pop('t', None)
-    if kind == 'dir':
-        wgt_cls = wx.DirPickerCtrl
-        if use_tc:
-            style = wx.DIRP_USE_TEXTCTRL
-        elif not style:
-            style = wx.DIRP_DEFAULT_STYLE
+    tooltip = kwargs.pop('tooltip', '')
+    multiline = kwargs.pop('multiline', False)
+    btn_label = kwargs.pop('btn_label', '')
+    size = kwargs.pop('size', (-1, -1))
+    prop = kwargs.pop('prop', 2)
+    use_tc = kwargs.pop('use_tc', True)
+    value = kwargs.pop('value', '')
+    text_editable = kwargs.pop('text_editable', False)
+    btn_enable = kwargs.pop('btn_enable', True)
+    tc_bg = kwargs.pop('tc_bg', 'white')
+    wgt_cls = wx.DirPickerCtrl if kind == 'dir' else wx.FilePickerCtrl
+    if use_tc:
+        kwargs.update(style=wx.DIRP_USE_TEXTCTRL)
 
-    else:
-        wgt_cls = wx.FilePickerCtrl
-        if use_tc:
-            style = wx.FLP_USE_TEXTCTRL
-        elif not style:
-            style = wx.FLP_DEFAULT_STYLE
-
-    pc = wgt_cls(parent, id, message=wdu.ttt(msg, t), size=size,
-                 style=style, **kwargs)
+    pc = wgt_cls(parent, id, message=wdu.ttt(msg, t), size=size, path=value,
+                 **kwargs)
     if pc.HasTextCtrl():
         pc.SetTextCtrlProportion(prop)
 
-    return pc
+    tc, btn = pc.Sizer.GetChildren()
+    tc = tc.GetWindow()
+    btn = btn.GetWindow()
+    if multiline:
+        tc.SetWindowStyle(wx.TE_MULTILINE)
+
+    btn.SetLabel(wdu.ttt(btn_label or btn.GetLabel(), t))
+    if tooltip:
+        tooltip = wdu.ttt(tooltip, t)
+        tc.SetToolTipString(tooltip)
+        btn.SetToolTipString(tooltip)
+
+    tc.SetEditable(text_editable)
+    if tc_bg:
+        tc.BackgroundColour = tc_bg
+
+    btn.Enable(btn_enable)
+    return pc, tc, btn
 
 
-def add_dir_picker(parent, id=-1, msg='Select a directory', size=(-1, -1),
-                   prop=2, style=None, use_tc=True, **kwargs):
-    return add_path_picker(parent, id, kind='dir', msg=msg, size=size,
-                           prop=prop, style=style, use_tc=use_tc, **kwargs)
+def add_dir_picker(parent, id=-1, msg='Select a directory', **kwargs):
+    return add_path_picker(parent, id, kind='dir', msg=msg, **kwargs)
 
 
-def add_file_picker(parent, id=-1, msg='Select a file', size=(-1, -1),
-                    prop=2, style=None, use_tc=True, **kwargs):
-    return add_path_picker(parent, id, kind='file', msg=msg, size=size,
-                           prop=prop, style=style, use_tc=use_tc, **kwargs)
+def add_file_picker(parent, id=-1, msg='Select a file', **kwargs):
+    return add_path_picker(parent, id, kind='file', msg=msg, **kwargs)
 
 
 def select_open_dir(parent, title='Select a directory',
@@ -364,9 +377,12 @@ def pack(wgt, sizer='h', **kwargs):
     elif sizer == 'v':
         sizer = wx.BoxSizer(wx.VERTICAL)
 
-    sizer.Add(wgt, kwargs.get('prop', 0),
-              flag=get_sizer_flags(kwargs.get('flag')),
-              border=kwargs.get('border', 5))
+    kargs = dict(flag=get_sizer_flags(kwargs.get('flag')))
+    border = kwargs.get('border', 3)
+    if border:
+        kargs.update(border=border)
+
+    sizer.Add(wgt, kwargs.get('prop', 0), **kargs)
     return sizer
 
 
@@ -388,11 +404,14 @@ def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
         return
 
     ws = sort_wgts(wgts, **kwargs)
-    border = kwargs.get('border', 5)
-    flag = kwargs.get('flag')
-    box = pack(ws[0][0], sizer=orient, prop=ws[0][1], border=border, flag=flag)
+    kargs = dict(flag=kwargs.get('flag'))
+    border = kwargs.get('border', 3)
+    if border:
+        kargs.update(border=border)
+
+    box = pack(ws[0][0], sizer=orient, prop=ws[0][1], **kargs)
     for wgt, pr in ws[1:]:
-        pack(wgt, box, prop=pr, border=border, flag=flag)
+        pack(wgt, box, prop=pr, **kargs)
 
     pack(box, sizer, **kwargs)
     return box
@@ -501,6 +520,23 @@ def add_open_dialog(parent, sizer, label='Select folder', value='',
 
     quick_pack(sizer, wgts=[(lbl, 0), (txt, 1), (btn, 0)], **kwargs)
     return lbl, txt, btn
+
+
+def quick_open_file(parent, sizer, label='Select File', value='', fg=None,
+                    fsize=(-1, -1), ssize=(-1, -1), tsize=(-1, -1), **kwargs):
+    lbl = add_label(parent, label=label, size=fsize, fg=fg, t=kwargs.get('t'))
+    fp, tc, btn = add_file_picker(parent, size=ssize, value=value, **kwargs)
+    quick_pack(sizer, wgts=[lbl, fp])
+    return lbl, fp, tc, btn
+
+
+def quick_open_folder(parent, sizer, label='Select Folder', value='', fg=None,
+                      fsize=(-1, -1), ssize=(-1, -1), tsize=(-1, -1),
+                      **kwargs):
+    lbl = add_label(parent, label=label, size=fsize, fg=fg, t=kwargs.get('t'))
+    fp, tc, btn = add_dir_picker(parent, size=ssize, value=value, **kwargs)
+    quick_pack(sizer, wgts=[lbl, fp])
+    return lbl, fp, tc, btn
 
 
 def add_line(parent, id=-1, size=(-1, -1), orient='h'):
@@ -613,8 +649,8 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
     dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
     # update button labels for i18n
     try:
-        std_btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
-        items = std_btn_sizer.GetChildren()
+        btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
+        items = btn_sizer.GetChildren()
         ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
         ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
         cancel_btn.SetLabel(wdu.ttt(cancel_label or cancel_btn.GetLabel(), t))
@@ -656,3 +692,38 @@ def quick_text_entry(parent=None, caption='Enter Something',
                      msg='Please enter something: ', **kwargs):
     return quick_entry(parent, caption=caption, msg=msg, password=False,
                        **kwargs)
+
+
+def quick_choice(parent=None, msg='Please select', caption='Please select',
+                 **kwargs):
+    t = kwargs.pop('t', None)
+    choices = kwargs.pop('choices', [])
+    valid_choices = kwargs.pop('valid_choices', [])
+    style = kwargs.pop('style', wx.CHOICEDLG_STYLE)
+    dlg = wx.SingleChoiceDialog(parent, wdu.ttt(msg, t), wdu.ttt(caption, t),
+                                choices, style)
+    ok_label = kwargs.pop('ok_label', None)
+    cancel_label = kwargs.pop('cancel_label', None)
+    # update button labels for i18n
+    try:
+        btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
+        items = btn_sizer.GetChildren()
+        ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
+        ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
+        cancel_btn.SetLabel(wdu.ttt(cancel_label or cancel_btn.GetLabel(), t))
+    except:
+        pass
+
+    while 1:
+        if dlg.ShowModal() == wx.ID_OK:
+            selected = dlg.GetStringSelection()
+            if selected in valid_choices:
+                dlg.Destroy()
+                return selected
+
+            continue
+
+        break
+
+    dlg.Destroy()
+    return None
