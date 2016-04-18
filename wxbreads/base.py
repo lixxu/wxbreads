@@ -30,7 +30,6 @@ class BaseWindow(wx.Frame):
         self.logo = img = wxi.logo.GetImage()
         icon = wx.IconFromBitmap(img.ConvertToBitmap())
         self.SetIcon(icon)
-        self.copyright = kwargs.get('copyright') or wdu.get_copy_right()
         self.setup_statusbar()
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
@@ -61,7 +60,10 @@ class BaseWindow(wx.Frame):
 
     def get_sb_value(self):
         """Value items for status bar."""
-        return [self.copyright, '', '']
+        return [self.get_copyright(), '', '']
+
+    def get_copyright(self):
+        return wdu.get_copy_right()
 
     def update_status(self, text, idx, **kwargs):
         kwargs.setdefault('t', self.t)
