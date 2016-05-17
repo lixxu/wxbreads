@@ -19,7 +19,10 @@ class BaseWindow(wx.Frame):
     app_author = ''
 
     def __init__(self, **kwargs):
-        title = '{} - {}'.format(self.app_name, self.app_version)
+        title = kwargs.get('title')
+        if not title:
+            title = '{} - {}'.format(self.app_name, self.app_version)
+
         super(BaseWindow, self).__init__(kwargs.get('parent'),
                                          size=kwargs.get('size', (-1, -1)),
                                          title=title)
