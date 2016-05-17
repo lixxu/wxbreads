@@ -14,14 +14,15 @@ class BaseWindow(wx.Frame):
     echo_timer_id = wx.NewId()
     root_pass = 'guess'
     app_version = '0.1'
-    app_name = 'Cool app'
+    app_name = 'Cool App'
     app_remark = 'Description for cool app'
-    app_author = 'Cool Author'
+    app_author = ''
 
     def __init__(self, **kwargs):
+        title = '{} - {}'.format(self.app_name, self.app_version)
         super(BaseWindow, self).__init__(kwargs.get('parent'),
                                          size=kwargs.get('size', (-1, -1)),
-                                         title=self.app_name)
+                                         title=title)
         self.is_running = False
         self.echo_lines = []
         self.is_echoing = False
@@ -30,25 +31,26 @@ class BaseWindow(wx.Frame):
         self.logo = img = wxi.logo.GetImage()
         icon = wx.IconFromBitmap(img.ConvertToBitmap())
         self.SetIcon(icon)
+        self.sb_count = len(self.get_sb_width())
         self.setup_statusbar()
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
-    def show_window(self):
+    def show(self):
         self.Centre(wx.BOTH)
         self.Show()
 
-    def setup_timers(self, clock_timer=1000, echo_timer=200):
+    def setup_timers(self, clock_ms=1000, echo_ms=200):
         self.clock_timer = wxw.init_timer(self, self.clock_timer_id,
-                                          self.on_clock_tick, clock_timer)
+                                          self.on_clock_tick, clock_ms)
         self.echo_timer = wxw.init_timer(self, self.echo_timer_id,
-                                         self.on_echoing, echo_timer)
+                                         self.on_echoing, echo_ms)
         self.all_timers = [self.clock_timer, self.echo_timer]
 
     def stop_timers(self):
         wxu.stop_timers(self.all_timers)
 
     def on_clock_tick(self, evt=None):
-        wxu.update_clock_statusbar(self.sbar, idx=len(self.get_sb_width() - 1))
+        wxu.update_clock_statusbar(self.sbar, idx=self.sb_count - 1))
 
     def setup_statusbar(self):
         self.sbar = wxw.init_statusbar(self, widths=self.get_sb_width(),
@@ -73,7 +75,7 @@ class BaseWindow(wx.Frame):
         import wxbreads.trayicon as wxt
         try:
             args = dict(icon=kwargs.get('icon') or self.logo,
-                        text=kwargs.get('text', 'Tray'),
+                        text=kwargs.get('text', self.app_name),
                         t=self.t)
             self.tbicon = wxt.TrayIcon(self, **args)
             self.opened_dlg = 0
@@ -140,29 +142,30 @@ class BaseWindow(wx.Frame):
             self.popup('Warning', 'Please stop current running task', 'w')
             return False
 
-        self.add_echo('Updating settings...', fg='blue', italic=True)
         if self.has_tray:
             self.opened_dlg += 1
 
-        if not wxw.quick_password_entry(self, root_pass=self.root_pass,
-                                        t=self.t):
-            if self.has_tray:
-                self.opened_dlg -= 1
+        check_ok = wxw.quick_password_entry(self, root_pass=self.root_pass,
+                                            t=self.t)
+        if self.has_tray:
+            self.opened_dlg -= 1
 
-            return False
-
-        return True
+        return check_ok
 
     def on_about(self, evt=None):
         if self.has_tray:
             self.opened_dlg += 1
 
-        wxw.quick_about(name=self.app_name,
-                        version=self.app_version,
-                        author=self.app_author,
-                        icon=wxi.phoenix.getIcon(),
-                        remark=self.app_remark,
-                        t=self.t)
+        kw = dict(name=self.app_name,
+                  version=self.app_version,
+                  icon=wxi.phoenix.getIcon(),
+                  remark=self.app_remark,
+                  t=self.t,
+                  )
+        if self.app_author:
+            kw.update(author=self.app_author)
+
+        wxw.quick_about(**kw)
         if self.has_tray:
             self.opened_dlg -= 1
 

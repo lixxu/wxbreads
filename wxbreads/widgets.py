@@ -618,16 +618,16 @@ def quick_about(*args, **kwargs):
                      '{}\n\nPlatform:\nPython {}\nwxPython {} ({})\n{}\n\n')
     t = kwargs.get('t', None)
     copyright = kwargs.pop('copyright', wdu.get_copy_right())
-    author = kwargs.pop('author', 'Author')
+    author = kwargs.pop('author', '')
     remark = kwargs.pop('remark', 'about this tool')
     description = fmt.format(wdu.ttt(remark, t), sys.version.split()[0],
                              wx.VERSION_STRING, ', '.join(wx.PlatformInfo[1:]),
                              wdu.get_platform_info())
+    if author:
+        kwargs.update(developers=[author], doc_writers=[author])
+
     about_info = dict(description=description,
-                      copyright=copyright.replace('&', '&&'),
-                      developers=[author],
-                      doc_writers=[author],
-                      **kwargs)
+                      copyright=copyright.replace('&', '&&'), **kwargs)
     about_box(**about_info)
 
 
@@ -651,9 +651,11 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
     try:
         btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
         items = btn_sizer.GetChildren()
-        ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
-        ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
-        cancel_btn.SetLabel(wdu.ttt(cancel_label or cancel_btn.GetLabel(), t))
+        ok_btn, c_btn = items[1].GetWindow(), items[2].GetWindow()
+        if t:
+            ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
+            c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
+
     except:
         pass
 
@@ -708,9 +710,11 @@ def quick_choice(parent=None, msg='Please select', caption='Please select',
     try:
         btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
         items = btn_sizer.GetChildren()
-        ok_btn, cancel_btn = items[1].GetWindow(), items[2].GetWindow()
-        ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
-        cancel_btn.SetLabel(wdu.ttt(cancel_label or cancel_btn.GetLabel(), t))
+        ok_btn, c_btn = items[1].GetWindow(), items[2].GetWindow()
+        if t:
+            ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
+            c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
+
     except:
         pass
 
