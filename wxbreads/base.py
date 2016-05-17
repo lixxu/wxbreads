@@ -42,6 +42,9 @@ class BaseWindow(wx.Frame):
         self.Centre(wx.BOTH)
         self.Show()
 
+    def set_min_size(self, size=None):
+        self.SetMinSize(size or self.GetSize())
+
     def setup_timers(self, clock_ms=1000, echo_ms=200):
         self.clock_timer = wxw.init_timer(self, self.clock_timer_id,
                                           self.on_clock_tick, clock_ms)
