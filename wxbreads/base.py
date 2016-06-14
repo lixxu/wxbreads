@@ -13,19 +13,26 @@ class BaseWindow(wx.Frame):
     clock_timer_id = wx.NewId()
     echo_timer_id = wx.NewId()
     root_pass = 'guess'
+    app_size = (-1, -1)
     app_version = '0.1'
     app_name = 'Cool App'
     app_remark = 'Description for cool app'
     app_author = ''
+    quit_confirm = True
 
     def __init__(self, **kwargs):
         title = kwargs.get('title')
+        version = kwargs.get('version')
         if not title:
-            title = '{} - {}'.format(self.app_name, self.app_version)
+            title = self.app_name
 
+        if not version:
+            version = self.app_version
+
+        app_title = '{}{}'.format(title, ' - ' + version if version else '')
+        size = kwargs.get('size', self.app_size)
         super(BaseWindow, self).__init__(kwargs.get('parent'),
-                                         size=kwargs.get('size', (-1, -1)),
-                                         title=title)
+                                         size=size, title=app_title)
         self.is_running = False
         self.echo_lines = []
         self.is_echoing = False
@@ -34,33 +41,57 @@ class BaseWindow(wx.Frame):
         self.logo = img = wxi.logo.GetImage()
         icon = wx.IconFromBitmap(img.ConvertToBitmap())
         self.SetIcon(icon)
-        self.sb_count = len(self.get_sb_width())
-        self.setup_statusbar()
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
-    def show(self):
-        self.Centre(wx.BOTH)
+    def show(self, center=True):
+        if center:
+            self.Centre(wx.BOTH)
+
         self.Show()
+
+    def show_with_effect(self, effect=None, timeout=0, center=True):
+        if effect is None:
+            self.show(center)
+            return
+
+        if center:
+            self.Centre(wx.BOTH)
+
+        self.ShowWithEffect(effect, timeout)
 
     def set_min_size(self, size=None):
         self.SetMinSize(size or self.GetSize())
 
     def setup_timers(self, clock_ms=1000, echo_ms=200):
-        self.clock_timer = wxw.init_timer(self, self.clock_timer_id,
-                                          self.on_clock_tick, clock_ms)
-        self.echo_timer = wxw.init_timer(self, self.echo_timer_id,
-                                         self.on_echoing, echo_ms)
-        self.all_timers = [self.clock_timer, self.echo_timer]
+        self.all_timers = []
+        if clock_ms:
+            self.clock_timer = wxw.add_timer(self, self.clock_timer_id,
+                                             self.on_clock_tick, clock_ms)
+            self.all_timers.append(self.clock_timer)
+
+        if echo_ms:
+            self.echo_timer = wxw.add_timer(self, self.echo_timer_id,
+                                            self.on_echoing, echo_ms)
+
+            self.all_timers.append(self.echo_timer)
 
     def stop_timers(self):
-        wxu.stop_timers(self.all_timers)
+        if hasattr(self, 'all_timers'):
+            wxu.stop_timers(self.all_timers)
 
     def on_clock_tick(self, evt=None):
-        wxu.update_clock_statusbar(self.sbar, idx=self.sb_count - 1)
+        if hasattr(self, 'sbar'):
+            wxu.update_clock_statusbar(self.sbar, idx=self.sb_count - 1)
+
+        self.other_clock_work()
+
+    def other_clock_work(self):
+        pass
 
     def setup_statusbar(self):
-        self.sbar = wxw.init_statusbar(self, widths=self.get_sb_width(),
-                                       values=self.get_sb_value())
+        self.sb_count = len(self.get_sb_width())
+        self.sbar = wxw.add_statusbar(self, widths=self.get_sb_width(),
+                                      values=self.get_sb_value())
 
     def get_sb_width(self):
         """Width items for status bar."""
@@ -106,7 +137,7 @@ class BaseWindow(wx.Frame):
         return wdu.ttt(text, self.t)
 
     def on_quit(self, evt=None):
-        wxw.quick_quit(self, t=self.t)
+        wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm)
 
     def on_hide(self, evt=None):
         self.Hide()
