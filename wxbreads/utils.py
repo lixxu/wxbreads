@@ -93,9 +93,6 @@ def write_echo_text(**kwargs):
 def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
               align=None, underline=False, bold=False, ts_style=False,
               font=None, size=None, clear=False, **kwargs):
-    if clear:
-        rtc.Clear()
-
     t = kwargs.get('t', None)
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
     if isinstance(text, basestring):
@@ -109,6 +106,9 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
 
     write_echo_text(ts_text=ts_text, text=utext, nl=nl, **kwargs)
     if kwargs.get('no_echo', False):
+        if clear:
+            rtc.Clear()
+
         return
 
     rtc.SetInsertionPointEnd()
@@ -163,6 +163,8 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
         rtc.Newline()
 
     rtc.ShowPosition(rtc.GetLastPosition())
+    if clear:
+        rtc.Clear()
 
 
 def on_hide(self, evt=None):

@@ -152,7 +152,7 @@ class BaseWindow(wx.Frame):
         wxu.echo_text(self.rtc, text, **kwargs)
 
     def add_echo(self, text='', **kwargs):
-        if self.clear_echo_row:
+        if self.clear_echo_row and kwargs.get('nl', True):
             self.echoed_row += 1
             kwargs.setdefault('clear',
                               self.echoed_row % self.clear_echo_row == 0)
