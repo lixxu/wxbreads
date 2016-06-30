@@ -16,6 +16,7 @@ try:
 except ImportError:
     import wx.lib.agw.flatnotebook as fnb
 
+import wx.lib.masked as masked
 import utils as wxu
 import windbreads.utils as wdu
 
@@ -514,12 +515,34 @@ def add_datepicker(parent, sizer=None, **kwargs):
     nargs = dict(size=fsize, tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
     lbl = add_label(parent, label=label,
                     name=kwargs.pop('fname', 'wxStaticText'), **nargs)
-    wgt = wx.DatePickerCtrl(parent, dt=value, size=ssize, style=style,
-                            name=kwargs.pop('sname', 'wxDatePickerCtrl'))
+    kw = dict(size=ssize, style=style,
+              name=kwargs.pop('sname', 'wxDatePickerCtrl'))
+    if value:
+        if isinstance(value, basestring):
+            try:
+                from dateutil.parser import parse
+                value = wxu.pydate2wxdate(parse(value))
+                kw.update(dt=value)
+            except:
+                pass
+
+        else:
+            kw.update(dt=value)
+
+    wgt = wx.DatePickerCtrl(parent, **kw)
     set_tooltip(wgt, tooltip, t)
     quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
 
     return lbl, wgt
+
+
+def add_timectrl(parent, **kwargs):
+    kwargs['min'] = kwargs.pop('min_value', None)
+    kwargs['max'] = kwargs.pop('max_value', None)
+    kwargs['spinButton'] = kwargs.pop('spin_btn', None)
+    kwargs['fmt24hr'] = kwargs.pop('format_24', True)
+    wgt = masked.TimeCtrl(parent, **kwargs)
+    return wgt
 
 
 def add_open_dialog(parent, sizer, label='Select folder', **kwargs):
@@ -825,7 +848,7 @@ def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
     return box
 
 
-def quick_open_file(parent, sizer, label='Select File', **kwargs):
+def quick_open_file(parent, sizer=None, label='Select File', **kwargs):
     value = kwargs.pop('value', '')
     fg = kwargs.pop('fg', None)
     fsize = kwargs.pop('fsize', (-1, -1))
@@ -944,6 +967,7 @@ def quick_choice(parent=None, msg='Please select', **kwargs):
 add_rich_text = add_richtext
 add_status_bar = add_statusbar
 add_date_picker = add_datepicker
+add_time_ctrl = add_timectrl
 add_text_ctrl = add_textctrl
 add_spin_ctrl = add_spinctrl
 add_spin_ctrl_double = add_spinctrl_double

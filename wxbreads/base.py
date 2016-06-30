@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import wx
+import wx.lib.delayedresult as delayedresult
 import windbreads.utils as wdu
 import wxbreads.utils as wxu
 import wxbreads.images as wxi
@@ -19,6 +20,7 @@ class BaseWindow(wx.Frame):
     app_remark = 'Description for cool app'
     app_author = ''
     quit_confirm = True
+    clear_echo_row = 0
 
     def __init__(self, **kwargs):
         title = kwargs.get('title')
@@ -36,6 +38,7 @@ class BaseWindow(wx.Frame):
         self.is_running = False
         self.echo_lines = []
         self.is_echoing = False
+        self.echoed_row = 0  # lines that echoed
         self.t = None
         self.has_tray = False
         self.logo = img = wxi.logo.GetImage()
@@ -149,6 +152,11 @@ class BaseWindow(wx.Frame):
         wxu.echo_text(self.rtc, text, **kwargs)
 
     def add_echo(self, text='', **kwargs):
+        if self.clear_echo_row:
+            self.echoed_row += 1
+            kwargs.setdefault('clear',
+                              self.echoed_row % self.clear_echo_row == 0)
+
         self.echo_lines.append((text, kwargs))
 
     def on_echoing(self, evt=None):
@@ -161,7 +169,7 @@ class BaseWindow(wx.Frame):
                 self.tbicon.on_restore(None)
 
         kwargs.setdefault('t', self.t)
-        result = wxw.popup(caption=caption, msg=msg, icon=icon, **kwargs)
+        result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         if self.has_tray:
             self.opened_dlg -= 1
 
@@ -217,3 +225,6 @@ class BaseWindow(wx.Frame):
 
     def update_ui_lang(self, refresh=True):
         wxu.update_ui_lang(self, refresh)
+
+    def start_delay_work(self, c_func, w_func, **kwargs):
+        delayedresult.startWorker(c_func, w_func, **kwargs)
