@@ -21,6 +21,7 @@ class BaseWindow(wx.Frame):
     app_author = ''
     quit_confirm = True
     clear_echo_row = 0
+    sbar_width = [230, -1, 120]
 
     def __init__(self, **kwargs):
         title = kwargs.get('title')
@@ -98,7 +99,7 @@ class BaseWindow(wx.Frame):
 
     def get_sb_width(self):
         """Width items for status bar."""
-        return [230, -1, 120]
+        return getattr(self, 'sbar_width') or [230, -1, 120]
 
     def get_sb_value(self):
         """Value items for status bar."""

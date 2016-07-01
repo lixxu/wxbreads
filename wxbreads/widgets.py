@@ -39,6 +39,7 @@ ICONS = dict(info=wx.ICON_INFORMATION,
              ex=wx.ICON_EXCLAMATION,
              )
 DEFAULT_WILDCARD = 'All files|*'
+HIGHLIGHT_RED = '#F75D59'
 
 
 def set_tooltip(wgt, tooltip='', t=None):
