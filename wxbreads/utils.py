@@ -177,9 +177,12 @@ def on_echoing(self, **kwargs):
         return
 
     self.is_echoing = True
-    while self.echo_lines:
+    i = 0
+    batch = kwargs.get('batch', 100)
+    while i < batch and self.echo_lines:
         line = self.echo_lines.pop(0)
         self.echo_text(line[0], **line[1])
+        i += 1
 
     self.is_echoing = False
 

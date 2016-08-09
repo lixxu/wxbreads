@@ -479,6 +479,24 @@ def add_choice(parent, sizer=None, **kwargs):
     return lbl, wgt
 
 
+def add_radio_box(parent, sizer=None, **kwargs):
+    t = kwargs.pop('t', None)
+    label = kwargs.pop('label', '')
+    size = kwargs.pop('size', (-1, -1))
+    style = kwargs.pop('style', wx.RA_SPECIFY_COLS)
+    choices = kwargs.pop('choices', [])
+    cols = kwargs.pop('cols', 0)
+    tooltip = kwargs.pop('tooltip', '')
+    value = kwargs.pop('value', 0)
+    wgt = wx.RadioBox(parent, -1, wdu.ttt(label, t), size=size,
+                      choices=choices, majorDimension=cols, style=style,
+                      name=kwargs.pop('name', 'wxRadioBox'))
+    wgt.SetSelection(int(value))
+    set_tooltip(wgt, tooltip, t)
+    pack(wgt, sizer, **kwargs)
+    return wgt
+
+
 def add_datepicker(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
     label = kwargs.pop('label', '')
@@ -976,6 +994,7 @@ add_check_box = add_checkbox
 add_static_box = add_staticbox
 add_check_box_row = add_checkbox_row
 add_combo_box = add_combobox
+add_radiobox = add_radio_box
 
 quick_textentry = quick_text_entry
 quick_open_dir = quick_open_folder
