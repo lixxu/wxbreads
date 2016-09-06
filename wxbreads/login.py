@@ -81,6 +81,7 @@ class LoginWindow(wx.Dialog):
                                            label='NT Name', fg='blue',
                                            value=self.last_user,
                                            **kwargs)
+        wxw.set_fg(self.name_tc, 'black')
         self.name_tc.Bind(wx.EVT_TEXT, self.on_enter_name)
 
         # Password
@@ -89,13 +90,14 @@ class LoginWindow(wx.Dialog):
                                           value=self.pwd,
                                           sstyle=wx.TE_PASSWORD,
                                           **kwargs)
-
+        wxw.set_fg(self.pwd_tc, 'black')
         _, wgt = wxw.add_combobox(self.panel, sizer, label='Domain',
                                   fg='blue',
                                   readonly=self.domains[0],
                                   value=self.domains[0],
                                   choices=self.domains,
                                   **kwargs)
+        wxw.set_fg(wgt, 'black')
         self.domain_cb = wgt
 
         ok_btn, cancel_btn = wxw.add_ok_buttons(self.panel, sizer,

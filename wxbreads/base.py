@@ -188,6 +188,9 @@ class BaseWindow(wx.Frame):
             self.popup('Warning', 'Please stop current running task', 'w')
             return False
 
+        if hasattr(self, 'is_root') and self.is_root:
+            return True
+
         if self.has_tray:
             self.opened_dlg += 1
 
