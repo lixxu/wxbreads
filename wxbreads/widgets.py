@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 import sys
 import wx
 import wx.richtext as rt
-
+import wx.lib.dialogs
 try:
     from agw import genericmessagedialog as gmd
 except ImportError:
@@ -112,6 +112,35 @@ def popup(parent=None, caption='caption', **kwargs):
     result = dlg.ShowModal()
     dlg.Destroy()
     return result
+
+
+def popup_smd(parent=None, msg='', caption='Message', **kwargs):
+    t = kwargs.get('t')
+    btn_label = kwargs.get('btn_label', 'OK')
+    if isinstance(msg, basestring):
+        if not isinstance(msg, unicode):
+            umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
+        else:
+            umsg = msg
+
+    else:
+        umsg = '{}'.format(msg)
+
+    if t:
+        btn_label = wdu.ttt(btn_label, t)
+        umsg = wdu.ttt(umsg, t)
+        title = wdu.ttt(caption, t)
+    else:
+        title = caption
+
+    dlg = wx.lib.dialogs.ScrolledMessageDialog(parent, umsg, title)
+    try:
+        dlg.GetChildren()[1].SetLabel(btn_label)
+    except:
+        pass
+
+    dlg.ShowModal()
+    dlg.Destroy()
 
 
 def add_button(parent, id=-1, **kwargs):
@@ -474,7 +503,8 @@ def add_choice(parent, sizer=None, **kwargs):
                     name=kwargs.pop('sname', 'wxChoice'))
     wgt.SetSelection(choices.index(value) if value in choices else 0)
     set_tooltip(wgt, tooltip, t)
-    quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
+    wgts = [lbl, wgt] if lbl else [wgt]
+    quick_pack(sizer, wgts=wgts, **kwargs)
 
     return lbl, wgt
 
