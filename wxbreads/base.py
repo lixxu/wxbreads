@@ -66,6 +66,13 @@ class BaseWindow(wx.Frame):
     def set_min_size(self, size=None):
         self.SetMinSize(size or self.GetSize())
 
+    def set_max_size(self, size=None):
+        self.SetMaxSize(size or self.GetSize())
+
+    def fix_size(self, size=None):
+        self.set_min_size(size)
+        self.set_max_size(size)
+
     def setup_timers(self, clock_ms=1000, echo_ms=200):
         self.all_timers = []
         if clock_ms:
@@ -232,3 +239,9 @@ class BaseWindow(wx.Frame):
 
     def start_delay_work(self, c_func, w_func, **kwargs):
         delayedresult.startWorker(c_func, w_func, **kwargs)
+
+
+def run_app(window_class):
+    app = wx.App()
+    window_class()
+    app.MainLoop()
