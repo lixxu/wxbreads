@@ -860,6 +860,8 @@ def quick_quit(self, **kwargs):
 
     if other_clean_work:
         other_clean_work()
+    elif hasattr(self, 'other_clean_work'):
+        self.other_clean_work()
 
     self.Destroy()
     return True

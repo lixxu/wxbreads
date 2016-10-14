@@ -10,10 +10,45 @@ import wxbreads.images as wxi
 import wxbreads.widgets as wxw
 
 
+class BaseDialog(wx.Dialog):
+    app_size = (-1, -1)
+    app_name = 'Cool Dialog'
+    app_version = ''
+
+    def __init__(self, **kwargs):
+        title = kwargs.get('title') or self.app_name
+        version = kwargs.get('version') or self.app_version
+        title = '{}{}'.format(title, ' - ' + version if version else '')
+        size = kwargs.get('size', self.app_size)
+
+        kw = dict(size=size, title=title)
+        style = kwargs.get('style')
+        if style:
+            kw.update(style=style)
+
+        super(BaseDialog, self).__init__(kwargs.get('parent'), **kw)
+        self.destroy = kwargs.get('destroy', True)
+        self.need_reload = False
+        self.Bind(wx.EVT_CLOSE, self.on_quit)
+
+    def show(self, center=True):
+        if center:
+            self.CenterOnScreen()
+
+        self.ShowModal()
+
+    def on_quit(self, evt=None):
+        if self.destroy:
+            self.Destroy()
+        else:
+            self.Hide()
+
+
 class BaseWindow(wx.Frame):
     clock_timer_id = wx.NewId()
     echo_timer_id = wx.NewId()
     root_pass = 'guess'
+    auth_setting = True
     app_size = (-1, -1)
     app_version = '0.1'
     app_name = 'Cool App'
@@ -21,21 +56,19 @@ class BaseWindow(wx.Frame):
     app_author = ''
     quit_confirm = True
     clear_echo_row = 0
-    sbar_width = [230, -1, 120]
+    sbar_width = [250, -1, 120]
 
     def __init__(self, **kwargs):
-        title = kwargs.get('title')
-        version = kwargs.get('version')
-        if not title:
-            title = self.app_name
-
-        if not version:
-            version = self.app_version
-
-        app_title = '{}{}'.format(title, ' - ' + version if version else '')
+        title = kwargs.get('title') or self.app_name
+        version = kwargs.get('version') or self.app_version
+        title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
-        super(BaseWindow, self).__init__(kwargs.get('parent'),
-                                         size=size, title=app_title)
+        kw = dict(size=size, title=title)
+        style = kwargs.get('style')
+        if style:
+            kw.update(style=style)
+
+        super(BaseWindow, self).__init__(kwargs.get('parent'), **kw)
         self.is_running = False
         self.echo_lines = []
         self.is_echoing = False
@@ -150,6 +183,9 @@ class BaseWindow(wx.Frame):
     def on_quit(self, evt=None):
         wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm)
 
+    def other_clean_work(self):
+        pass
+
     def on_hide(self, evt=None):
         self.Hide()
 
@@ -196,6 +232,9 @@ class BaseWindow(wx.Frame):
             return False
 
         if hasattr(self, 'is_root') and self.is_root:
+            return True
+
+        if not self.auth_setting:
             return True
 
         if self.has_tray:
