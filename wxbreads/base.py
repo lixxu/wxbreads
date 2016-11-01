@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from datetime import datetime
 import wx
 import wx.lib.delayedresult as delayedresult
 import windbreads.utils as wdu
@@ -21,7 +22,7 @@ class BaseDialog(wx.Dialog):
         title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
 
-        kw = dict(size=size, title=title)
+        kw = dict(size=size, title=title, pos=(-1, -1))
         style = kwargs.get('style')
         if style:
             kw.update(style=style)
@@ -75,6 +76,7 @@ class BaseWindow(wx.Frame):
         self.echoed_row = 0  # lines that echoed
         self.t = None
         self.has_tray = False
+        self.opened_dlg = None
         self.logo = img = wxi.logo.GetImage()
         icon = wx.IconFromBitmap(img.ConvertToBitmap())
         self.SetIcon(icon)
@@ -128,6 +130,11 @@ class BaseWindow(wx.Frame):
             wxu.update_clock_statusbar(self.sbar, idx=self.sb_count - 1)
 
         self.other_clock_work()
+
+    def update_run_ts(self, idx=1):
+        if self.is_running:
+            ts = (datetime.now() - self.start_ts).total_seconds()
+            self.update_status('{}s'.format(ts), idx)
 
     def other_clock_work(self):
         pass
@@ -207,14 +214,14 @@ class BaseWindow(wx.Frame):
         wxu.on_echoing(self)
 
     def popup(self, caption, msg, icon='i', **kwargs):
-        if self.has_tray:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
             if kwargs.pop('restore', True):
                 self.tbicon.on_restore(None)
 
         kwargs.setdefault('t', self.t)
         result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
-        if self.has_tray:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
         return result
@@ -237,18 +244,18 @@ class BaseWindow(wx.Frame):
         if not self.auth_setting:
             return True
 
-        if self.has_tray:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
         check_ok = wxw.quick_password_entry(self, root_pass=self.root_pass,
                                             t=self.t)
-        if self.has_tray:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
         return check_ok
 
     def on_about(self, evt=None):
-        if self.has_tray:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
         kw = dict(name=self.app_name,
@@ -261,8 +268,11 @@ class BaseWindow(wx.Frame):
             kw.update(author=self.app_author)
 
         wxw.quick_about(**kw)
-        if self.has_tray:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
+
+    def need_adjust_opened_dlg(self):
+        return self.has_tray or self.opened_dlg is not None
 
     def on_popup_lang(self, evt):
         wxu.on_popup_lang(self, evt)
@@ -280,7 +290,7 @@ class BaseWindow(wx.Frame):
         delayedresult.startWorker(c_func, w_func, **kwargs)
 
 
-def run_app(window_class):
+def run_app(window_class, *args, **kwargs):
     app = wx.App()
-    window_class()
+    window_class(*args, **kwargs)
     app.MainLoop()

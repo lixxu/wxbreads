@@ -17,7 +17,7 @@ except ImportError:
     import wx.lib.agw.flatnotebook as fnb
 
 import wx.lib.masked as masked
-import utils as wxu
+import wxbreads.utils as wxu
 import windbreads.utils as wdu
 
 '''Remark:
@@ -747,6 +747,8 @@ def pack(wgt, sizer='h', **kwargs):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
     elif sizer == 'v':
         sizer = wx.BoxSizer(wx.VERTICAL)
+    elif not sizer:
+        return
 
     kargs = dict(flag=get_sizer_flags(kwargs.get('flag')))
     border = kwargs.get('border', 3)
@@ -1014,6 +1016,39 @@ def quick_choice(parent=None, msg='Please select', **kwargs):
     dlg.Destroy()
     return None
 
+
+def quick_big_buttons(self, parent, start=True, setting=True, hide=True,
+                      changes=True, about=True):
+    font = self.GetFont()
+    font.SetWeight(wx.BOLD)
+    kwargs = dict(size=(-1, 45), font=font)
+    buttons = []
+    if start:
+        start_btn = add_button(parent, label='Start', **kwargs)
+        start_btn.Bind(wx.EVT_BUTTON, self.on_start)
+        buttons.append(start_btn)
+
+    if setting:
+        setting_btn = add_button(parent, label='Settings...', **kwargs)
+        setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
+        buttons.append(setting_btn)
+
+    if hide:
+        hide_btn = add_button(parent, label='Hide', **kwargs)
+        hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
+        buttons.append(hide_btn)
+
+    if changes:
+        changes_btn = add_button(parent, label='Changes', **kwargs)
+        changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
+        buttons.append(changes_btn)
+
+    if about:
+        about_btn = add_button(parent, label='About', **kwargs)
+        about_btn.Bind(wx.EVT_BUTTON, self.on_about)
+        buttons.append(about_btn)
+
+    return buttons
 
 add_rich_text = add_richtext
 add_status_bar = add_statusbar
