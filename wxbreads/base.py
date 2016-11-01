@@ -216,7 +216,7 @@ class BaseWindow(wx.Frame):
     def popup(self, caption, msg, icon='i', **kwargs):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
-            if kwargs.pop('restore', True):
+            if self.has_tray and kwargs.pop('restore', True):
                 self.tbicon.on_restore(None)
 
         kwargs.setdefault('t', self.t)
