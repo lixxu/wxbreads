@@ -825,7 +825,7 @@ def quick_quit(self, **kwargs):
         popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         return
 
-    if hasattr(self, 'opened_dlg') and self.opened_dlg > 0:
+    if hasattr(self, 'tray') and self.opened_dlg > 0:
         caption = kwargs.pop('opened_caption', 'Warning')
         msg = kwargs.pop('opened_msg', 'Please close other dialogs')
         icon = kwargs.pop('opened_icon', 'w')
@@ -833,6 +833,9 @@ def quick_quit(self, **kwargs):
         return
 
     if need_confirm:
+        if hasattr(self, 'opened_dlg') and self.opened_dlg is not None:
+            self.opened_dlg += 1
+
         answer = popup(self,
                        caption=kwargs.pop('ask_caption', 'Confirmation'),
                        msg=kwargs.pop('ask_msg', 'Are you sure to quit?'),
@@ -840,6 +843,9 @@ def quick_quit(self, **kwargs):
                        btn=kwargs.pop('btn', wx.YES_NO | wx.NO_DEFAULT),
                        **kwargs)
         if answer == wx.ID_NO:
+            if hasattr(self, 'opened_dlg') and self.opened_dlg is not None:
+                self.opened_dlg += 1
+
             return
 
     self.Hide()

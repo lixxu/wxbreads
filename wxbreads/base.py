@@ -21,6 +21,7 @@ class BaseDialog(wx.Dialog):
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
+        self.t = None
 
         kw = dict(size=size, title=title, pos=(-1, -1))
         style = kwargs.get('style')
@@ -43,6 +44,20 @@ class BaseDialog(wx.Dialog):
             self.Destroy()
         else:
             self.Hide()
+
+    def popup(self, caption, msg, icon='i', **kwargs):
+        if self.opened_dlg is not None:
+            self.opened_dlg += 1
+
+        kwargs.setdefault('t', self.t)
+        result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
+        if self.opened_dlg is not None:
+            self.opened_dlg -= 1
+
+        return result
+
+    def need_adjust_opened_dlg(self):
+        return self.has_tray or self.opened_dlg is not None
 
 
 class BaseWindow(wx.Frame):
