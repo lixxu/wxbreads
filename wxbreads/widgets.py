@@ -62,6 +62,15 @@ def set_font(wgt, font=None):
         wgt.SetFont(font)
 
 
+def focus_on(wgt, select=False, clear=False):
+    if clear:
+        wgt.Clear()
+    elif select:
+        wgt.SetSelection(-1, -1)
+
+    wgt.SetFocus()
+
+
 def popup(parent=None, caption='caption', **kwargs):
     t = kwargs.get('t')
     btn = kwargs.pop('btn', wx.OK)

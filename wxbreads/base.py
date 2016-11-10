@@ -21,7 +21,9 @@ class BaseDialog(wx.Dialog):
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
+
         self.t = None
+        self.opened_dlg = None
 
         kw = dict(size=size, title=title, pos=(-1, -1))
         style = kwargs.get('style')
