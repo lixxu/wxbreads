@@ -118,8 +118,19 @@ def popup(parent=None, caption='caption', **kwargs):
         return dlg
 
     dlg.CenterOnParent()
+    opened_dlg = False
+    if parent and hasattr(parent, 'opened_dlg'):
+        if parent.opened_dlg is not None:
+            opened_dlg = True
+
+    if opened_dlg:
+        parent.opened_dlg += 1
+
     result = dlg.ShowModal()
     dlg.Destroy()
+    if opened_dlg:
+        parent.opened_dlg -= 1
+
     return result
 
 
@@ -148,7 +159,15 @@ def popup_smd(parent=None, msg='', caption='Message', **kwargs):
     except:
         pass
 
+    if parent and hasattr(parent, 'opened_dlg'):
+        if parent.opened_dlg is not None:
+            parent.opened_dlg += 1
+
     dlg.ShowModal()
+    if parent and hasattr(parent, 'opened_dlg'):
+        if parent.opened_dlg is not None:
+            parent.opened_dlg -= 1
+
     dlg.Destroy()
 
 

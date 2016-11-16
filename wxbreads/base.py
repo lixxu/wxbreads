@@ -80,6 +80,7 @@ class BaseWindow(wx.Frame):
         title = kwargs.get('title') or self.app_name
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
+        self.full_title = title
         size = kwargs.get('size', self.app_size)
         kw = dict(size=size, title=title)
         style = kwargs.get('style')
@@ -233,8 +234,14 @@ class BaseWindow(wx.Frame):
     def popup(self, caption, msg, icon='i', **kwargs):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
-            if self.has_tray and kwargs.pop('restore', True):
+
+        if self.has_tray:
+            if kwargs.pop('restore', True):
                 self.tbicon.on_restore(None)
+
+        else:
+            self.Iconize(False)
+            self.Raise()
 
         kwargs.setdefault('t', self.t)
         result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
