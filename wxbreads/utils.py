@@ -68,12 +68,27 @@ def wxdate2pydate(date):
     return None
 
 
+def cat_echo_text(text, **kwargs):
+    args = kwargs.get('args')
+    kargs = kwargs.get('kargs')
+    t = kwargs.get('t')
+    if kargs:
+        return wdu.ttt(text, t).format(**kargs)
+
+    if args:
+        if not isinstance(args, (tuple, list)):
+            args = (args, )
+
+        return wdu.ttt(text, t).format(*args)
+
+    return wdu.ttt(text, t)
+
+
 def write_echo_text(**kwargs):
     ts_text = kwargs.get('ts_text')
     text = kwargs.get('text', '')
-    t = kwargs.get('t')
-    if kwargs.get('tff') and t:  # t for file
-        text = wdu.ttt(text, t)
+    if kwargs.get('tff'):  # t for file
+        text = cat_echo_text(text, **kwargs)
 
     if isinstance(text, unicode):
         text = text.encode('utf-8')
@@ -93,7 +108,6 @@ def write_echo_text(**kwargs):
 def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
               align=None, underline=False, bold=False, ts_style=False,
               font=None, size=None, clear=False, **kwargs):
-    t = kwargs.get('t', None)
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
     if isinstance(text, basestring):
         if not isinstance(text, unicode):
@@ -157,7 +171,7 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
     if ts_text and ts_style:
         rtc.WriteText(ts_text)
 
-    rtc.WriteText(wdu.ttt(utext, t))
+    rtc.WriteText(cat_echo_text(utext, **kwargs))
     rtc.EndStyle()
     if nl:
         rtc.Newline()

@@ -654,8 +654,8 @@ def add_line(parent, id=-1, size=(-1, -1), orient='h'):
 
 def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     t = kwargs.pop('t', None)
-    ok_text = kwargs.pop('ok_text', '&OK')
-    cancel_text = kwargs.pop('cancel_text', '&Cancel')
+    ok_text = kwargs.pop('ok_text', 'OK')
+    cancel_text = kwargs.pop('cancel_text', 'Cancel')
     pack_line = kwargs.pop('pack_line', True)
     if pack_line:
         sl = add_line(parent, id)
@@ -1060,27 +1060,27 @@ def quick_big_buttons(self, parent, start=True, setting=True, hide=True,
     if start:
         start_btn = add_button(parent, label='Start', **kwargs)
         start_btn.Bind(wx.EVT_BUTTON, self.on_start)
-        buttons.append(start_btn)
+        buttons.append((start_btn, 'Start'))
 
     if setting:
-        setting_btn = add_button(parent, label='Settings...', **kwargs)
+        setting_btn = add_button(parent, label='Settings', **kwargs)
         setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
-        buttons.append(setting_btn)
+        buttons.append((setting_btn, 'Settings'))
 
     if hide:
         hide_btn = add_button(parent, label='Hide', **kwargs)
         hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
-        buttons.append(hide_btn)
+        buttons.append((hide_btn, 'Hide'))
 
     if changes:
         changes_btn = add_button(parent, label='Changes', **kwargs)
         changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
-        buttons.append(changes_btn)
+        buttons.append((changes_btn, 'Changes'))
 
     if about:
         about_btn = add_button(parent, label='About', **kwargs)
         about_btn.Bind(wx.EVT_BUTTON, self.on_about)
-        buttons.append(about_btn)
+        buttons.append((about_btn, 'About'))
 
     return buttons
 

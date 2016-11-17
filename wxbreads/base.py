@@ -22,7 +22,7 @@ class BaseDialog(wx.Dialog):
         title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
 
-        self.t = None
+        self.t = kwargs.get('t')
         self.opened_dlg = None
 
         kw = dict(size=size, title=title, pos=(-1, -1))
@@ -40,6 +40,13 @@ class BaseDialog(wx.Dialog):
             self.CenterOnScreen()
 
         self.ShowModal()
+
+    def on_upper_case(self, evt=None):
+        obj = evt.GetEventObject()
+        text = obj.GetValue().strip().upper()
+        obj.ChangeValue(text)
+        obj.SetInsertionPointEnd()
+        evt.Skip()
 
     def on_quit(self, evt=None):
         if self.destroy:
@@ -149,6 +156,13 @@ class BaseWindow(wx.Frame):
 
         self.other_clock_work()
 
+    def on_upper_case(self, evt=None):
+        obj = evt.GetEventObject()
+        text = obj.GetValue().strip().upper()
+        obj.ChangeValue(text)
+        obj.SetInsertionPointEnd()
+        evt.Skip()
+
     def update_run_ts(self, idx=1):
         if self.is_running:
             ts = (datetime.now() - self.start_ts).total_seconds()
@@ -204,6 +218,28 @@ class BaseWindow(wx.Frame):
 
     def tt(self, text):
         return wdu.ttt(text, self.t)
+
+    def set_label(self, wgt, label='', tooltip=''):
+        wgt.SetLabel(self.tt(label))
+        wxw.set_tooltip(wgt, tooltip, self.t)
+
+    def refresh_translation(self, wgts=[]):
+        for lwgt in wgts:
+            tooltip = ''
+            if len(lwgt) == 2:
+                wgt, label = lwgt
+            else:
+                wgt, label, tooltip = lwgt
+
+            wxw.set_tooltip(wgt, tooltip, self.t)
+            self.set_label(wgt, label)
+
+        if hasattr(self, 'panel'):
+            self.panel.Layout()
+        else:
+            self.Layout()
+
+        self.Refresh()
 
     def on_quit(self, evt=None):
         wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm)
