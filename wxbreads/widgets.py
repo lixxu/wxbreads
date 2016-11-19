@@ -73,6 +73,7 @@ def focus_on(wgt, select=False, clear=False):
 
 def popup(parent=None, caption='caption', **kwargs):
     t = kwargs.get('t')
+    font = wxu.auto_get_font(parent, **kwargs)
     btn = kwargs.pop('btn', wx.OK)
     need_return = kwargs.pop('need_return', False)
     size = kwargs.pop('size', (-1, -1))
@@ -113,6 +114,7 @@ def popup(parent=None, caption='caption', **kwargs):
     dlg.SetYesNoLabels(yes_label, no_label)
     dlg.SetYesNoCancelLabels(yes_label, no_label, cancel_label)
     dlg.SetMessage(umsg)
+    set_font(dlg, font)
 
     if need_return:
         return dlg
@@ -153,9 +155,11 @@ def popup_smd(parent=None, msg='', caption='Message', **kwargs):
     else:
         title = caption
 
+    font = wxu.auto_get_font(parent, **kwargs)
     dlg = wx.lib.dialogs.ScrolledMessageDialog(parent, umsg, title)
     try:
         dlg.GetChildren()[1].SetLabel(btn_label)
+        set_font()
     except:
         pass
 
@@ -163,6 +167,7 @@ def popup_smd(parent=None, msg='', caption='Message', **kwargs):
         if parent.opened_dlg is not None:
             parent.opened_dlg += 1
 
+    set_font(dlg, font)
     dlg.ShowModal()
     if parent and hasattr(parent, 'opened_dlg'):
         if parent.opened_dlg is not None:
@@ -967,14 +972,21 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
     root_pass = kwargs.pop('root_pass', 'guess')
     ok_label = kwargs.pop('ok_label', None)
     cancel_label = kwargs.pop('cancel_label', None)
+    font = wxu.auto_get_font(parent, **kwargs)
     dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
     # update button labels for i18n
     try:
-        btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
+        sizers = dlg.Sizer.GetChildren()
+        msg_wgt = sizers[0].Sizer.GetChildren()[0].GetWindow()
+        # text_wgt = sizers[1].GetWindow()
+        sizers2 = sizers[2].Sizer.GetChildren()
+        # line_wgt = sizers2[0].GetWindow()
+        btn_sizer = sizers2[1].Sizer
         items = btn_sizer.GetChildren()
         ok_btn, c_btn = items[1].GetWindow(), items[2].GetWindow()
         ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
         c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
+        [set_font(wgt, font) for wgt in (msg_wgt, ok_btn, c_btn)]
     except:
         pass
 
@@ -982,6 +994,7 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
     dlg.SetMinClientSize(size)
     dlg.SetMaxClientSize(size)
     dlg.SetValue(kwargs.pop('value', ''))
+    set_font(dlg, font)
     while 1:
         dlg.SetFocus()
         if dlg.ShowModal() == wx.ID_OK:
@@ -1024,15 +1037,25 @@ def quick_choice(parent=None, msg='Please select', **kwargs):
     style = kwargs.pop('style', wx.CHOICEDLG_STYLE)
     dlg = wx.SingleChoiceDialog(parent, wdu.ttt(msg, t), wdu.ttt(caption, t),
                                 choices, style)
+    font = wxu.auto_get_font(parent, **kwargs)
+    set_font(dlg, font)
     ok_label = kwargs.pop('ok_label', None)
     cancel_label = kwargs.pop('cancel_label', None)
     # update button labels for i18n
     try:
-        btn_sizer = dlg.Sizer.GetChildren()[2].Sizer.GetChildren()[1].Sizer
+        sizers = dlg.Sizer.GetChildren()
+        msg_wgt = sizers[0].Sizer.GetChildren()[0].GetWindow()
+        # listbox = sizers[1].GetWindow()
+        sizers2 = sizers[0].Sizer.GetChildren()
+        # line = sizers2[0].GetWindow()
+        btn_sizer = sizers2[1].Sizer
         items = btn_sizer.GetChildren()
         ok_btn, c_btn = items[1].GetWindow(), items[2].GetWindow()
         ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
         c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
+        set_font(msg_wgt, font)
+        set_font(ok_btn, font)
+        set_font(c_btn, font)
     except:
         pass
 
@@ -1052,33 +1075,37 @@ def quick_choice(parent=None, msg='Please select', **kwargs):
 
 
 def quick_big_buttons(self, parent, start=True, setting=True, hide=True,
-                      changes=True, about=True):
-    font = self.GetFont()
+                      changes=True, about=True, **kwargs):
+    font = wxu.auto_get_font(self, **kwargs)
+    if not font:
+        font = self.GetFont()
+
     font.SetWeight(wx.BOLD)
-    kwargs = dict(size=(-1, 45), font=font)
+    kw = dict(size=(-1, 45), font=font)
+    kw.update(kwargs)
     buttons = []
     if start:
-        start_btn = add_button(parent, label='Start', **kwargs)
+        start_btn = add_button(parent, label='Start', **kw)
         start_btn.Bind(wx.EVT_BUTTON, self.on_start)
         buttons.append((start_btn, 'Start'))
 
     if setting:
-        setting_btn = add_button(parent, label='Settings', **kwargs)
+        setting_btn = add_button(parent, label='Settings', **kw)
         setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
         buttons.append((setting_btn, 'Settings'))
 
     if hide:
-        hide_btn = add_button(parent, label='Hide', **kwargs)
+        hide_btn = add_button(parent, label='Hide', **kw)
         hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
         buttons.append((hide_btn, 'Hide'))
 
     if changes:
-        changes_btn = add_button(parent, label='Changes', **kwargs)
+        changes_btn = add_button(parent, label='Changes', **kw)
         changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
         buttons.append((changes_btn, 'Changes'))
 
     if about:
-        about_btn = add_button(parent, label='About', **kwargs)
+        about_btn = add_button(parent, label='About', **kw)
         about_btn.Bind(wx.EVT_BUTTON, self.on_about)
         buttons.append((about_btn, 'About'))
 

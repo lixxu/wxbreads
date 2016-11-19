@@ -14,6 +14,9 @@ RTC_ALIGNS = dict(default=wx.TEXT_ALIGNMENT_DEFAULT,
                   center=wx.TEXT_ALIGNMENT_CENTER,
                   right=wx.TEXT_ALIGNMENT_RIGHT,
                   )
+CHINESE_FONTS = ('微软雅黑', '雅黑', 'microsoft yahei', '黑体', '宋体', '新宋体',
+                 '仿宋', '楷体', 'simhei', 'heiti', 'simsun', 'nsimsun',
+                 'fangsong', 'kaiti', 'mingliu', 'pmingliu')
 
 
 def get_text_width(text, wgt):
@@ -55,6 +58,38 @@ def require_int(evt, min_value=1):
     wgt.SetInsertionPointEnd()
 
 
+def auto_get_font(obj=None, **kwargs):
+    if 'font' in kwargs:
+        return kwargs['font']
+
+    try:
+        return obj.auto_font()
+    except:
+        pass
+
+    return None
+
+
+def get_chinese_fonts():
+    e = wx.FontEnumerator()
+    e.EnumerateFacenames()
+    fonts = []
+    for name in (f for f in e.GetFacenames() if not f.startswith('@')):
+        if name.lower().startswith(CHINESE_FONTS):
+            fonts.append(name)
+
+    return fonts
+
+
+def get_best_chinese_font(fonts=[]):
+    for cf in CHINESE_FONTS:
+        for font in fonts:
+            if font.lower().startswith(cf):
+                return font
+
+    return None
+
+
 def pydate2wxdate(date):
     tt = date.timetuple()
     dmy = (tt[2], tt[1] - 1, tt[0])
@@ -68,34 +103,46 @@ def wxdate2pydate(date):
     return None
 
 
-def cat_echo_text(text, **kwargs):
+def cat_echo_text(**kwargs):
     args = kwargs.get('args')
     kargs = kwargs.get('kargs')
     t = kwargs.get('t')
-    if kargs:
-        return wdu.ttt(text, t).format(**kargs)
+    text = kwargs.get('text', '')
+    if text:
+        if kargs:
+            return wdu.ttt(text, t).format(**kargs)
 
-    if args:
-        if not isinstance(args, (tuple, list)):
-            args = (args, )
+        if args:
+            if not isinstance(args, (tuple, list)):
+                args = (args, )
 
-        return wdu.ttt(text, t).format(*args)
+            return wdu.ttt(text, t).format(*args)
 
-    return wdu.ttt(text, t)
+        return wdu.ttt(text, t)
+
+    return text
 
 
 def write_echo_text(**kwargs):
     ts_text = kwargs.get('ts_text')
-    text = kwargs.get('text', '')
     if kwargs.get('tff'):  # t for file
-        text = cat_echo_text(text, **kwargs)
+        text = cat_echo_text(**kwargs)
+    else:
+        kargs = kwargs.copy()
+        kargs.update(t=None)
+        text = cat_echo_text(**kargs)
 
     if isinstance(text, unicode):
         text = text.encode('utf-8')
 
     nl = kwargs.get('nl', True)
     log_mode = kwargs.get('log_mode', 'a')
-    for log_file in kwargs.get('log_files', []):
+    log_file = kwargs.get('log_file')
+    log_files = kwargs.get('log_files', [])
+    if log_file:
+        log_files = [log_file]
+
+    for log_file in log_files:
         with open(log_file, log_mode) as f:
             if ts_text:
                 f.write(ts_text)
@@ -171,7 +218,7 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
     if ts_text and ts_style:
         rtc.WriteText(ts_text)
 
-    rtc.WriteText(cat_echo_text(utext, **kwargs))
+    rtc.WriteText(cat_echo_text(text=utext, **kwargs))
     rtc.EndStyle()
     if nl:
         rtc.Newline()

@@ -11,35 +11,105 @@ import wxbreads.images as wxi
 import wxbreads.widgets as wxw
 
 
-class BaseDialog(wx.Dialog):
+class BaseBase(object):
+    app_name = 'App'
     app_size = (-1, -1)
-    app_name = 'Cool Dialog'
     app_version = ''
+    update_font = False
 
-    def __init__(self, **kwargs):
-        title = kwargs.get('title') or self.app_name
-        version = kwargs.get('version') or self.app_version
-        title = '{}{}'.format(title, ' - ' + version if version else '')
-        size = kwargs.get('size', self.app_size)
-
-        self.t = kwargs.get('t')
+    def init_values(self, **kwargs):
         self.opened_dlg = None
-
-        kw = dict(size=size, title=title, pos=(-1, -1))
-        style = kwargs.get('style')
-        if style:
-            kw.update(style=style)
-
-        super(BaseDialog, self).__init__(kwargs.get('parent'), **kw)
-        self.destroy = kwargs.get('destroy', True)
         self.need_reload = False
-        self.Bind(wx.EVT_CLOSE, self.on_quit)
+        self.t = kwargs.get('t')
+        self.destroy = kwargs.get('destroy', True)
+        self.has_tray = False
 
-    def show(self, center=True):
-        if center:
+    def auto_font(self, lang=None):
+        if not self.update_font:
+            return None
+
+        en_font, ch_font = self.get_fonts()
+        l = lang or self.get_lang()
+        name = en_font if l == 'en' else ch_font
+        return self.create_font(name)
+
+    def create_font(self, face=None):
+        if face:
+            font = self.GetFont()
+            font.SetFaceName(face)
+            return font
+            # return wx.Font(-1, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, face)
+
+        return None
+
+    def get_fonts(self):
+        return self.get_english_font(), self.get_best_chinese_font()
+
+    def get_chinese_fonts(self):
+        return wxu.get_chinese_fonts()
+
+    def get_best_chinese_font(self, fonts=[]):
+        font = wxu.get_best_chinese_font(fonts or self.get_chinese_fonts())
+        return font if font else self.get_english_font()
+
+    def get_basic_font(self):
+        return self.GetFont().GetFaceName()
+
+    def get_english_font(self):
+        if not hasattr(self, 'english_font_name'):
+            self.english_font_name = self.get_basic_font()
+
+        return self.english_font_name
+
+    def other_clock_work(self):
+        pass
+
+    def other_clean_work(self):
+        pass
+
+    def get_lang(self):
+        return 'en'
+
+    def get_zh_mo(self):
+        return None
+
+    def get_en_mo(self):
+        return None
+
+    def tt(self, text):
+        return wdu.ttt(text, self.t)
+
+    def set_label(self, wgt, label='', tooltip=''):
+        wgt.SetLabel(self.tt(label))
+        wxw.set_tooltip(wgt, tooltip, self.t)
+
+    def set_min_size(self, size=None):
+        self.SetMinSize(size or self.GetSize())
+
+    def set_max_size(self, size=None):
+        self.SetMaxSize(size or self.GetSize())
+
+    def fix_size(self, size=None):
+        self.set_min_size(size)
+        self.set_max_size(size)
+
+    def show(self, **kwargs):
+        if kwargs.get('cop', True):  # center on parent
+            self.CenterOnParent()
+        elif kwargs.get('cos', True):
             self.CenterOnScreen()
+        elif kwargs.get('center', True):
+            self.Centre(wx.BOTH)
 
-        self.ShowModal()
+        if kwargs.get('modal', True) and hasattr(self, 'ShowModal'):
+            self.ShowModal()
+            return
+
+        effect = kwargs.get('effect')
+        if effect:
+            self.ShowWithEffect(effect, int(kwargs.get('timeout', 0)))
+        else:
+            self.Show()
 
     def on_upper_case(self, evt=None):
         obj = evt.GetEventObject()
@@ -48,35 +118,66 @@ class BaseDialog(wx.Dialog):
         obj.SetInsertionPointEnd()
         evt.Skip()
 
+    def on_hide(self, evt=None):
+        self.Hide()
+
     def on_quit(self, evt=None):
         if self.destroy:
             self.Destroy()
         else:
             self.Hide()
 
+    def need_adjust_opened_dlg(self):
+        return self.has_tray or self.opened_dlg is not None
+
     def popup(self, caption, msg, icon='i', **kwargs):
-        if self.opened_dlg is not None:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
+
+        if self.has_tray:
+            if kwargs.pop('restore', True):
+                self.tbicon.on_restore(None)
+
+        try:
+            self.Iconize(False)
+            self.Raise()
+        except:
+            pass
 
         kwargs.setdefault('t', self.t)
         result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
-        if self.opened_dlg is not None:
+        if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
         return result
 
-    def need_adjust_opened_dlg(self):
-        return self.has_tray or self.opened_dlg is not None
+
+class BaseDialog(wx.Dialog, BaseBase):
+    app_name = 'Dialog'
+
+    def __init__(self, **kwargs):
+        self.init_values(**kwargs)
+        title = wdu.ttt(kwargs.get('title') or self.app_name, self.t)
+        version = kwargs.get('version') or self.app_version
+        title = '{}{}'.format(title, ' - ' + version if version else '')
+        size = kwargs.get('size', self.app_size)
+
+        kw = dict(size=size, title=title, pos=(-1, -1))
+        style = kwargs.get('style')
+        if style:
+            kw.update(style=style)
+
+        super(BaseDialog, self).__init__(kwargs.get('parent'), **kw)
+        self.english_font_name = self.get_english_font()
+        wxw.set_font(self, kwargs.get('font'))
+        self.Bind(wx.EVT_CLOSE, self.on_quit)
 
 
-class BaseWindow(wx.Frame):
+class BaseWindow(wx.Frame, BaseBase):
     clock_timer_id = wx.NewId()
     echo_timer_id = wx.NewId()
     root_pass = 'guess'
     auth_setting = True
-    app_size = (-1, -1)
-    app_version = '0.1'
-    app_name = 'Cool App'
     app_remark = 'Description for cool app'
     app_author = ''
     quit_confirm = True
@@ -84,6 +185,8 @@ class BaseWindow(wx.Frame):
     sbar_width = [250, -1, 120]
 
     def __init__(self, **kwargs):
+        self.init_values(**kwargs)
+
         title = kwargs.get('title') or self.app_name
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
@@ -95,43 +198,15 @@ class BaseWindow(wx.Frame):
             kw.update(style=style)
 
         super(BaseWindow, self).__init__(kwargs.get('parent'), **kw)
+        self.english_font_name = self.get_english_font()
         self.is_running = False
         self.echo_lines = []
         self.is_echoing = False
         self.echoed_row = 0  # lines that echoed
-        self.t = None
-        self.has_tray = False
-        self.opened_dlg = None
         self.logo = img = wxi.logo.GetImage()
         icon = wx.IconFromBitmap(img.ConvertToBitmap())
         self.SetIcon(icon)
         self.Bind(wx.EVT_CLOSE, self.on_quit)
-
-    def show(self, center=True):
-        if center:
-            self.Centre(wx.BOTH)
-
-        self.Show()
-
-    def show_with_effect(self, effect=None, timeout=0, center=True):
-        if effect is None:
-            self.show(center)
-            return
-
-        if center:
-            self.Centre(wx.BOTH)
-
-        self.ShowWithEffect(effect, timeout)
-
-    def set_min_size(self, size=None):
-        self.SetMinSize(size or self.GetSize())
-
-    def set_max_size(self, size=None):
-        self.SetMaxSize(size or self.GetSize())
-
-    def fix_size(self, size=None):
-        self.set_min_size(size)
-        self.set_max_size(size)
 
     def setup_timers(self, clock_ms=1000, echo_ms=200):
         self.all_timers = []
@@ -156,20 +231,10 @@ class BaseWindow(wx.Frame):
 
         self.other_clock_work()
 
-    def on_upper_case(self, evt=None):
-        obj = evt.GetEventObject()
-        text = obj.GetValue().strip().upper()
-        obj.ChangeValue(text)
-        obj.SetInsertionPointEnd()
-        evt.Skip()
-
     def update_run_ts(self, idx=1):
         if self.is_running:
             ts = (datetime.now() - self.start_ts).total_seconds()
             self.update_status('{}s'.format(ts), idx)
-
-    def other_clock_work(self):
-        pass
 
     def setup_statusbar(self):
         self.sb_count = len(self.get_sb_width())
@@ -207,23 +272,8 @@ class BaseWindow(wx.Frame):
         wdu.update_t(self, lang=self.get_lang(), zh=self.get_zh_mo(),
                      en=self.get_en_mo())
 
-    def get_lang(self):
-        return 'en'
-
-    def get_zh_mo(self):
-        return None
-
-    def get_en_mo(self):
-        return None
-
-    def tt(self, text):
-        return wdu.ttt(text, self.t)
-
-    def set_label(self, wgt, label='', tooltip=''):
-        wgt.SetLabel(self.tt(label))
-        wxw.set_tooltip(wgt, tooltip, self.t)
-
     def refresh_translation(self, wgts=[]):
+        font = self.auto_font()
         for lwgt in wgts:
             tooltip = ''
             if len(lwgt) == 2:
@@ -233,6 +283,7 @@ class BaseWindow(wx.Frame):
 
             wxw.set_tooltip(wgt, tooltip, self.t)
             self.set_label(wgt, label)
+            wxw.set_font(wgt, font)
 
         if hasattr(self, 'panel'):
             self.panel.Layout()
@@ -243,12 +294,6 @@ class BaseWindow(wx.Frame):
 
     def on_quit(self, evt=None):
         wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm)
-
-    def other_clean_work(self):
-        pass
-
-    def on_hide(self, evt=None):
-        self.Hide()
 
     def echo_text(self, text='', **kwargs):
         kwargs.setdefault('t', self.t)
@@ -266,25 +311,6 @@ class BaseWindow(wx.Frame):
 
     def on_echoing(self, evt=None):
         wxu.on_echoing(self)
-
-    def popup(self, caption, msg, icon='i', **kwargs):
-        if self.need_adjust_opened_dlg():
-            self.opened_dlg += 1
-
-        if self.has_tray:
-            if kwargs.pop('restore', True):
-                self.tbicon.on_restore(None)
-
-        else:
-            self.Iconize(False)
-            self.Raise()
-
-        kwargs.setdefault('t', self.t)
-        result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
-        if self.need_adjust_opened_dlg():
-            self.opened_dlg -= 1
-
-        return result
 
     def on_setting(self, evt=None):
         if self.prepare_setting():
