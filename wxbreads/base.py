@@ -182,7 +182,7 @@ class BaseWindow(wx.Frame, BaseBase):
     app_author = ''
     quit_confirm = True
     clear_echo_row = 0
-    sbar_width = [250, -1, 120]
+    sbar_width = [250, -1, 130]
 
     def __init__(self, **kwargs):
         self.init_values(**kwargs)

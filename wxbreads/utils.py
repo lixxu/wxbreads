@@ -264,7 +264,7 @@ def stop_timers(timers=[]):
     [stop_timer(timer) for timer in timers]
 
 
-def update_clock_statusbar(sbar, ts_fmt='%Y-%b-%d %H:%M', idx=2):
+def update_clock_statusbar(sbar, ts_fmt='%Y/%b/%d %H:%M', idx=2):
     set_status_text(sbar, time.strftime(ts_fmt), idx)
 
 
