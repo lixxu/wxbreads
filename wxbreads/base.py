@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from functools import partial
 from datetime import datetime
 import wx
 import wx.lib.delayedresult as delayedresult
@@ -151,6 +152,18 @@ class BaseBase(object):
 
         return result
 
+    def bind(self, evt, func, wgt, format='self'):
+        if isinstance(evt, basestring):
+            evt = getattr(wx, evt.upper())
+
+        if not hasattr(self, func.__name__):
+            func = partial(func, self)
+
+        if format == 'self':
+            self.Bind(evt, func, wgt)
+        else:
+            wgt.Bind(evt, func)
+
 
 class BaseDialog(wx.Dialog, BaseBase):
     app_name = 'Dialog'
@@ -282,7 +295,9 @@ class BaseWindow(wx.Frame, BaseBase):
                 wgt, label, tooltip = lwgt
 
             wxw.set_tooltip(wgt, tooltip, self.t)
-            self.set_label(wgt, label)
+            if label is not None:
+                self.set_label(wgt, label)
+
             wxw.set_font(wgt, font)
 
         if hasattr(self, 'panel'):
