@@ -194,6 +194,8 @@ class BaseWindow(wx.Frame, BaseBase):
     app_remark = 'Description for cool app'
     app_author = ''
     quit_confirm = True
+    reset_copyright = True
+    reset_copyright_seconds = (0, 1, 30, 31)
     clear_echo_row = 0
     sbar_width = [260, -1, 130]
 
@@ -241,6 +243,9 @@ class BaseWindow(wx.Frame, BaseBase):
     def on_clock_tick(self, evt=None):
         if hasattr(self, 'sbar'):
             wxu.update_clock_statusbar(self.sbar, idx=self.sb_count - 1)
+            if self.reset_copyright:
+                if datetime.now().second in self.reset_copyright_seconds:
+                    self.update_status(self.get_copyright(), 0, t=None)
 
         self.other_clock_work()
 
