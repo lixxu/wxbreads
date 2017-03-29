@@ -17,6 +17,8 @@ class BaseBase(object):
     app_size = (-1, -1)
     app_version = ''
     update_font = False
+    quit_confirm = True
+    quit_password = ''
 
     def init_values(self, **kwargs):
         self.opened_dlg = None
@@ -24,6 +26,19 @@ class BaseBase(object):
         self.t = kwargs.get('t')
         self.destroy = kwargs.get('destroy', True)
         self.has_tray = False
+
+    def get_font(self, bold=False, size=None):
+        font = self.GetFont()
+        if bold:
+            font.SetWeight(wx.BOLD)
+
+        if size:
+            font.SetPointSize(size)
+
+        return font
+
+    def get_lang_text(self, lang='en'):
+        return 'English' if lang == 'en' else '中文'
 
     def auto_font(self, lang=None):
         if not self.update_font:
@@ -95,9 +110,17 @@ class BaseBase(object):
         self.set_max_size(size)
 
     def show(self, **kwargs):
-        if kwargs.get('cop', True):  # center on parent
+        cop = kwargs.get('cop')
+        if cop is None:
+            cop = kwargs.get('center_on_parent', True)
+
+        cos = kwargs.get('cos')
+        if cos is None:
+            cos = kwargs.get('center_on_screen', True)
+
+        if cop:  # center on parent
             self.CenterOnParent()
-        elif kwargs.get('cos', True):
+        elif cos:
             self.CenterOnScreen()
         elif kwargs.get('center', True):
             self.Centre(wx.BOTH)
@@ -123,10 +146,8 @@ class BaseBase(object):
         self.Hide()
 
     def on_quit(self, evt=None):
-        if self.destroy:
-            self.Destroy()
-        else:
-            self.Hide()
+        wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm,
+                       need_password=self.quit_password)
 
     def need_adjust_opened_dlg(self):
         return self.has_tray or self.opened_dlg is not None
@@ -185,6 +206,12 @@ class BaseDialog(wx.Dialog, BaseBase):
         wxw.set_font(self, kwargs.get('font'))
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
+    def on_quit(self, evt=None):
+        if self.destroy:
+            self.Destroy()
+        else:
+            self.Hide()
+
 
 class BaseWindow(wx.Frame, BaseBase):
     clock_timer_id = wx.NewId()
@@ -193,7 +220,6 @@ class BaseWindow(wx.Frame, BaseBase):
     auth_setting = True
     app_remark = 'Description for cool app'
     app_author = ''
-    quit_confirm = True
     reset_copyright = True
     reset_copyright_seconds = (0, 1, 30, 31)
     clear_echo_row = 0
@@ -249,10 +275,13 @@ class BaseWindow(wx.Frame, BaseBase):
 
         self.other_clock_work()
 
-    def update_run_ts(self, idx=1):
+    def update_run_ts(self, idx=1, as_seconds=True):
         if self.is_running:
-            ts = (datetime.now() - self.start_ts).total_seconds()
-            self.update_status('{}s'.format(ts), idx)
+            time_df = datetime.now() - self.start_ts
+            if as_seconds:
+                self.update_status('{}s'.format(time_df.total_seconds()), idx)
+            else:
+                self.update_status('{}'.format(time_df), idx)
 
     def setup_statusbar(self):
         self.sb_count = len(self.get_sb_width())
@@ -311,9 +340,6 @@ class BaseWindow(wx.Frame, BaseBase):
             self.Layout()
 
         self.Refresh()
-
-    def on_quit(self, evt=None):
-        wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm)
 
     def echo_text(self, text='', **kwargs):
         kwargs.setdefault('t', self.t)

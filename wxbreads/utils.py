@@ -50,13 +50,9 @@ def get_adjust_size(size=(-1, -1), **kwargs):
 def require_int(evt, min_value=1, max_value=-1):
     wgt = evt.GetEventObject()
     text = wgt.GetValue().strip()
-    is_ok = text.isdigit() and int(text) >= min_value
-    is_ok = is_ok and (max_value == -1 or int(text) <= max_value)
-    wgt.ChangeValue(text if is_ok else '')
-    if is_ok:
+    if text.isdigit():
+        wgt.ChangeValue(text)
         wgt.SetInsertionPoint(wgt.GetInsertionPoint())
-    else:
-        wgt.SetInsertionPointEnd()
 
 
 def auto_get_font(obj=None, **kwargs):

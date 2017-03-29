@@ -707,13 +707,29 @@ def add_timer(self, timer_id, timer_func, miliseconds=-1, one_shot=False):
 
 
 def add_fnb(parent, id=-1, **kwargs):
-    style = kwargs.pop('style', None)
+    style = kwargs.pop('style', 0)
     active_color = kwargs.pop('active_color', None)
-    if style is None:
-        # I prefer this style
-        style = fnb.FNB_NODRAG | fnb.FNB_NO_X_BUTTON | fnb.FNB_NO_NAV_BUTTONS
-        style |= fnb.FNB_VC8 | fnb.FNB_BACKGROUND_GRADIENT
+    no_drag = kwargs.pop('no_drag', True)
+    no_x = kwargs.pop('no_x', True)
+    no_nav = kwargs.pop('no_nav', True)
+    has_bg = kwargs.pop('has_bg', True)
+    tab_style = kwargs.pop('tab_style', 'vc8').strip().upper()
 
+    style |= wx.TAB_TRAVERSAL
+
+    if no_drag:
+        style |= fnb.FNB_NODRAG
+
+    if no_x:
+        style |= fnb.FNB_NO_X_BUTTON
+
+    if no_nav:
+        style |= fnb.FNB_NO_NAV_BUTTONS
+
+    if has_bg:
+        style |= fnb.FNB_BACKGROUND_GRADIENT
+
+    style |= getattr(fnb, 'FNB_{}'.format(tab_style))
     if kwargs.pop('bottom', False):
         style |= fnb.FNB_BOTTOM
 
@@ -847,9 +863,15 @@ def about_box(**kwargs):
     wx.AboutBox(info)
 
 
+def adjust_opened_dlg(self, inc=1):
+    if hasattr(self, 'opened_dlg') and self.opened_dlg is not None:
+        self.opened_dlg += inc
+
+
 def quick_quit(self, **kwargs):
     """Quick handy method to ask for quit."""
     need_confirm = kwargs.pop('need_confirm', True)
+    need_password = kwargs.pop('need_password', '')
     other_clean_work = kwargs.pop('other_clean_work', None)
     if hasattr(self, 'is_running') and self.is_running:
         caption = kwargs.pop('running_caption', 'Warning')
@@ -865,20 +887,23 @@ def quick_quit(self, **kwargs):
         popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         return
 
-    if need_confirm:
-        if hasattr(self, 'opened_dlg') and self.opened_dlg is not None:
-            self.opened_dlg += 1
+    if need_password:
+        adjust_opened_dlg(self, 1)
+        is_ok = quick_password_entry(self, root_pass=need_password, **kwargs)
+        adjust_opened_dlg(self, -1)
+        if not is_ok:
+            return
 
+    elif need_confirm:
+        adjust_opened_dlg(self, 1)
         answer = popup(self,
                        caption=kwargs.pop('ask_caption', 'Confirmation'),
                        msg=kwargs.pop('ask_msg', 'Are you sure to quit?'),
                        icon=kwargs.pop('ask_icon', 'q'),
                        btn=kwargs.pop('btn', wx.YES_NO | wx.NO_DEFAULT),
                        **kwargs)
+        adjust_opened_dlg(self, -1)
         if answer == wx.ID_NO:
-            if hasattr(self, 'opened_dlg') and self.opened_dlg is not None:
-                self.opened_dlg += 1
-
             return
 
     self.Hide()
