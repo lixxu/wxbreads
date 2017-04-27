@@ -5,14 +5,25 @@ from __future__ import unicode_literals
 import wx
 import windbreads.utils as wdu
 
+try:
+    TaskBarIcon = wx.TaskBarIcon
+    IconFromBitmap = wx.IconFromBitmap
+    EVT_TASKBAR_LEFT_DOWN = wx.EVT_TASKBAR_LEFT_DOWN
+except AttributeError:
+    import wx.adv
 
-class TrayIcon(wx.TaskBarIcon):
+    TaskBarIcon = wx.adv.TaskBarIcon
+    IconFromBitmap = wx.Icon
+    EVT_TASKBAR_LEFT_DOWN = wx.adv.EVT_TASKBAR_LEFT_DOWN
+
+
+class TrayIcon(TaskBarIcon):
     restore_id = wx.NewId()
     quit_id = wx.NewId()
 
     def __init__(self, frame, icon=None, text='TrayIcon', **kwargs):
         self.t = kwargs.get('t')
-        wx.TaskBarIcon.__init__(self)
+        TaskBarIcon.__init__(self)
         self.frame = frame
         if icon:
             if not isinstance(icon, basestring):
@@ -20,7 +31,7 @@ class TrayIcon(wx.TaskBarIcon):
 
             self.SetIcon(icon, wdu.ttt(text, self.t))
 
-        self.Bind(wx.EVT_TASKBAR_LEFT_DOWN, self.on_restore)
+        self.Bind(EVT_TASKBAR_LEFT_DOWN, self.on_restore)
         self.Bind(wx.EVT_MENU, self.on_restore, id=self.restore_id)
         self.Bind(wx.EVT_MENU, self.on_quit, id=self.quit_id)
 
@@ -38,7 +49,7 @@ class TrayIcon(wx.TaskBarIcon):
             img = img.Scale(22, 22)
 
         # wxMac can be any size upto 128x128, so leave the source img alone....
-        icon = wx.IconFromBitmap(img.ConvertToBitmap())
+        icon = IconFromBitmap(img.ConvertToBitmap())
         return icon
 
     def on_restore(self, event):

@@ -245,7 +245,11 @@ class BaseWindow(wx.Frame, BaseBase):
         self.is_echoing = False
         self.echoed_row = 0  # lines that echoed
         self.logo = img = wxi.logo.GetImage()
-        icon = wx.IconFromBitmap(img.ConvertToBitmap())
+        try:
+            icon = wx.IconFromBitmap(img.ConvertToBitmap())
+        except AttributeError:
+            icon = wx.Icon(img.ConvertToBitmap())
+
         self.SetIcon(icon)
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
@@ -313,6 +317,7 @@ class BaseWindow(wx.Frame, BaseBase):
             self.opened_dlg = 0
             self.has_tray = True
         except:
+            raise
             self.tbicon = None
 
     def update_t(self):
@@ -390,9 +395,14 @@ class BaseWindow(wx.Frame, BaseBase):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
+        try:
+            icon = wxi.phoenix.GetIcon()
+        except:
+            icon = wxi.phoenix.getIcon()
+
         kw = dict(name=self.app_name,
                   version=self.app_version,
-                  icon=wxi.phoenix.getIcon(),
+                  icon=icon,
                   remark=self.app_remark,
                   t=self.t,
                   )

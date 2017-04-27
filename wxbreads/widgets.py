@@ -17,6 +17,15 @@ except ImportError:
     import wx.lib.agw.flatnotebook as fnb
 
 import wx.lib.masked as masked
+try:
+    AboutDialogInfo = wx.AboutDialogInfo
+    AboutBox = wx.AboutBox
+except AttributeError:
+    import wx.adv
+
+    AboutDialogInfo = wx.adv.AboutDialogInfo
+    AboutBox = wx.adv.AboutBox
+
 import wxbreads.utils as wxu
 import windbreads.utils as wdu
 
@@ -44,7 +53,12 @@ HIGHLIGHT_RED = '#F75D59'
 
 def set_tooltip(wgt, tooltip='', t=None):
     if tooltip:
-        wgt.SetToolTipString(wdu.ttt(tooltip, t=t))
+        if hasattr(wgt, 'SetToolTip'):
+            f = wgt.SetToolTip
+        else:
+            f = wgt.SetToolTipString
+
+        f(wdu.ttt(tooltip, t=t))
 
 
 def set_fg(wgt, fg=None):
@@ -823,7 +837,7 @@ def sort_wgts(wgts=[], **kwargs):
 
 def about_box(**kwargs):
     t = kwargs.pop('t', None)
-    info = wx.AboutDialogInfo()
+    info = AboutDialogInfo()
     icon = kwargs.pop('icon', None)
     icon_fmt = kwargs.pop('icon_fmt', None)
     if icon:
@@ -860,7 +874,7 @@ def about_box(**kwargs):
     [info.AddDocWriter(writer) for writer in doc_writers]
     [info.AddArtist(artist) for artist in artists]
     [info.AddTranslator(tranlator) for tranlator in tranlators]
-    wx.AboutBox(info)
+    AboutBox(info)
 
 
 def adjust_opened_dlg(self, inc=1):
