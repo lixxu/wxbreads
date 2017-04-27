@@ -20,11 +20,13 @@ import wx.lib.masked as masked
 try:
     AboutDialogInfo = wx.AboutDialogInfo
     AboutBox = wx.AboutBox
+    DatePickerCtrl = wx.DatePickerCtrl
 except AttributeError:
     import wx.adv
 
     AboutDialogInfo = wx.adv.AboutDialogInfo
     AboutBox = wx.adv.AboutBox
+    DatePickerCtrl = wx.adv.DatePickerCtrl
 
 import wxbreads.utils as wxu
 import windbreads.utils as wdu
@@ -625,7 +627,7 @@ def add_datepicker(parent, sizer=None, **kwargs):
         else:
             kw.update(dt=value)
 
-    wgt = wx.DatePickerCtrl(parent, **kw)
+    wgt = DatePickerCtrl(parent, **kw)
     set_tooltip(wgt, tooltip, t)
     quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
 
