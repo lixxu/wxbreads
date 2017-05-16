@@ -51,6 +51,7 @@ ICONS = dict(info=wx.ICON_INFORMATION,
              )
 DEFAULT_WILDCARD = 'All files|*'
 HIGHLIGHT_RED = '#F75D59'
+ABOUT_FORMAT = '{}\n\nPlatform:\n- Python {}\n- wxPython {}\n  * ({})\n- {}\n'
 
 
 def set_tooltip(wgt, tooltip='', t=None):
@@ -950,8 +951,7 @@ def quick_quit(self, **kwargs):
 
 
 def quick_about(*args, **kwargs):
-    fmt = kwargs.pop('fmt',
-                     '{}\n\nPlatform:\nPython {}\nwxPython {} ({})\n{}\n\n')
+    fmt = kwargs.pop('fmt', ABOUT_FORMAT)
     t = kwargs.get('t', None)
     copyright = kwargs.pop('copyright', wdu.get_copy_right())
     author = kwargs.pop('author', '')
