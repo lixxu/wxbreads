@@ -17,6 +17,8 @@ except ImportError:
     import wx.lib.agw.flatnotebook as fnb
 
 import wx.lib.masked as masked
+
+OLD_WX = True
 try:
     AboutDialogInfo = wx.AboutDialogInfo
     AboutBox = wx.AboutBox
@@ -27,6 +29,8 @@ except AttributeError:
     AboutDialogInfo = wx.adv.AboutDialogInfo
     AboutBox = wx.adv.AboutBox
     DatePickerCtrl = wx.adv.DatePickerCtrl
+
+    OLD_WX = False
 
 import wxbreads.utils as wxu
 import windbreads.utils as wdu
@@ -51,17 +55,17 @@ ICONS = dict(info=wx.ICON_INFORMATION,
              )
 DEFAULT_WILDCARD = 'All files|*'
 HIGHLIGHT_RED = '#F75D59'
-ABOUT_FORMAT = '{}\n\nPlatform:\n- Python {}\n- wxPython {}\n  * ({})\n- {}\n'
+if OLD_WX:
+    ABOUT_FORMAT = '{}\n\nPlatform:\n- Python {}\n- wxPython {} ({})\n- {}\n'
+else:
+    ABOUT_FORMAT = '{}\n\nPlatform:\n- Python {}\n- wxPython {}\n  * ({})\
+    \n- {}\n'
 
 
 def set_tooltip(wgt, tooltip='', t=None):
     if tooltip:
-        if hasattr(wgt, 'SetToolTip'):
-            f = wgt.SetToolTip
-        else:
-            f = wgt.SetToolTipString
-
-        f(wdu.ttt(tooltip, t=t))
+        func = wgt.SetToolTipString if OLD_WX else wgt.SetToolTip
+        func(wdu.ttt(tooltip, t=t))
 
 
 def set_fg(wgt, fg=None):
