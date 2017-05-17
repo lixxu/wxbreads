@@ -129,7 +129,7 @@ def write_echo_text(**kwargs):
         kargs.update(t=None)
         text = cat_echo_text(**kargs)
 
-    if isinstance(text, unicode):
+    if isinstance(text, wdu.safe_unicode()):
         text = text.encode('utf-8')
 
     nl = kwargs.get('nl', True)
@@ -153,8 +153,8 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
               align=None, underline=False, bold=False, ts_style=False,
               font=None, size=None, clear=False, **kwargs):
     ts_text = '[{}] '.format(datetime.now()) if ts else ''
-    if isinstance(text, basestring):
-        if not isinstance(text, unicode):
+    if isinstance(text, wdu.safe_basestring()):
+        if not isinstance(text, wdu.safe_unicode()):
             utext = text.decode(wdu.detect_encoding(text)['encoding'])
         else:
             utext = text

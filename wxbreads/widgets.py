@@ -101,8 +101,8 @@ def popup(parent=None, caption='caption', **kwargs):
     icon = kwargs.pop('icon', 'i')
     msg = kwargs.pop('msg', '')
     icon = ICONS.get(icon, ICONS['i'])
-    if isinstance(msg, basestring):
-        if not isinstance(msg, unicode):
+    if isinstance(msg, wdu.safe_basestring()):
+        if not isinstance(msg, wdu.safe_unicode()):
             umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
         else:
             umsg = msg
@@ -160,8 +160,8 @@ def popup(parent=None, caption='caption', **kwargs):
 def popup_smd(parent=None, msg='', caption='Message', **kwargs):
     t = kwargs.get('t')
     btn_label = kwargs.get('btn_label', 'OK')
-    if isinstance(msg, basestring):
-        if not isinstance(msg, unicode):
+    if isinstance(msg, wdu.safe_basestring()):
+        if not isinstance(msg, wdu.safe_unicode()):
             umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
         else:
             umsg = msg
@@ -621,7 +621,7 @@ def add_datepicker(parent, sizer=None, **kwargs):
     kw = dict(size=ssize, style=style,
               name=kwargs.pop('sname', 'wxDatePickerCtrl'))
     if value:
-        if isinstance(value, basestring):
+        if isinstance(value, wdu.safe_basestring()):
             try:
                 from dateutil.parser import parse
                 value = wxu.pydate2wxdate(parse(value))
@@ -848,7 +848,7 @@ def about_box(**kwargs):
     icon = kwargs.pop('icon', None)
     icon_fmt = kwargs.pop('icon_fmt', None)
     if icon:
-        if isinstance(icon, basestring):
+        if isinstance(icon, wdu.safe_basestring()):
             args = [icon]
             if icon_fmt:
                 args.append(icon_fmt)
@@ -1155,6 +1155,7 @@ def quick_big_buttons(self, parent, start=True, setting=True, hide=True,
         buttons.append((about_btn, 'About'))
 
     return buttons
+
 
 add_rich_text = add_richtext
 add_status_bar = add_statusbar

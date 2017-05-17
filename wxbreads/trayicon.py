@@ -26,7 +26,7 @@ class TrayIcon(TaskBarIcon):
         TaskBarIcon.__init__(self)
         self.frame = frame
         if icon:
-            if not isinstance(icon, basestring):
+            if not isinstance(icon, wdu.safe_basestring()):
                 icon = self.make_icon(icon)
 
             self.SetIcon(icon, wdu.ttt(text, self.t))
