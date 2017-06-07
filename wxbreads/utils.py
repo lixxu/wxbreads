@@ -129,11 +129,17 @@ def write_echo_text(**kwargs):
         kargs.update(t=None)
         text = cat_echo_text(**kargs)
 
-    if isinstance(text, wdu.safe_unicode()):
-        text = text.encode('utf-8')
+    encoding = kwargs.get('encoding', 'utf-8')
+    if wdu.IS_PY2 and isinstance(text, wdu.safe_unicode()):
+        text = text.encode(encoding)
+    elif wdu.IS_PY3:
+        text = bytes(text, encoding)
+        if ts_text:
+            ts_text = bytes(ts_text, encoding)
 
     nl = kwargs.get('nl', True)
-    log_mode = kwargs.get('log_mode', 'a')
+    log_mode = kwargs.get('log_mode', 'a' if wdu.IS_PY2 else 'ab')
+
     log_file = kwargs.get('log_file')
     log_files = kwargs.get('log_files', [])
     if log_file:
@@ -146,7 +152,7 @@ def write_echo_text(**kwargs):
 
             f.write(text)
             if nl:
-                f.write('\n')
+                f.write(wdu.NEW_LINE)
 
 
 def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,

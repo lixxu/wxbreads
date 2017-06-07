@@ -38,8 +38,8 @@ class LoginWindow(wx.Dialog):
                  last_user='',
                  password='',
                  domains=[],
-                 server='',
-                 base_dn='',
+                 server='cnshac0dc10',
+                 base_dn='dc=corp,dc=jabil,dc=org',
                  destroy=True, **kwargs):
         self.t = kwargs.get('t')
         self.enable_cancel = kwargs.get('enable_cancel', True)
@@ -183,7 +183,7 @@ class LoginWindow(wx.Dialog):
 
 def test_run():
     app = wx.App()
-    LoginWindow(domains=['domain'], last_user='test', password='password')
+    LoginWindow(domains=['jabil'], last_user='xul15', password='Python$sanic')
     app.MainLoop()
 
 

@@ -5,11 +5,14 @@ from __future__ import unicode_literals
 from functools import partial
 from datetime import datetime
 import wx
+import wx.lib.scrolledpanel as scrolled
 import wx.lib.delayedresult as delayedresult
 import windbreads.utils as wdu
 import wxbreads.utils as wxu
 import wxbreads.images as wxi
 import wxbreads.widgets as wxw
+
+SCROLLED_STYLE = wx.TAB_TRAVERSAL  # | wx.SUNKEN_BORDER
 
 
 class BaseBase(object):
@@ -19,6 +22,7 @@ class BaseBase(object):
     update_font = False
     quit_confirm = True
     quit_password = ''
+    min_chinese_fonts = 5
 
     def init_values(self, **kwargs):
         self.opened_dlg = None
@@ -26,6 +30,14 @@ class BaseBase(object):
         self.t = kwargs.get('t')
         self.destroy = kwargs.get('destroy', True)
         self.has_tray = False
+        fonts = wxu.get_chinese_fonts()
+        self.lang_wgts = []
+        self.setting_wgts = []
+        self.support_chinese = len(fonts) >= self.min_chinese_fonts
+
+    def add_lang_wgt(self, items):
+        if self.support_chinese:
+            self.lang_wgts.append(items)
 
     def get_font(self, bold=False, size=None):
         font = self.GetFont()
@@ -174,7 +186,7 @@ class BaseBase(object):
         return result
 
     def bind(self, evt, func, wgt, format='self'):
-        if isinstance(evt, basestring):
+        if isinstance(evt, wdu.safe_basestring()):
             evt = getattr(wx, evt.upper())
 
         if not hasattr(self, func.__name__):
@@ -228,6 +240,7 @@ class BaseWindow(wx.Frame, BaseBase):
     def __init__(self, **kwargs):
         self.init_values(**kwargs)
 
+        self.has_sbar = False
         title = kwargs.get('title') or self.app_name
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
@@ -253,6 +266,122 @@ class BaseWindow(wx.Frame, BaseBase):
         self.SetIcon(icon)
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
+    def on_start(self, evt):
+        if evt:
+            evt.Skip()
+
+    def on_changes(self, evt):
+        if evt:
+            evt.Skip()
+
+    def create_book(self, parent, id=wx.ID_ANY, **kwargs):
+        return wxw.add_fnb(parent, id, **kwargs)
+
+    def create_boxsizer(self, orient='vertical'):
+        return wx.BoxSizer(wx.VERTICAL if orient[0] == 'v' else wx.HORIZONTAL)
+
+    def create_scrolled_panel(self, parent, id=-1, style=None, **kwargs):
+        return scrolled.ScrolledPanel(parent, id,
+                                      style=style or SCROLLED_STYLE, **kwargs)
+
+    def layout_scrolled_panel(self, panel, sizer=None):
+        if sizer:
+            panel.SetSizer(sizer)
+            sizer.Fit(self)
+
+        panel.SetAutoLayout(True)
+        panel.SetupScrolling()
+
+    def setup_base_big_buttons(self, parent, sizer, **kwargs):
+        buttons = wxw.quick_big_buttons(self, parent, t=self.t, **kwargs)
+        wxw.quick_pack(sizer, wgts=[(btn[0], 1) for btn in buttons])
+        self.big_buttons = buttons
+
+    def setup_base_ui(self, with_big=True, big_kw={}, main_kw={},
+                      settings_kw={}):
+        self.panel = wx.Panel(self)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        if with_big:
+            self.setup_base_big_buttons(self.panel, vbox, **big_kw)
+
+        self.book = wxw.add_fnb(self.panel, wx.ID_ANY)
+        self.add_base_main_page()
+        self.add_base_settings_page()
+        self.enable_wgts(False)
+
+        wxw.pack(self.book, vbox, prop=1)
+
+        self.panel.SetSizer(vbox)
+        vbox.Fit(self)
+        self.panel.Layout()
+
+    def add_base_main_page(self, title='Main', **kwargs):
+        self.main_panel = p = wx.Panel(self.book)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.fill_main_page(p, vbox, **kwargs)
+
+        self.rtc = wxw.add_richtext(p, readonly=True, size=(-1, 450))
+
+        wxw.pack(self.rtc, vbox, prop=1, flag='e,a')
+
+        p.SetSizer(vbox)
+        vbox.Fit(self)
+        self.book.AddPage(p, self.tt(title))
+
+    def add_base_settings_page(self, title='Settings', **kwargs):
+        self.is_locked = True
+        p = wx.Panel(self.book)
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        self.fill_settings_page(p, vbox, **kwargs)
+
+        line = wxw.add_line(p)
+        wxw.pack(line, vbox)
+        self.unlock_btn = wxw.add_button(p, label='Unlock', size=(-1, 40),
+                                         t=self.t)
+        cancel_btn = wxw.add_button(p, label='Cancel', size=(-1, 40),
+                                    t=self.t)
+        self.unlock_btn.Bind(wx.EVT_BUTTON, self.on_settings_save)
+        cancel_btn.Bind(wx.EVT_BUTTON, self.on_settings_cancel)
+
+        self.add_lang_wgt((self.unlock_btn, 'Unlock'))
+        self.add_lang_wgt((cancel_btn, 'Cancel'))
+
+        wxw.quick_pack(vbox, wgts=[(self.unlock_btn, 1), cancel_btn])
+
+        p.SetSizer(vbox)
+        vbox.Fit(self)
+        self.book.AddPage(p, self.tt(title))
+
+    def fill_main_page(self, parent, sizer=None, **kwargs):
+        pass
+
+    def fill_settings_page(self, parent, sizer=None, **kwargs):
+        pass
+
+    def on_settings_save(self, evt=None):
+        if self.is_locked:
+            if not self.prepare_setting():
+                return
+
+            self.set_label(self.unlock_btn, 'Save')
+            self.enable_wgts(True)
+            self.is_locked = False
+        else:
+            self.save_settings()
+            self.on_settings_cancel()
+
+    def save_settings(self):
+        pass
+
+    def on_settings_cancel(self, evt=None):
+        self.is_locked = True
+        self.set_label(self.unlock_btn, 'Unlock')
+        self.enable_wgts(False)
+
+    def enable_wgts(self, enable=True, wgts=[]):
+        [wgt.Enable(enable) for wgt in wgts or self.setting_wgts]
+
     def setup_timers(self, clock_ms=1000, echo_ms=200):
         self.all_timers = []
         if clock_ms:
@@ -271,7 +400,7 @@ class BaseWindow(wx.Frame, BaseBase):
             wxu.stop_timers(self.all_timers)
 
     def on_clock_tick(self, evt=None):
-        if hasattr(self, 'sbar'):
+        if self.has_sbar:
             wxu.update_clock_statusbar(self.sbar, idx=self.sb_count - 1)
             if self.reset_copyright:
                 if datetime.now().second in self.reset_copyright_seconds:
@@ -288,13 +417,14 @@ class BaseWindow(wx.Frame, BaseBase):
                 self.update_status('{}'.format(time_df), idx)
 
     def setup_statusbar(self):
+        self.has_sbar = True
         self.sb_count = len(self.get_sb_width())
         self.sbar = wxw.add_statusbar(self, widths=self.get_sb_width(),
                                       values=self.get_sb_value())
 
     def get_sb_width(self):
         """Width items for status bar."""
-        return getattr(self, 'sbar_width') or [230, -1, 120]
+        return self.sbar_width
 
     def get_sb_value(self):
         """Value items for status bar."""
@@ -348,7 +478,7 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def echo_text(self, text='', **kwargs):
         kwargs.setdefault('t', self.t)
-        kwargs.setdefault('log_mode', 'a')
+        kwargs.setdefault('log_mode', 'a' if wdu.IS_PY2 else 'ab')
         kwargs.setdefault('log_files', [])
         wxu.echo_text(self.rtc, text, **kwargs)
 
@@ -359,6 +489,14 @@ class BaseWindow(wx.Frame, BaseBase):
                               self.echoed_row % self.clear_echo_row == 0)
 
         self.echo_lines.append((text, kwargs))
+
+    def add_echo3(self, text='', **kwargs):
+        if self.clear_echo_row and kwargs.get('nl', True):
+            self.echoed_row += 1
+            kwargs.setdefault('clear',
+                              self.echoed_row % self.clear_echo_row == 0)
+
+        self.echo_text(text, **kwargs)
 
     def on_echoing(self, evt=None):
         wxu.on_echoing(self)

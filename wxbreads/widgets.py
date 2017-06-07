@@ -36,9 +36,9 @@ import wxbreads.utils as wxu
 import windbreads.utils as wdu
 
 '''Remark:
-fsize/fstyle: 1st widget size/style
-ssize/sstyle: 2nd widget size/sstyle
-tsize/tstyle: 3rd widget size/tstyle
+fsize/fstyle/fkw: 1st widget size/style/kwargs
+ssize/sstyle/skw: 2nd widget size/sstyle/kwargs
+tsize/tstyle/tkw: 3rd widget size/tstyle/kwargs
 '''
 
 ICONS = dict(info=wx.ICON_INFORMATION,
@@ -460,25 +460,35 @@ def add_staticbox(parent, id=-1, label='', orient='v', **kwargs):
     return sbox, sbsizer
 
 
+def update_widget_kwargs(kw, **kwargs):
+    [kw.setdefault(k, v) for k, v in kwargs.items()]
+
 def add_text_row(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    value = kwargs.pop('value', '')
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
     tooltip = kwargs.pop('tooltip', '')
-    multiline = kwargs.pop('multiline', False)
 
     nargs = dict(tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
-    lbl = add_label(parent, label=label, size=fsize,
-                    style=kwargs.pop('fstyle', None),
-                    name=kwargs.pop('fname', 'wxStaticText'), **nargs)
-    wgt = add_textctrl(parent, value=value, multiline=multiline,
-                       style=kwargs.pop('sstyle', None), size=ssize,
-                       name=kwargs.pop('sname', 'wxTextCtrl'), **nargs)
+
+    # new format kwargs
+    kwargs.pop('ttw', None)  # not used here
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         style=kwargs.pop('fstyle', None),
+                         name=kwargs.pop('fname', 'wxStaticText'),
+                         label = kwargs.pop('label', ''), **nargs)
+
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         style=kwargs.pop('sstyle', None),
+                         name=kwargs.pop('sname', 'wxTextCtrl'),
+                         value=kwargs.pop('value', ''),
+                         multiline=kwargs.pop('multiline', False), **nargs)
+
+    lbl = add_label(parent, **fkw)
+    wgt = add_textctrl(parent, **skw)
     quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
 
     return lbl, wgt
@@ -486,21 +496,28 @@ def add_text_row(parent, sizer=None, **kwargs):
 
 def add_checkbox_row(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    cb_label = kwargs.pop('cb_label', '')
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    value = kwargs.pop('value', True)
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
     tooltip = kwargs.pop('tooltip', '')
-
     nargs = dict(tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
-    lbl = add_label(parent, label=label, size=fsize,
-                    name=kwargs.pop('fname', 'wxStaticText'), **nargs)
-    wgt = add_checkbox(parent, label=cb_label, value=value, size=ssize,
-                       name=kwargs.pop('sname', 'wxCheckBox'), **nargs)
+
+    # new format kwargs
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         style=kwargs.pop('fstyle', None),
+                         name=kwargs.pop('fname', 'wxStaticText'),
+                         label=kwargs.pop('label', ''), **nargs)
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         style=kwargs.pop('sstyle', None),
+                         name=kwargs.pop('sname', 'wxCheckBox'),
+                         value=kwargs.pop('value', True),
+                         label=kwargs.pop('cb_label', ''), **nargs)
+    kwargs.pop('tkw', None)  # not used here
+
+    lbl = add_label(parent, **fkw)
+    wgt = add_checkbox(parent, **skw)
     quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
 
     return lbl, wgt
@@ -509,28 +526,36 @@ def add_checkbox_row(parent, sizer=None, **kwargs):
 def add_combobox(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
     label = kwargs.pop('label', '')
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    fstyle = kwargs.pop('fstyle', None)
-    sstyle = kwargs.pop('sstyle', wx.CB_DROPDOWN | wx.CB_SORT)
     fg = kwargs.pop('fg', None)
+    bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
-    value = kwargs.pop('value', '')
-    choices = kwargs.pop('choices', [])
-    readonly = kwargs.pop('readonly', False)
     tooltip = kwargs.pop('tooltip', '')
+    readonly = kwargs.pop('readonly', False)
+
+    kwargs.pop('tkw', None)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         name=kwargs.pop('fname', 'wxStaticText'),
+                         style=kwargs.pop('fstyle', None),
+                         t=t, label=label, font=font, fg=fg, bg=bg,
+                         tooltip=tooltip)
+
+    skw = kwargs.pop('skw', {})
+    sstyle = kwargs.pop('sstyle', wx.CB_DROPDOWN | wx.CB_SORT)
     if readonly and sstyle:
         sstyle = sstyle | wx.CB_READONLY
 
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         value='{}'.format(kwargs.pop('value', '')),
+                         name=kwargs.pop('sname', 'wxComboBox'),
+                         style=sstyle, choices=kwargs.pop('choices', []),
+                         )
+
     lbl = None
     if label is not None:
-        lbl = add_label(parent, label=label, size=fsize, font=font, fg=fg,
-                        style=fstyle, t=t,
-                        name=kwargs.pop('fname', 'wxStaticText'))
+        lbl = add_label(parent, **fkw)
 
-    wgt = wx.ComboBox(parent, -1, '{}'.format(value), choices=choices,
-                      size=ssize, style=sstyle,
-                      name=kwargs.pop('sname', 'wxComboBox'))
+    wgt = wx.ComboBox(parent, -1, **skw)
     set_tooltip(wgt, tooltip, t=t)
     quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
     return lbl, wgt
@@ -539,22 +564,31 @@ def add_combobox(parent, sizer=None, **kwargs):
 def add_choice(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
     label = kwargs.pop('label', '')
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    fstyle = kwargs.pop('fstyle', None)
     fg = kwargs.pop('fg', None)
+    bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
     value = kwargs.pop('value', '')
-    choices = kwargs.pop('choices', [])
     tooltip = kwargs.pop('tooltip', '')
+
+    kwargs.pop('tkw', None)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, label=label, size=kwargs.pop('fsize', (-1, -1)),
+                         style=kwargs.pop('fstyle', None),
+                         name=kwargs.pop('fname', 'wxStaticText'),
+                         fg=fg, bg=bg, font=font, tooltip=tooltip, t=t,
+                         )
+
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, choices=kwargs.pop('choices', []),
+                         size=kwargs.pop('ssize', (-1, -1)),
+                         name=kwargs.pop('sname', 'wxChoice'),
+                         )
+
     lbl = None
     if label is not None:
-        lbl = add_label(parent, label=label, size=fsize, font=font, fg=fg,
-                        style=fstyle, t=t,
-                        name=kwargs.pop('fname', 'wxStaticText'))
+        lbl = add_label(parent, **fkw)
 
-    wgt = wx.Choice(parent, -1, choices=choices, size=ssize,
-                    name=kwargs.pop('sname', 'wxChoice'))
+    wgt = wx.Choice(parent, -1, **skw)
     wgt.SetSelection(choices.index(value) if value in choices else 0)
     set_tooltip(wgt, tooltip, t)
     wgts = [lbl, wgt] if lbl else [wgt]
@@ -583,16 +617,22 @@ def add_radio_box(parent, sizer=None, **kwargs):
 
 def add_datepicker(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    value = kwargs.pop('value', '')
+
     tooltip = kwargs.pop('tooltip', '')
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
-    style = kwargs.pop('style', None)
-    tooltip = kwargs.pop('tooltip', '')
+    nargs = dict(size=fsize, tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
+
+    kwargs.pop('tkw', None)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         style=kwargs.pop('fstyle', None),
+                         name=kwargs.pop('fname', 'wxStaticText'),
+                         label=kwargs.pop('label', ''), **nargs)
+
+    sstyle = kwargs.pop('sstyle', None)
+    style = sstyle or kwargs.pop('style', None)
     if not style:
         dropdown = kwargs.pop('dropdown', True)
         sty1 = wx.DP_DROPDOWN if dropdown else None
@@ -615,24 +655,26 @@ def add_datepicker(parent, sizer=None, **kwargs):
     if allow_none:
         style |= wx.DP_ALLOWNONE
 
-    nargs = dict(size=fsize, tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
-    lbl = add_label(parent, label=label,
-                    name=kwargs.pop('fname', 'wxStaticText'), **nargs)
-    kw = dict(size=ssize, style=style,
-              name=kwargs.pop('sname', 'wxDatePickerCtrl'))
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         value=kwargs.pop('value', ''),
+                         name=kwargs.pop('sname', 'wxDatePickerCtrl'),
+                         style=style)
+
+    lbl = add_label(parent, **fkw)
     if value:
         if isinstance(value, wdu.safe_basestring()):
             try:
                 from dateutil.parser import parse
                 value = wxu.pydate2wxdate(parse(value))
-                kw.update(dt=value)
+                update_widget_kwargs(skw, dt=value)
             except:
                 pass
 
         else:
-            kw.update(dt=value)
+            update_widget_kwargs(skw, dt=value)
 
-    wgt = DatePickerCtrl(parent, **kw)
+    wgt = DatePickerCtrl(parent, **skw)
     set_tooltip(wgt, tooltip, t)
     quick_pack(sizer, wgts=[lbl, wgt], **kwargs)
 
@@ -650,25 +692,32 @@ def add_timectrl(parent, **kwargs):
 
 def add_open_dialog(parent, sizer, label='Select folder', **kwargs):
     t = kwargs.pop('t', None)
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    tsize = kwargs.pop('tsize', (-1, -1))
-    value = kwargs.pop('value', '')
-    tooltip = kwargs.pop('tooltip', '')
     fg = kwargs.pop('fg', None)
-    multiline = kwargs.pop('multiline', False)
-    btn_label = kwargs.pop('btn_label', 'Browse')
-    btn_id = kwargs.pop('btn_id', None)
-    lbl = add_label(parent, label=label, size=fsize, t=t, fg=fg)
-    txt = add_textctrl(parent, value=value, size=ssize, multiline=multiline,
-                       t=t)
-    set_tooltip(txt, tooltip, t)
-    nargs = dict(label=btn_label, size=tsize, t=t)
-    if btn_id:
-        nargs.update(id=btn_id)
+    bg = kwargs.pop('bg', None)
+    font = kwargs.pop('font', None)
+    tooltip = kwargs.pop('tooltip', '')
 
-    btn = add_button(parent, **nargs)
-    set_tooltip(btn, tooltip, t)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         label=label, t=t, fg=fg, bg=bg, font=font,
+                         tooltip=tooltip)
+
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         value=kwargs.pop('value', ''),
+                         multiline=kwargs.pop('multiline', False), t=t,
+                         tooltip=tooltip, fg=fg, bg=bg, font=font)
+
+    tkw = kwargs.pop('tkw', {})
+    update_widget_kwargs(tkw, label=kwargs.pop('btn_label', 'Browse'),
+                         id=kwargs.pop('btn_id', None),
+                         size=kwargs.pop('tsize', (-1, -1)),
+                         t=t, tooltip=tooltip, fg=fg, bg=bg, font=font)
+
+    lbl = add_label(parent, **fkw)
+    txt = add_textctrl(parent, **skw)
+    btn = add_button(parent, **tkw)
+
     quick_pack(sizer, wgts=[(lbl, 0), (txt, 1), (btn, 0)], **kwargs)
     return lbl, txt, btn
 
@@ -680,18 +729,22 @@ def add_line(parent, id=-1, size=(-1, -1), orient='h'):
 
 def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     t = kwargs.pop('t', None)
-    ok_text = kwargs.pop('ok_text', 'OK')
-    cancel_text = kwargs.pop('cancel_text', 'Cancel')
     pack_line = kwargs.pop('pack_line', True)
     if pack_line:
         sl = add_line(parent, id)
 
-    ok_btn = add_button(parent, wx.ID_OK, label=ok_text, size=size, t=t,
-                        name=kwargs.pop('fname', 'wxButton'))
+    kwargs.pop('tkw', None)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, label=kwargs.pop('ok_text', 'OK'),
+                         size=size, t=t, name=kwargs.pop('fname', 'wxButton'))
+
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, label=kwargs.pop('cancel_text', 'Cancel'),
+                         size=size, t=t, name=kwargs.pop('sname', 'wxButton'))
+
+    ok_btn = add_button(parent, wx.ID_OK, **fkw)
     ok_btn.SetDefault()
-    cancel_btn = add_button(parent, wx.ID_CANCEL, label=cancel_text,
-                            size=size, t=t,
-                            name=kwargs.pop('sname', 'wxButton'))
+    cancel_btn = add_button(parent, wx.ID_CANCEL, **skw)
 
     btn_sizer = wx.StdDialogButtonSizer()
     btn_sizer.AddButton(ok_btn)
@@ -987,26 +1040,38 @@ def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
 
 def quick_open_file(parent, sizer=None, label='Select File', **kwargs):
     value = kwargs.pop('value', '')
+    t = kwargs.get('t')
     fg = kwargs.pop('fg', None)
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    lbl = add_label(parent, label=label, size=fsize, fg=fg, t=kwargs.get('t'),
-                    name=kwargs.pop('fname', 'wxStaticText'))
-    kwargs.update(size=ssize)
-    fp, tc, btn = add_file_picker(parent, value=value, **kwargs)
+    bg = kwargs.pop('bg', None)
+    kwargs.pop('tkw', None)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         label=label, fg=fg, bg=bg, t=t,
+                         name=kwargs.pop('fname', 'wxStaticText'))
+
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         t=t, **kwargs)
+    lbl = add_label(parent, **fkw)
+    fp, tc, btn = add_file_picker(parent, value=value, **skw)
     quick_pack(sizer, wgts=[lbl, fp])
     return lbl, fp, tc, btn
 
 
 def quick_open_folder(parent, sizer=None, label='Select Folder', **kwargs):
-    value = kwargs.pop('value', '')
     fg = kwargs.pop('fg', None)
-    fsize = kwargs.pop('fsize', (-1, -1))
-    ssize = kwargs.pop('ssize', (-1, -1))
-    lbl = add_label(parent, label=label, size=fsize, fg=fg, t=kwargs.get('t'),
-                    name=kwargs.pop('fname', 'wxStaticText'))
-    kwargs.update(size=ssize)
-    fp, tc, btn = add_dir_picker(parent, value=value, **kwargs)
+    bg = kwargs.pop('bg', None)
+    kwargs.pop('tkw', None)
+    fkw = kwargs.pop('fkw', {})
+    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
+                         label=label, fg=fg, bg=bg, t=kwargs.get('t'),
+                         name=kwargs.pop('fname', 'wxStaticText'))
+
+    skw = kwargs.pop('skw', {})
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
+                         value=kwargs.pop('value', ''), **kwargs)
+    lbl = add_label(parent, **fkw)
+    fp, tc, btn = add_dir_picker(parent, **skw)
     quick_pack(sizer, wgts=[lbl, fp])
     return lbl, fp, tc, btn
 
