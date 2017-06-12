@@ -13,6 +13,7 @@ import wxbreads.images as wxi
 import wxbreads.widgets as wxw
 
 SCROLLED_STYLE = wx.TAB_TRAVERSAL  # | wx.SUNKEN_BORDER
+CP_STYLE = wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE
 
 
 class BaseBase(object):
@@ -283,6 +284,12 @@ class BaseWindow(wx.Frame, BaseBase):
     def create_scrolled_panel(self, parent, id=-1, style=None, **kwargs):
         return scrolled.ScrolledPanel(parent, id,
                                       style=style or SCROLLED_STYLE, **kwargs)
+
+    def create_cp(self, parent, style=None, label='Show', bind=None, **kwargs):
+        self.cp = cp = wx.CollapsiblePane(self.panel, label=self.tt(label),
+                                          style=style or CP_STYLE)
+        if bind:
+            self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, bind, cp)
 
     def layout_scrolled_panel(self, panel, sizer=None):
         if sizer:
