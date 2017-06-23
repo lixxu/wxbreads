@@ -207,8 +207,11 @@ def add_button(parent, id=-1, **kwargs):
     bg = kwargs.pop('bg', None)
     icon = kwargs.pop('icon', None)
     style = kwargs.pop('style', wx.NO_BORDER)
-    btn = wx.Button(parent, id, wdu.ttt(label, t), size=size,
-                    name=kwargs.get('name', 'wxButton'), style=style)
+    kw = dict(size=size, name=kwargs.get('name', 'wxButton'))
+    if style:
+        kw.update(style=style)
+
+    btn = wx.Button(parent, id, wdu.ttt(label, t), **kw)
     set_tooltip(btn, tooltip, t=t)
     set_font(btn, font)
     set_fg(btn, fg)
@@ -578,8 +581,9 @@ def add_choice(parent, sizer=None, **kwargs):
                          fg=fg, bg=bg, font=font, tooltip=tooltip, t=t,
                          )
 
+    choices = kwargs.pop('choices', [])
     skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, choices=kwargs.pop('choices', []),
+    update_widget_kwargs(skw, choices=choices,
                          size=kwargs.pop('ssize', (-1, -1)),
                          name=kwargs.pop('sname', 'wxChoice'),
                          )
@@ -622,7 +626,7 @@ def add_datepicker(parent, sizer=None, **kwargs):
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
-    nargs = dict(size=fsize, tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
+    nargs = dict(tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
 
     kwargs.pop('tkw', None)
     fkw = kwargs.pop('fkw', {})
@@ -655,9 +659,9 @@ def add_datepicker(parent, sizer=None, **kwargs):
     if allow_none:
         style |= wx.DP_ALLOWNONE
 
+    value = kwargs.pop('value', '')
     skw = kwargs.pop('skw', {})
     update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         value=kwargs.pop('value', ''),
                          name=kwargs.pop('sname', 'wxDatePickerCtrl'),
                          style=style)
 
@@ -1040,18 +1044,16 @@ def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
 
 def quick_open_file(parent, sizer=None, label='Select File', **kwargs):
     value = kwargs.pop('value', '')
-    t = kwargs.get('t')
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     kwargs.pop('tkw', None)
     fkw = kwargs.pop('fkw', {})
     update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         label=label, fg=fg, bg=bg, t=t,
+                         label=label, fg=fg, bg=bg, t=kwargs.get('t'),
                          name=kwargs.pop('fname', 'wxStaticText'))
 
     skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         t=t, **kwargs)
+    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)), **kwargs)
     lbl = add_label(parent, **fkw)
     fp, tc, btn = add_file_picker(parent, value=value, **skw)
     quick_pack(sizer, wgts=[lbl, fp])
