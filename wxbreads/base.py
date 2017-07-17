@@ -24,6 +24,7 @@ class BaseBase(object):
     quit_confirm = True
     quit_password = ''
     min_chinese_fonts = 5
+    remember_window = False
 
     def init_values(self, **kwargs):
         self.opened_dlg = None
@@ -93,8 +94,24 @@ class BaseBase(object):
     def other_clock_work(self):
         pass
 
+    def can_remember_window(self):
+        return (self.remember_window and hasattr(self, 'config') and
+                hasattr(self, 'dump_config'))
+
+    def restore_position(self):
+        if self.can_remember_window() and 'app_w' in self.config:
+            w, h = int(self.config['app_w']), int(self.config['app_h'])
+            x, y = int(self.config['app_x']), int(self.config['app_y'])
+            self.SetSize((w, h))
+            self.SetPosition((x, y))
+
     def other_clean_work(self):
-        pass
+        if self.can_remember_window():
+            w, h = self.GetSize()
+            x, y = self.GetPosition()
+            self.config.update(app_w=str(w), app_h=str(h),
+                               app_x=str(x), app_y=str(y))
+            self.dump_config()
 
     def get_lang(self):
         return 'en'
@@ -147,6 +164,11 @@ class BaseBase(object):
             self.ShowWithEffect(effect, int(kwargs.get('timeout', 0)))
         else:
             self.Show()
+
+        try:
+            self.restore_position()
+        except:
+            pass
 
     def on_upper_case(self, evt=None):
         obj = evt.GetEventObject()
