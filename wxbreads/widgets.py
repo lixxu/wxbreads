@@ -333,7 +333,8 @@ def add_checkbox(parent, id=-1, **kwargs):
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     wgt = wx.CheckBox(parent, id, wdu.ttt(label, t), size=size,
-                      name=kwargs.pop('name', 'wxCheckBox'))
+                      name=kwargs.pop('name', 'wxCheckBox'),
+                      style=kwargs.pop('style', 0))
     set_tooltip(wgt, tooltip, t)
     set_font(wgt, font)
     set_fg(wgt, fg)

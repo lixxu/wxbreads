@@ -18,6 +18,7 @@ CP_STYLE = wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE
 
 class BaseBase(object):
     app_name = 'App'
+    app_title = 'App'
     app_size = (-1, -1)
     app_version = ''
     update_font = False
@@ -226,7 +227,8 @@ class BaseDialog(wx.Dialog, BaseBase):
 
     def __init__(self, **kwargs):
         self.init_values(**kwargs)
-        title = wdu.ttt(kwargs.get('title') or self.app_name, self.t)
+        title = wdu.ttt(kwargs.get('title') or self.app_title or self.app_name,
+                        self.t)
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
@@ -264,7 +266,7 @@ class BaseWindow(wx.Frame, BaseBase):
         self.init_values(**kwargs)
 
         self.has_sbar = False
-        title = kwargs.get('title') or self.app_name
+        title = kwargs.get('title') or self.app_title or self.app_name
         version = kwargs.get('version') or self.app_version
         title = '{}{}'.format(title, ' - ' + version if version else '')
         self.full_title = title

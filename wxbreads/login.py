@@ -127,7 +127,7 @@ class LoginWindow(wx.Dialog):
     def get_field_values(self):
         self.login_name = self.name_tc.GetValue().strip().lower()
         self.password = self.pwd_tc.GetValue()
-        self.domain = self.domain_cb.GetValue().strip().upper()
+        self.domain = self.domain_cb.GetValue().strip().lower()
 
     def on_login(self, event):
         self.get_field_values()
