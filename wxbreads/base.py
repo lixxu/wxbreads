@@ -18,7 +18,7 @@ CP_STYLE = wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE
 
 class BaseBase(object):
     app_name = 'App'
-    app_title = 'App'
+    app_title = ''
     app_size = (-1, -1)
     app_version = ''
     update_font = False
@@ -472,7 +472,8 @@ class BaseWindow(wx.Frame, BaseBase):
         import wxbreads.trayicon as wxt
         try:
             args = dict(icon=kwargs.get('icon') or self.logo,
-                        text=kwargs.get('text', self.app_name),
+                        text=kwargs.get('text',
+                                        self.app_title or self.app_name),
                         t=self.t)
             self.tbicon = wxt.TrayIcon(self, **args)
             self.opened_dlg = 0
@@ -569,7 +570,7 @@ class BaseWindow(wx.Frame, BaseBase):
         except:
             icon = wxi.phoenix.getIcon()
 
-        kw = dict(name=self.app_name,
+        kw = dict(name=self.app_title or self.app_name,
                   version=self.app_version,
                   icon=icon,
                   remark=self.app_remark,
