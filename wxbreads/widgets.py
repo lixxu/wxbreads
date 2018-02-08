@@ -116,7 +116,14 @@ def popup(parent=None, caption='caption', **kwargs):
     else:
         title = caption
 
-    dlg = gmd.GenericMessageDialog(parent, umsg, title, btn | icon, size=size)
+    dlg_kw = dict()
+    if OLD_WX:
+        dlg_cls = gmd.GenericMessageDialog
+        dlg_kw.update(size=size)
+    else:
+        dlg_cls = wx.MessageDialog
+
+    dlg = dlg_cls(parent, umsg, title, btn | icon, **dlg_kw)
     help_label = kwargs.get('help_label', 'Help')
     ok_label = kwargs.get('ok_label', 'OK')
     cancel_label = kwargs.get('cancel_label', 'Cancel')
@@ -136,7 +143,6 @@ def popup(parent=None, caption='caption', **kwargs):
     dlg.SetYesNoCancelLabels(yes_label, no_label, cancel_label)
     dlg.SetMessage(umsg)
     set_font(dlg, font)
-
     if need_return:
         return dlg
 
@@ -467,6 +473,7 @@ def add_staticbox(parent, id=-1, label='', orient='v', **kwargs):
 def update_widget_kwargs(kw, **kwargs):
     [kw.setdefault(k, v) for k, v in kwargs.items()]
 
+
 def add_text_row(parent, sizer=None, **kwargs):
     t = kwargs.pop('t', None)
     fg = kwargs.pop('fg', None)
@@ -482,7 +489,7 @@ def add_text_row(parent, sizer=None, **kwargs):
     update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
                          style=kwargs.pop('fstyle', None),
                          name=kwargs.pop('fname', 'wxStaticText'),
-                         label = kwargs.pop('label', ''), **nargs)
+                         label=kwargs.pop('label', ''), **nargs)
 
     skw = kwargs.pop('skw', {})
     update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),

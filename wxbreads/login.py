@@ -3,20 +3,30 @@
 
 from __future__ import unicode_literals
 import wx
-from pyldaplite import ldap, PyLDAPLite
+try:
+    from pyldaplite import ldap, PyLDAPLite as LDAP
+
+    SERVER_DOWN_ERROR = ldap.SERVER_DOWN
+    INVALID_CREDENTIALS_ERROR = ldap.INVALID_CREDENTIALS
+except ImportError:
+    from ldap3tool import ldap3, LDAPTool as LDAP
+
+    SERVER_DOWN_ERROR = ldap3.core.exceptions.LDAPSocketOpenError
+    INVALID_CREDENTIALS_ERROR = ldap3.core.exceptions.LDAPBindError
+
 import windbreads.utils as wdu
-import widgets as wxw
+import wxbreads.widgets as wxw
 
 HIGHLIGHT_RED = '#F75D59'
 
 
 def ldap_login(server, base_dn, login_name, password, close=True):
-    p = PyLDAPLite(server=server, base_dn=base_dn)
+    p = LDAP(server=server, base_dn=base_dn)
     try:
         p.connect(login_name, password)
-    except ldap.SERVER_DOWN as e:
+    except SERVER_DOWN_ERROR as e:
         return 100, e
-    except ldap.INVALID_CREDENTIALS:
+    except INVALID_CREDENTIALS_ERROR:
         return 200, None
     except Exception as e:
         return 300, e

@@ -60,8 +60,7 @@ class BaseBase(object):
             return None
 
         en_font, ch_font = self.get_fonts()
-        l = lang or self.get_lang()
-        name = en_font if l == 'en' else ch_font
+        name = en_font if (lang or self.get_lang()) == 'en' else ch_font
         return self.create_font(name)
 
     def create_font(self, face=None):
@@ -203,7 +202,8 @@ class BaseBase(object):
             pass
 
         kwargs.setdefault('t', self.t)
-        result = wxw.popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
+        result = wxw.popup(kwargs.pop('parent', self), caption=caption,
+                           msg=msg, icon=icon, **kwargs)
         if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
