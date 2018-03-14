@@ -391,6 +391,7 @@ def add_path_picker(parent, id=-1, msg='Select a directory', **kwargs):
     btn.Enable(btn_enable)
     tc.SetName(tc_name)
     btn.SetName(btn_name)
+    tc.SetInsertionPoint(0)
     return pc, tc, btn
 
 
@@ -415,16 +416,16 @@ def select_open_dir(parent, title='Select a directory', **kwargs):
 
 def select_open_file(parent, msg='Select a file', **kwargs):
     wildcard = kwargs.pop('wildcard', DEFAULT_WILDCARD)
-    style = kwargs.pop('style', wx.OPEN)
+    style = kwargs.pop('style', wx.FD_OPEN)
     multi = kwargs.pop('multi', False)
     if multi:
-        style |= wx.MULTIPLE
+        style |= wx.FD_MULTIPLE
 
     if kwargs.pop('exist', True):
-        style |= wx.FILE_MUST_EXIST
+        style |= wx.FD_FILE_MUST_EXIST
 
     if kwargs.pop('change_dir', False):
-        style |= wx.CHANGE_DIR
+        style |= wx.FD_CHANGE_DIR
 
     t = kwargs.pop('t', None)
     dlg = wx.FileDialog(parent, message=wdu.ttt(msg, t),
@@ -444,12 +445,12 @@ def select_open_file(parent, msg='Select a file', **kwargs):
 
 def select_save_file(parent, msg='Save file as...', **kwargs):
     wildcard = kwargs.pop('wildcard', DEFAULT_WILDCARD)
-    style = kwargs.pop('style', wx.SAVE)
+    style = kwargs.pop('style', wx.FD_SAVE)
     if kwargs.pop('overwrite_prompt', True):
-        style |= wx.OVERWRITE_PROMPT
+        style |= wx.FD_OVERWRITE_PROMPT
 
     if kwargs.pop('change_dir', False):
-        style |= wx.CHANGE_DIR
+        style |= wx.FD_CHANGE_DIR
 
     t = kwargs.pop('t', None)
     dlg = wx.FileDialog(parent, message=wdu.ttt(msg, t),
@@ -766,7 +767,7 @@ def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     if pack_line:
         pack(sl, sizer, flag='e,t', border=15)
 
-    pack(btn_sizer, sizer, prop=1, flag='ac,a', border=border)
+    pack(btn_sizer, sizer, prop=0, flag='ac,a', border=border)
     return ok_btn, cancel_btn
 
 

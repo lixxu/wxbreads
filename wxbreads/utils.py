@@ -157,8 +157,17 @@ def write_echo_text(**kwargs):
 
 def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
               align=None, underline=False, bold=False, ts_style=False,
-              font=None, size=None, clear=False, **kwargs):
-    ts_text = '[{}] '.format(datetime.now()) if ts else ''
+              font=None, size=None, clear=False, keep_date=True, **kwargs):
+    if ts:
+        now = datetime.now()
+        if keep_date:
+            ts_text = '[{}] '.format(now)
+        else:
+            ts_text = '[{}] '.format(str(now).split(' ', 1)[-1])
+
+    else:
+        ts_text = ''
+
     if isinstance(text, wdu.safe_basestring()):
         if not isinstance(text, wdu.safe_unicode()):
             utext = text.decode(wdu.detect_encoding(text)['encoding'])

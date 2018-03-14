@@ -7,6 +7,7 @@ from datetime import datetime
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.delayedresult as delayedresult
+import wx.lib.evtmgr as em
 import windbreads.utils as wdu
 import wxbreads.utils as wxu
 import wxbreads.images as wxi
@@ -26,6 +27,7 @@ class BaseBase(object):
     quit_password = ''
     min_chinese_fonts = 5
     remember_window = False
+    show_version_in_title = True
 
     def init_values(self, **kwargs):
         self.opened_dlg = None
@@ -37,6 +39,18 @@ class BaseBase(object):
         self.lang_wgts = []
         self.setting_wgts = []
         self.support_chinese = len(fonts) >= self.min_chinese_fonts
+
+    @property
+    def screen_size(self):
+        return wx.GetDisplaySize()
+
+    def get_title(self, **kwargs):
+        title = kwargs.get('title') or self.app_title or self.app_name
+        if self.show_version_in_title:
+            return title
+
+        version = kwargs.get('version') or self.app_version
+        return '{}{}'.format(title, ' - ' + version if version else '')
 
     def add_lang_wgt(self, items):
         if self.support_chinese:
@@ -71,6 +85,12 @@ class BaseBase(object):
             # return wx.Font(-1, wx.DEFAULT, wx.NORMAL, wx.NORMAL, False, face)
 
         return None
+
+    def create_book(self, parent, id=wx.ID_ANY, **kwargs):
+        return wxw.add_fnb(parent, id, **kwargs)
+
+    def create_boxsizer(self, orient='vertical'):
+        return wx.BoxSizer(wx.VERTICAL if orient[0] == 'v' else wx.HORIZONTAL)
 
     def get_fonts(self):
         return self.get_english_font(), self.get_best_chinese_font()
@@ -125,8 +145,20 @@ class BaseBase(object):
     def tt(self, text):
         return wdu.ttt(text, self.t)
 
+    def set_font(self, wgt, font=None):
+        wxw.set_font(wgt, font)
+
     def set_label(self, wgt, label='', tooltip=''):
         wgt.SetLabel(self.tt(label))
+        self.set_tooltip(wgt, tooltip)
+
+    def set_fg(self, wgt, fg=None):
+        wxw.set_fg(wgt, fg)
+
+    def set_bg(self, wgt, bg=None):
+        wxw.set_bg(wgt, bg)
+
+    def set_tooltip(self, wgt, tooltip=''):
         wxw.set_tooltip(wgt, tooltip, self.t)
 
     def set_min_size(self, size=None):
@@ -221,19 +253,39 @@ class BaseBase(object):
         else:
             wgt.Bind(evt, func)
 
+    def show_busy(self, msg, parent):
+        busy = wx.BusyInfo(msg, parent=parent)
+        try:
+            wx.AppConsole.Yield()
+        except:
+            wx.Yield()
+
+        return busy
+
+    def hide_busy(self, busy):
+        del busy
+
+    def register_evt(self, listener, event, source=None, win=None, id=None):
+        em.eventManager.Register(listener, event, source, win, id)
+
+    def unregister_listener(self, listener):
+        em.eventManager.DeregisterListener(listener)
+
+    def unregister_win(self, win):
+        em.eventManager.DeregisterWindow(win)
+
+    def start_delay_work(self, c_func, w_func, **kwargs):
+        delayedresult.startWorker(c_func, w_func, **kwargs)
+
 
 class BaseDialog(wx.Dialog, BaseBase):
     app_name = 'Dialog'
 
     def __init__(self, **kwargs):
         self.init_values(**kwargs)
-        title = wdu.ttt(kwargs.get('title') or self.app_title or self.app_name,
-                        self.t)
-        version = kwargs.get('version') or self.app_version
-        title = '{}{}'.format(title, ' - ' + version if version else '')
         size = kwargs.get('size', self.app_size)
 
-        kw = dict(size=size, title=title, pos=(-1, -1))
+        kw = dict(size=size, title=self.get_title(**kwargs), pos=(-1, -1))
         style = kwargs.get('style')
         if style:
             kw.update(style=style)
@@ -266,12 +318,9 @@ class BaseWindow(wx.Frame, BaseBase):
         self.init_values(**kwargs)
 
         self.has_sbar = False
-        title = kwargs.get('title') or self.app_title or self.app_name
-        version = kwargs.get('version') or self.app_version
-        title = '{}{}'.format(title, ' - ' + version if version else '')
-        self.full_title = title
+        self.full_title = self.get_title(**kwargs)
         size = kwargs.get('size', self.app_size)
-        kw = dict(size=size, title=title)
+        kw = dict(size=size, title=self.full_title)
         style = kwargs.get('style')
         if style:
             kw.update(style=style)
@@ -298,12 +347,6 @@ class BaseWindow(wx.Frame, BaseBase):
     def on_changes(self, evt):
         if evt:
             evt.Skip()
-
-    def create_book(self, parent, id=wx.ID_ANY, **kwargs):
-        return wxw.add_fnb(parent, id, **kwargs)
-
-    def create_boxsizer(self, orient='vertical'):
-        return wx.BoxSizer(wx.VERTICAL if orient[0] == 'v' else wx.HORIZONTAL)
 
     def create_scrolled_panel(self, parent, id=-1, style=None, **kwargs):
         return scrolled.ScrolledPanel(parent, id,
@@ -597,9 +640,6 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def update_ui_lang(self, refresh=True):
         wxu.update_ui_lang(self, refresh)
-
-    def start_delay_work(self, c_func, w_func, **kwargs):
-        delayedresult.startWorker(c_func, w_func, **kwargs)
 
 
 def run_app(window_class, *args, **kwargs):
