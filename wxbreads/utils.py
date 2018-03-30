@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals, division
-import time
 from datetime import datetime
+import time
+import six
 import wx
 import wx.richtext as rt
 import windbreads.utils as wdu
@@ -130,15 +131,15 @@ def write_echo_text(**kwargs):
         text = cat_echo_text(**kargs)
 
     encoding = kwargs.get('encoding', 'utf-8')
-    if wdu.IS_PY2 and isinstance(text, wdu.safe_unicode()):
+    if six.PY2 and isinstance(text, six.text_type):
         text = text.encode(encoding)
-    elif wdu.IS_PY3:
+    elif six.PY3:
         text = bytes(text, encoding)
         if ts_text:
             ts_text = bytes(ts_text, encoding)
 
     nl = kwargs.get('nl', True)
-    log_mode = kwargs.get('log_mode', 'a' if wdu.IS_PY2 else 'ab')
+    log_mode = kwargs.get('log_mode', 'a' if six.PY2 else 'ab')
 
     log_file = kwargs.get('log_file')
     log_files = kwargs.get('log_files', [])
@@ -168,8 +169,8 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
     else:
         ts_text = ''
 
-    if isinstance(text, wdu.safe_basestring()):
-        if not isinstance(text, wdu.safe_unicode()):
+    if isinstance(text, six.string_types):
+        if not isinstance(text, six.text_type):
             utext = text.decode(wdu.detect_encoding(text)['encoding'])
         else:
             utext = text

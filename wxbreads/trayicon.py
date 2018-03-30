@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+import six
 import wx
 import windbreads.utils as wdu
 
@@ -26,7 +27,7 @@ class TrayIcon(TaskBarIcon):
         TaskBarIcon.__init__(self)
         self.frame = frame
         if icon:
-            if not isinstance(icon, wdu.safe_basestring()):
+            if not isinstance(icon, six.string_types):
                 icon = self.make_icon(icon)
 
             self.SetIcon(icon, wdu.ttt(text, self.t))

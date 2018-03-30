@@ -19,13 +19,15 @@ setup(
     packages=['wxbreads'],
     zip_safe=False,
     platforms='any',
-    install_requires=[],
+    install_requires=['six'],
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]
 )

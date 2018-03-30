@@ -3,6 +3,7 @@
 
 from __future__ import unicode_literals
 import sys
+import six
 import wx
 import wx.richtext as rt
 import wx.lib.dialogs
@@ -101,8 +102,8 @@ def popup(parent=None, caption='caption', **kwargs):
     icon = kwargs.pop('icon', 'i')
     msg = kwargs.pop('msg', '')
     icon = ICONS.get(icon, ICONS['i'])
-    if isinstance(msg, wdu.safe_basestring()):
-        if not isinstance(msg, wdu.safe_unicode()):
+    if isinstance(msg, six.string_types):
+        if not isinstance(msg, six.text_type):
             umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
         else:
             umsg = msg
@@ -166,8 +167,8 @@ def popup(parent=None, caption='caption', **kwargs):
 def popup_smd(parent=None, msg='', caption='Message', **kwargs):
     t = kwargs.get('t')
     btn_label = kwargs.get('btn_label', 'OK')
-    if isinstance(msg, wdu.safe_basestring()):
-        if not isinstance(msg, wdu.safe_unicode()):
+    if isinstance(msg, six.string_types):
+        if not isinstance(msg, six.text_type):
             umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
         else:
             umsg = msg
@@ -676,7 +677,7 @@ def add_datepicker(parent, sizer=None, **kwargs):
 
     lbl = add_label(parent, **fkw)
     if value:
-        if isinstance(value, wdu.safe_basestring()):
+        if isinstance(value, six.string_types):
             try:
                 from dateutil.parser import parse
                 value = wxu.pydate2wxdate(parse(value))
@@ -914,7 +915,7 @@ def about_box(**kwargs):
     icon = kwargs.pop('icon', None)
     icon_fmt = kwargs.pop('icon_fmt', None)
     if icon:
-        if isinstance(icon, wdu.safe_basestring()):
+        if isinstance(icon, six.string_types):
             args = [icon]
             if icon_fmt:
                 args.append(icon_fmt)

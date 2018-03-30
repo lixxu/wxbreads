@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-from functools import partial
 from datetime import datetime
+from functools import partial
+import six
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.delayedresult as delayedresult
@@ -46,7 +47,8 @@ class BaseBase(object):
 
     def get_title(self, **kwargs):
         title = kwargs.get('title') or self.app_title or self.app_name
-        if self.show_version_in_title:
+        title = self.tt(title)
+        if not self.show_version_in_title:
             return title
 
         version = kwargs.get('version') or self.app_version
@@ -242,7 +244,7 @@ class BaseBase(object):
         return result
 
     def bind(self, evt, func, wgt, format='self'):
-        if isinstance(evt, wdu.safe_basestring()):
+        if isinstance(evt, six.string_types):
             evt = getattr(wx, evt.upper())
 
         if not hasattr(self, func.__name__):
@@ -253,8 +255,8 @@ class BaseBase(object):
         else:
             wgt.Bind(evt, func)
 
-    def show_busy(self, msg, parent):
-        busy = wx.BusyInfo(msg, parent=parent)
+    def show_busy(self, msg, parent=None):
+        busy = wx.BusyInfo(self.tt(msg), parent=parent or self)
         try:
             wx.AppConsole.Yield()
         except:
@@ -553,7 +555,7 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def echo_text(self, text='', **kwargs):
         kwargs.setdefault('t', self.t)
-        kwargs.setdefault('log_mode', 'a' if wdu.IS_PY2 else 'ab')
+        kwargs.setdefault('log_mode', 'a' if six.PY2 else 'ab')
         kwargs.setdefault('log_files', [])
         wxu.echo_text(self.rtc, text, **kwargs)
 
