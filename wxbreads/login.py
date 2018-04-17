@@ -124,6 +124,7 @@ class LoginWindow(BaseDialog):
         self.ok_btn.Enable(False)
         self.cancel_btn.Enable(False)
         self.is_login = True
+        self.current_user = None
         self.start_delay_work(self.after_submit, self.do_submit)
 
     def after_submit(self, delay_result):
