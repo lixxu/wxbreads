@@ -8,7 +8,7 @@ import six
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.delayedresult as delayedresult
-import wx.lib.evtmgr as em
+# import wx.lib.evtmgr as em
 import windbreads.utils as wdu
 import wxbreads.utils as wxu
 import wxbreads.images as wxi
@@ -267,14 +267,14 @@ class BaseBase(object):
     def hide_busy(self, busy):
         del busy
 
-    def register_evt(self, listener, event, source=None, win=None, id=None):
-        em.eventManager.Register(listener, event, source, win, id)
-
-    def unregister_listener(self, listener):
-        em.eventManager.DeregisterListener(listener)
-
-    def unregister_win(self, win):
-        em.eventManager.DeregisterWindow(win)
+    # def register_evt(self, listener, event, source=None, win=None, id=None):
+    #     em.eventManager.Register(listener, event, source, win, id)
+    #
+    # def unregister_listener(self, listener):
+    #     em.eventManager.DeregisterListener(listener)
+    #
+    # def unregister_win(self, win):
+    #     em.eventManager.DeregisterWindow(win)
 
     def start_delay_work(self, c_func, w_func, **kwargs):
         delayedresult.startWorker(c_func, w_func, **kwargs)
