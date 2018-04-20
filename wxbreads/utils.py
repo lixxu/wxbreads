@@ -169,7 +169,7 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
     else:
         ts_text = ''
 
-    if isinstance(text, six.string_types):
+    if text and isinstance(text, six.string_types):
         if not isinstance(text, six.text_type):
             utext = text.decode(wdu.detect_encoding(text)['encoding'])
         else:
