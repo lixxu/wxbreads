@@ -610,23 +610,31 @@ class BaseWindow(wx.Frame, BaseBase):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
-        try:
-            icon = wxi.phoenix.GetIcon()
-        except:
-            icon = wxi.phoenix.getIcon()
-
-        kw = dict(name=self.app_title or self.app_name,
-                  version=self.app_version,
-                  icon=icon,
-                  remark=self.app_remark,
-                  t=self.t,
-                  )
-        if self.app_author:
-            kw.update(author=self.app_author)
-
-        wxw.quick_about(**kw)
+        wxw.quick_about(**self.get_about_kwargs())
         if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
+
+    def get_about_icon(self):
+        try:
+            return wxi.phoenix.GetIcon()
+        except:
+            return wxi.phoenix.getIcon()
+
+    def get_about_extra_kwargs(self):
+        return {}
+
+    def get_about_kwargs(self):
+        kw = dict(name=self.app_title or self.app_name,
+                  version=self.app_version,
+                  icon=self.get_about_icon(),
+                  remark=self.app_remark,
+                  t=self.t,
+                  website=getattr(self, 'app_website', ''),
+                  author=getattr(self, 'app_author', ''),
+                  licence=getattr(self, 'app_licence', ''),
+                  )
+        kw.update(self.get_about_extra_kwargs())
+        return kw
 
     def need_adjust_opened_dlg(self):
         return self.has_tray or self.opened_dlg is not None
