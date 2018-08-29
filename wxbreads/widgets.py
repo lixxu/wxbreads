@@ -1025,13 +1025,23 @@ def quick_about(*args, **kwargs):
     fmt = kwargs.pop('fmt', ABOUT_FORMAT)
     t = kwargs.get('t', None)
     copyright = kwargs.pop('copyright', wdu.get_copy_right())
-    author = kwargs.pop('author', '')
+    authors = kwargs.pop('author', None)
+    writers = kwargs.pop('writers', None)
     remark = kwargs.pop('remark', 'about this tool')
     description = fmt.format(wdu.ttt(remark, t), sys.version.split()[0],
                              wx.VERSION_STRING, ', '.join(wx.PlatformInfo[1:]),
                              wdu.get_platform_info())
-    if author:
-        kwargs.update(developers=[author], doc_writers=[author])
+    if authors:
+        if not isinstance(authors, list):
+            authors = [authors]
+
+        kwargs.update(developers=authors)
+
+    if writers:
+        if not isinstance(writers, list):
+            writers = [writers]
+
+        kwargs.update(doc_writers=writers)
 
     about_info = dict(description=description,
                       copyright=copyright.replace('&', '&&'), **kwargs)
