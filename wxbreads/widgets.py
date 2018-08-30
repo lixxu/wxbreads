@@ -238,7 +238,7 @@ def add_label(parent, id=-1, **kwargs):
     tooltip = kwargs.pop('tooltip', '')
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
-    style = kwargs.pop('style', None)
+    style = kwargs.pop('style', 0)
     nargs = dict(size=size, name=kwargs.get('name', 'wxStaticText'))
     if style:
         nargs.update(style=style)
@@ -256,7 +256,7 @@ def add_textctrl(parent, id=-1, **kwargs):
     t = kwargs.pop('t', None)
     value = kwargs.pop('value', '')
     size = kwargs.pop('size', (-1, -1))
-    style = kwargs.pop('style', None)
+    style = kwargs.pop('style', 0)
     fg = kwargs.pop('fg', None)
     bg = kwargs.pop('bg', None)
     font = kwargs.pop('font', None)
@@ -489,13 +489,13 @@ def add_text_row(parent, sizer=None, **kwargs):
     kwargs.pop('ttw', None)  # not used here
     fkw = kwargs.pop('fkw', {})
     update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', None),
+                         style=kwargs.pop('fstyle', 0),
                          name=kwargs.pop('fname', 'wxStaticText'),
                          label=kwargs.pop('label', ''), **nargs)
 
     skw = kwargs.pop('skw', {})
     update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         style=kwargs.pop('sstyle', None),
+                         style=kwargs.pop('sstyle', 0),
                          name=kwargs.pop('sname', 'wxTextCtrl'),
                          value=kwargs.pop('value', ''),
                          multiline=kwargs.pop('multiline', False), **nargs)
@@ -518,12 +518,12 @@ def add_checkbox_row(parent, sizer=None, **kwargs):
     # new format kwargs
     fkw = kwargs.pop('fkw', {})
     update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', None),
+                         style=kwargs.pop('fstyle', 0),
                          name=kwargs.pop('fname', 'wxStaticText'),
                          label=kwargs.pop('label', ''), **nargs)
     skw = kwargs.pop('skw', {})
     update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         style=kwargs.pop('sstyle', None),
+                         style=kwargs.pop('sstyle', 0),
                          name=kwargs.pop('sname', 'wxCheckBox'),
                          value=kwargs.pop('value', True),
                          label=kwargs.pop('cb_label', ''), **nargs)
@@ -549,7 +549,7 @@ def add_combobox(parent, sizer=None, **kwargs):
     fkw = kwargs.pop('fkw', {})
     update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
                          name=kwargs.pop('fname', 'wxStaticText'),
-                         style=kwargs.pop('fstyle', None),
+                         style=kwargs.pop('fstyle', 0),
                          t=t, label=label, font=font, fg=fg, bg=bg,
                          tooltip=tooltip)
 
@@ -586,7 +586,7 @@ def add_choice(parent, sizer=None, **kwargs):
     kwargs.pop('tkw', None)
     fkw = kwargs.pop('fkw', {})
     update_widget_kwargs(fkw, label=label, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', None),
+                         style=kwargs.pop('fstyle', 0),
                          name=kwargs.pop('fname', 'wxStaticText'),
                          fg=fg, bg=bg, font=font, tooltip=tooltip, t=t,
                          )
@@ -641,12 +641,12 @@ def add_datepicker(parent, sizer=None, **kwargs):
     kwargs.pop('tkw', None)
     fkw = kwargs.pop('fkw', {})
     update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', None),
+                         style=kwargs.pop('fstyle', 0),
                          name=kwargs.pop('fname', 'wxStaticText'),
                          label=kwargs.pop('label', ''), **nargs)
 
-    sstyle = kwargs.pop('sstyle', None)
-    style = sstyle or kwargs.pop('style', None)
+    sstyle = kwargs.pop('sstyle', 0)
+    style = sstyle or kwargs.pop('style', 0)
     if not style:
         dropdown = kwargs.pop('dropdown', True)
         sty1 = wx.DP_DROPDOWN if dropdown else None
