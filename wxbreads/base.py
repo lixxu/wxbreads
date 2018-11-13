@@ -297,6 +297,24 @@ class BaseDialog(wx.Dialog, BaseBase):
         wxw.set_font(self, kwargs.get('font'))
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
+    def setup_ui(self, parent=None, ok_text='Save', cancel_text='Cancel'):
+        self.wgts = {}
+        vbox = wx.BoxSizer(wx.VERTICAL)
+
+        self.setup_other_ui(vbox)
+
+        ok_btn, cancel_btn = wxw.add_ok_buttons(parent or self, vbox,
+                                                ok_text=ok_text,
+                                                cancel_text=cancel_text)
+        ok_btn.Bind(wx.EVT_BUTTON, self.on_save)
+        cancel_btn.Bind(wx.EVT_BUTTON, self.on_quit)
+
+        self.SetSizer(vbox)
+        vbox.Fit(self)
+
+    def on_save(self, evt):
+        pass
+
     def on_quit(self, evt=None):
         if self.destroy:
             self.Destroy()
