@@ -773,10 +773,11 @@ def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     return ok_btn, cancel_btn
 
 
-def add_statusbar(obj, widths=[-1, 170, 160], values=['', '', ''], **kwargs):
+def add_statusbar(parent, widths=[260, -1, 130], values=['', '', ''],
+                  **kwargs):
     t = kwargs.pop('t', None)
-    sbar = obj.CreateStatusBar(len(widths))
-    sbar.SetStatusWidths(widths)
+    sbar = wx.StatusBar(parent)
+    sbar.SetFieldsCount(len(widths), widths)
     for i, v in enumerate(values):
         if v is None:
             continue
@@ -1008,7 +1009,7 @@ def quick_quit(self, **kwargs):
             pass
 
     if hasattr(self, 'stop_timers'):
-        self.stop_timers()
+        self.stop_timers(delete=True)
 
     if hasattr(self, 'tbicon') and self.tbicon is not None:
         self.tbicon.Destroy()

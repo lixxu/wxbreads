@@ -3,7 +3,7 @@
 
 from __future__ import unicode_literals, division
 from datetime import datetime
-import time
+from time import strftime
 import six
 import wx
 import wx.richtext as rt
@@ -268,17 +268,19 @@ def start_timer(timer, miliseconds=1000, one_shot=False):
     timer.Start(int(miliseconds), one_shot)
 
 
-def stop_timer(timer):
+def stop_timer(timer, delete=False):
     if timer.IsRunning():
         timer.Stop()
+        if delete:
+            del timer
 
 
-def stop_timers(timers=[]):
-    [stop_timer(timer) for timer in timers]
+def stop_timers(timers=[], delete=False):
+    [stop_timer(timer, delete) for timer in timers]
 
 
 def update_clock_statusbar(sbar, ts_fmt='%Y/%b/%d %H:%M', idx=2):
-    set_status_text(sbar, time.strftime(ts_fmt), idx)
+    set_status_text(sbar, strftime(ts_fmt), idx)
 
 
 def set_status_text(sbar, text, idx, t=None):

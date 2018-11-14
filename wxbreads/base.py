@@ -368,8 +368,8 @@ class BaseWindow(wx.Frame, BaseBase):
         if evt:
             evt.Skip()
 
-    def create_scrolled_panel(self, parent, id=-1, style=None, **kwargs):
-        return scrolled.ScrolledPanel(parent, id,
+    def create_scrolled_panel(self, parent=None, id=-1, style=None, **kwargs):
+        return scrolled.ScrolledPanel(parent or self, id,
                                       style=style or SCROLLED_STYLE, **kwargs)
 
     def create_cp(self, parent, style=None, label='Show', bind=None, **kwargs):
@@ -489,9 +489,9 @@ class BaseWindow(wx.Frame, BaseBase):
 
             self.all_timers.append(self.echo_timer)
 
-    def stop_timers(self):
+    def stop_timers(self, delete=False):
         if hasattr(self, 'all_timers'):
-            wxu.stop_timers(self.all_timers)
+            wxu.stop_timers(self.all_timers, delete=delete)
 
     def on_clock_tick(self, evt=None):
         if self.has_sbar:
@@ -515,6 +515,7 @@ class BaseWindow(wx.Frame, BaseBase):
         self.sb_count = len(self.get_sb_width())
         self.sbar = wxw.add_statusbar(self, widths=self.get_sb_width(),
                                       values=self.get_sb_value())
+        self.SetStatusBar(self.sbar)
 
     def get_sb_width(self):
         """Width items for status bar."""
