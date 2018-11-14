@@ -4,6 +4,9 @@
 from __future__ import unicode_literals
 from datetime import datetime
 from functools import partial
+import os.path
+import tempfile
+import traceback
 import six
 import wx
 import wx.lib.scrolledpanel as scrolled
@@ -530,7 +533,12 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def update_status(self, text, idx, **kwargs):
         kwargs.setdefault('t', self.t)
-        wxu.set_status_text(self.sbar, text, idx, **kwargs)
+        try:
+            wxu.set_status_text(self.sbar, text, idx, **kwargs)
+        except Exception:
+            temp_file = os.path.join(tempfile.gettempdir(), 'wxbugs.txt')
+            with open(temp_file, 'a') as f:
+                f.write('{}\n'.format(traceback.format_ext()))
 
     def setup_tray(self, **kwargs):
         import wxbreads.trayicon as wxt
