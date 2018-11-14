@@ -19,8 +19,8 @@ except AttributeError:
 
 
 class TrayIcon(TaskBarIcon):
-    restore_id = wx.NewId()
-    quit_id = wx.NewId()
+    restore_id = wx.NewIdRef()
+    quit_id = wx.NewIdRef()
 
     def __init__(self, frame, icon=None, text='TrayIcon', **kwargs):
         self.t = kwargs.get('t')

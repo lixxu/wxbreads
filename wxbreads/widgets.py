@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import sys
 import six
+import threading
 import wx
 import wx.richtext as rt
 import wx.lib.dialogs
@@ -118,7 +119,7 @@ def popup(parent=None, caption='caption', **kwargs):
         title = caption
 
     dlg_kw = dict()
-    if OLD_WX:
+    if OLD_WX or threading.currentThread().name == 'MainThread':
         dlg_cls = gmd.GenericMessageDialog
         dlg_kw.update(size=size)
     else:

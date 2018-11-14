@@ -117,8 +117,8 @@ class BaseBase(object):
         pass
 
     def can_remember_window(self):
-        return (self.remember_window and hasattr(self, 'config') and
-                hasattr(self, 'dump_config'))
+        logic1 = self.remember_window and hasattr(self, 'config')
+        return logic1 and hasattr(self, 'dump_config')
 
     def restore_position(self):
         if self.can_remember_window() and 'app_w' in self.config:
@@ -323,8 +323,8 @@ class BaseDialog(wx.Dialog, BaseBase):
 
 
 class BaseWindow(wx.Frame, BaseBase):
-    clock_timer_id = wx.NewId()
-    echo_timer_id = wx.NewId()
+    clock_timer_id = wx.NewIdRef()
+    echo_timer_id = wx.NewIdRef()
     root_pass = 'guess'
     auth_setting = True
     app_remark = 'Description for cool app'

@@ -287,8 +287,8 @@ def set_status_text(sbar, text, idx, t=None):
 
 def on_popup_lang(self, evt):
     if not hasattr(self, 'english_id'):
-        self.english_id = wx.NewId()
-        self.chinese_id = wx.NewId()
+        self.english_id = wx.NewIdRef()
+        self.chinese_id = wx.NewIdRef()
 
         self.Bind(wx.EVT_MENU, self.popup_lang, id=self.english_id)
         self.Bind(wx.EVT_MENU, self.popup_lang, id=self.chinese_id)
