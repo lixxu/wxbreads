@@ -18,8 +18,6 @@ from wxbreads.base import BaseDialog
 import windbreads.utils as wdu
 import wxbreads.widgets as wxw
 
-HIGHLIGHT_RED = '#F75D59'
-
 
 def ldap_login(server, base_dn, login_name, password, close=True):
     p = LDAP(server=server, base_dn=base_dn)
@@ -47,9 +45,23 @@ class LoginWindow(BaseDialog):
         self.enable_cancel = kwargs.get('enable_cancel', True)
         super(LoginWindow, self).__init__(**kwargs)
         self.panel = wx.Panel(self)
-        self.root_user = kwargs.get('root_user', 'root')
-        self.root_pass = kwargs.get('root_pass', 'guess')
-        self.last_user = kwargs.get('last_user', '')
+        self.parent = parent = kwargs.get('parent')
+        root_user = kwargs.get('root_user')
+        root_pass = kwargs.get('root_pass')
+        last_user = kwargs.get('last_user')
+        if parent:
+            if not root_user:
+                root_user = getattr(parent, 'root_user', 'root')
+
+            if not root_pass:
+                root_pass = getattr(parent, 'root_pass', '')
+
+            if not last_user:
+                last_user = getattr(parent, 'login_user')
+
+        self.root_user = root_user or 'root'
+        self.root_pass = root_pass or ''
+        self.last_user = last_user or ''
         self.pwd = kwargs.get('password', '')
         self.current_user = None
 
@@ -59,16 +71,13 @@ class LoginWindow(BaseDialog):
         self.destroy = kwargs.get('destroy', True)
         self.can_exit = kwargs.get('can_exit', True)
         self.is_login = False
-        # font = self.GetFont()
-        # font.SetWeight(wx.BOLD)
-        # font.SetPointSize(13)
-        # self.panel.SetFont(font)
-        self.init_ui()
+
+        self.setup_ui()
         self.Bind(wx.EVT_BUTTON, self.on_login, id=wx.ID_OK)
         self.Bind(wx.EVT_BUTTON, self.on_quit, id=wx.ID_CANCEL)
         self.show()
 
-    def init_ui(self):
+    def setup_ui(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         size = (120, -1)
         label_style = wx.ALIGN_RIGHT
@@ -101,6 +110,7 @@ class LoginWindow(BaseDialog):
         self.ok_btn = ok_btn
         self.cancel_btn = cancel_btn
         cancel_btn.Enable(self.enable_cancel)
+
         self.panel.SetSizer(sizer)
         self.panel.Layout()
         sizer.Fit(self)
@@ -111,7 +121,7 @@ class LoginWindow(BaseDialog):
 
     def high_light(self, wgt, focus=True):
         wgt.Clear()
-        wgt.BackgroundColour = HIGHLIGHT_RED
+        wgt.SetBackgroundColour(wxw.HIGHLIGHT_RED)
         if focus:
             wgt.SetFocus()
 
@@ -137,7 +147,11 @@ class LoginWindow(BaseDialog):
         self.cancel_btn.Enable(True)
         self.is_login = False
         if self.current_user:
+            if self.parent and hasattr(self.parent, 'login_user'):
+                self.parent.login_user = self.current_user
+
             self.can_exit = True
+            self.destroy = True
             self.on_quit()
 
     def do_submit(self):
@@ -147,7 +161,7 @@ class LoginWindow(BaseDialog):
             self.Refresh()
             return
 
-        self.name_tc.BackgroundColour = wx.WHITE
+        self.name_tc.SetBackgroundColour(wx.NullColour)
         if not self.password:
             self.name_tc.ClearBackground()
             self.high_light(self.pwd_tc)
@@ -191,7 +205,7 @@ class LoginWindow(BaseDialog):
 
 def test_run():
     app = wx.App()
-    LoginWindow(domains=['jabil'], last_user='username', password='password')
+    LoginWindow(domains=['domain'], last_user='username', password='password')
     app.MainLoop()
 
 
