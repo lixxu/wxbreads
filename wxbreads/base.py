@@ -11,6 +11,7 @@ import six
 import wx
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.delayedresult as delayedresult
+
 # import wx.lib.evtmgr as em
 import windbreads.utils as wdu
 import wxbreads.utils as wxu
@@ -22,13 +23,13 @@ CP_STYLE = wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE
 
 
 class BaseBase(object):
-    app_name = 'App'
-    app_title = ''
+    app_name = "App"
+    app_title = ""
     app_size = (-1, -1)
-    app_version = ''
+    app_version = ""
     update_font = False
     quit_confirm = True
-    quit_password = ''
+    quit_password = ""
     min_chinese_fonts = 5
     remember_window = False
     show_version_in_title = True
@@ -36,8 +37,8 @@ class BaseBase(object):
     def init_values(self, **kwargs):
         self.opened_dlg = None
         self.need_reload = False
-        self.t = kwargs.get('t')
-        self.destroy = kwargs.get('destroy', True)
+        self.t = kwargs.get("t")
+        self.destroy = kwargs.get("destroy", True)
         self.has_tray = False
         fonts = wxu.get_chinese_fonts()
         self.lang_wgts = []
@@ -49,13 +50,13 @@ class BaseBase(object):
         return wx.GetDisplaySize()
 
     def get_title(self, **kwargs):
-        title = kwargs.get('title') or self.app_title or self.app_name
+        title = kwargs.get("title") or self.app_title or self.app_name
         title = self.tt(title)
         if not self.show_version_in_title:
             return title
 
-        version = kwargs.get('version') or self.app_version
-        return '{}{}'.format(title, ' - ' + version if version else '')
+        version = kwargs.get("version") or self.app_version
+        return "{}{}".format(title, " - " + version if version else "")
 
     def add_lang_wgt(self, items):
         if self.support_chinese:
@@ -71,15 +72,15 @@ class BaseBase(object):
 
         return font
 
-    def get_lang_text(self, lang='en'):
-        return 'English' if lang == 'en' else '中文'
+    def get_lang_text(self, lang="en"):
+        return "English" if lang == "en" else "中文"
 
     def auto_font(self, lang=None):
         if not self.update_font:
             return None
 
         en_font, ch_font = self.get_fonts()
-        name = en_font if (lang or self.get_lang()) == 'en' else ch_font
+        name = en_font if (lang or self.get_lang()) == "en" else ch_font
         return self.create_font(name)
 
     def create_font(self, face=None):
@@ -94,8 +95,8 @@ class BaseBase(object):
     def create_book(self, parent, id=wx.ID_ANY, **kwargs):
         return wxw.add_fnb(parent, id, **kwargs)
 
-    def create_boxsizer(self, orient='vertical'):
-        return wx.BoxSizer(wx.VERTICAL if orient[0] == 'v' else wx.HORIZONTAL)
+    def create_boxsizer(self, orient="vertical"):
+        return wx.BoxSizer(wx.VERTICAL if orient[0] == "v" else wx.HORIZONTAL)
 
     def get_fonts(self):
         return self.get_english_font(), self.get_best_chinese_font()
@@ -111,7 +112,7 @@ class BaseBase(object):
         return self.GetFont().GetFaceName()
 
     def get_english_font(self):
-        if not hasattr(self, 'english_font_name'):
+        if not hasattr(self, "english_font_name"):
             self.english_font_name = self.get_basic_font()
 
         return self.english_font_name
@@ -120,13 +121,13 @@ class BaseBase(object):
         pass
 
     def can_remember_window(self):
-        logic1 = self.remember_window and hasattr(self, 'config')
-        return logic1 and hasattr(self, 'dump_config')
+        logic1 = self.remember_window and hasattr(self, "config")
+        return logic1 and hasattr(self, "dump_config")
 
     def restore_position(self):
-        if self.can_remember_window() and 'app_w' in self.config:
-            w, h = int(self.config['app_w']), int(self.config['app_h'])
-            x, y = int(self.config['app_x']), int(self.config['app_y'])
+        if self.can_remember_window() and "app_w" in self.config:
+            w, h = int(self.config["app_w"]), int(self.config["app_h"])
+            x, y = int(self.config["app_x"]), int(self.config["app_y"])
             self.SetSize((w, h))
             self.SetPosition((x, y))
 
@@ -134,12 +135,13 @@ class BaseBase(object):
         if self.can_remember_window():
             w, h = self.GetSize()
             x, y = self.GetPosition()
-            self.config.update(app_w=str(w), app_h=str(h),
-                               app_x=str(x), app_y=str(y))
+            self.config.update(
+                app_w=str(w), app_h=str(h), app_x=str(x), app_y=str(y)
+            )
             self.dump_config()
 
     def get_lang(self):
-        return 'en'
+        return "en"
 
     def get_zh_mo(self):
         return None
@@ -153,7 +155,7 @@ class BaseBase(object):
     def set_font(self, wgt, font=None):
         wxw.set_font(wgt, font)
 
-    def set_label(self, wgt, label='', tooltip=''):
+    def set_label(self, wgt, label="", tooltip=""):
         wgt.SetLabel(self.tt(label))
         self.set_tooltip(wgt, tooltip)
 
@@ -163,7 +165,7 @@ class BaseBase(object):
     def set_bg(self, wgt, bg=None):
         wxw.set_bg(wgt, bg)
 
-    def set_tooltip(self, wgt, tooltip=''):
+    def set_tooltip(self, wgt, tooltip=""):
         wxw.set_tooltip(wgt, tooltip, self.t)
 
     def set_min_size(self, size=None):
@@ -177,34 +179,34 @@ class BaseBase(object):
         self.set_max_size(size)
 
     def show(self, **kwargs):
-        cop = kwargs.get('cop')
+        cop = kwargs.get("cop")
         if cop is None:
-            cop = kwargs.get('center_on_parent', True)
+            cop = kwargs.get("center_on_parent", True)
 
-        cos = kwargs.get('cos')
+        cos = kwargs.get("cos")
         if cos is None:
-            cos = kwargs.get('center_on_screen', True)
+            cos = kwargs.get("center_on_screen", True)
 
         if cop:  # center on parent
             self.CenterOnParent()
         elif cos:
             self.CenterOnScreen()
-        elif kwargs.get('center', True):
+        elif kwargs.get("center", True):
             self.Centre(wx.BOTH)
 
-        if kwargs.get('modal', True) and hasattr(self, 'ShowModal'):
+        if kwargs.get("modal", True) and hasattr(self, "ShowModal"):
             self.ShowModal()
             return
 
-        effect = kwargs.get('effect')
+        effect = kwargs.get("effect")
         if effect:
-            self.ShowWithEffect(effect, int(kwargs.get('timeout', 0)))
+            self.ShowWithEffect(effect, int(kwargs.get("timeout", 0)))
         else:
             self.Show()
 
         try:
             self.restore_position()
-        except:
+        except Exception:
             pass
 
     def on_upper_case(self, evt=None):
@@ -218,42 +220,51 @@ class BaseBase(object):
         self.Hide()
 
     def on_quit(self, evt=None):
-        wxw.quick_quit(self, t=self.t, need_confirm=self.quit_confirm,
-                       need_password=self.quit_password)
+        wxw.quick_quit(
+            self,
+            t=self.t,
+            need_confirm=self.quit_confirm,
+            need_password=self.quit_password,
+        )
 
     def need_adjust_opened_dlg(self):
         return self.has_tray or self.opened_dlg is not None
 
-    def popup(self, caption, msg, icon='i', **kwargs):
+    def popup(self, caption, msg, icon="i", **kwargs):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
         if self.has_tray:
-            if kwargs.pop('restore', True):
+            if kwargs.pop("restore", True):
                 self.tbicon.on_restore(None)
 
         try:
             self.Iconize(False)
             self.Raise()
-        except:
+        except Exception:
             pass
 
-        kwargs.setdefault('t', self.t)
-        result = wxw.popup(kwargs.pop('parent', self), caption=caption,
-                           msg=msg, icon=icon, **kwargs)
+        kwargs.setdefault("t", self.t)
+        result = wxw.popup(
+            kwargs.pop("parent", self),
+            caption=caption,
+            msg=msg,
+            icon=icon,
+            **kwargs
+        )
         if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
         return result
 
-    def bind(self, evt, func, wgt, format='self'):
+    def bind(self, evt, func, wgt, format="self"):
         if isinstance(evt, six.string_types):
             evt = getattr(wx, evt.upper())
 
         if not hasattr(self, func.__name__):
             func = partial(func, self)
 
-        if format == 'self':
+        if format == "self":
             self.Bind(evt, func, wgt)
         else:
             wgt.Bind(evt, func)
@@ -262,7 +273,7 @@ class BaseBase(object):
         busy = wx.BusyInfo(self.tt(msg), parent=parent or self)
         try:
             wx.AppConsole.Yield()
-        except:
+        except Exception:
             wx.Yield()
 
         return busy
@@ -284,31 +295,31 @@ class BaseBase(object):
 
 
 class BaseDialog(wx.Dialog, BaseBase):
-    app_name = 'Dialog'
+    app_name = "Dialog"
 
     def __init__(self, **kwargs):
         self.init_values(**kwargs)
-        size = kwargs.get('size', self.app_size)
+        size = kwargs.get("size", self.app_size)
 
         kw = dict(size=size, title=self.get_title(**kwargs), pos=(-1, -1))
-        style = kwargs.get('style')
+        style = kwargs.get("style")
         if style:
             kw.update(style=style)
 
-        super(BaseDialog, self).__init__(kwargs.get('parent'), **kw)
+        super(BaseDialog, self).__init__(kwargs.get("parent"), **kw)
         self.english_font_name = self.get_english_font()
-        wxw.set_font(self, kwargs.get('font'))
+        wxw.set_font(self, kwargs.get("font"))
         self.Bind(wx.EVT_CLOSE, self.on_quit)
 
-    def setup_ui(self, parent=None, ok_text='Save', cancel_text='Cancel'):
+    def setup_ui(self, parent=None, ok_text="Save", cancel_text="Cancel"):
         self.wgts = {}
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.setup_other_ui(vbox)
 
-        ok_btn, cancel_btn = wxw.add_ok_buttons(parent or self, vbox,
-                                                ok_text=ok_text,
-                                                cancel_text=cancel_text)
+        ok_btn, cancel_btn = wxw.add_ok_buttons(
+            parent or self, vbox, ok_text=ok_text, cancel_text=cancel_text
+        )
         ok_btn.Bind(wx.EVT_BUTTON, self.on_save)
         cancel_btn.Bind(wx.EVT_BUTTON, self.on_quit)
 
@@ -328,10 +339,10 @@ class BaseDialog(wx.Dialog, BaseBase):
 class BaseWindow(wx.Frame, BaseBase):
     clock_timer_id = wx.NewIdRef()
     echo_timer_id = wx.NewIdRef()
-    root_pass = 'guess'
+    root_pass = "guess"
     auth_setting = True
-    app_remark = 'Description for cool app'
-    app_author = ''
+    app_remark = "Description for cool app"
+    app_author = ""
     reset_copyright = True
     reset_copyright_seconds = (0, 1, 30, 31)
     clear_echo_row = 0
@@ -342,13 +353,13 @@ class BaseWindow(wx.Frame, BaseBase):
 
         self.has_sbar = False
         self.full_title = self.get_title(**kwargs)
-        size = kwargs.get('size', self.app_size)
+        size = kwargs.get("size", self.app_size)
         kw = dict(size=size, title=self.full_title)
-        style = kwargs.get('style')
+        style = kwargs.get("style")
         if style:
             kw.update(style=style)
 
-        super(BaseWindow, self).__init__(kwargs.get('parent'), **kw)
+        super(BaseWindow, self).__init__(kwargs.get("parent"), **kw)
         self.english_font_name = self.get_english_font()
         self.is_running = False
         self.echo_lines = []
@@ -372,12 +383,14 @@ class BaseWindow(wx.Frame, BaseBase):
             evt.Skip()
 
     def create_scrolled_panel(self, parent=None, id=-1, style=None, **kwargs):
-        return scrolled.ScrolledPanel(parent or self, id,
-                                      style=style or SCROLLED_STYLE, **kwargs)
+        return scrolled.ScrolledPanel(
+            parent or self, id, style=style or SCROLLED_STYLE, **kwargs
+        )
 
-    def create_cp(self, parent, style=None, label='Show', bind=None, **kwargs):
-        self.cp = cp = wx.CollapsiblePane(self.panel, label=self.tt(label),
-                                          style=style or CP_STYLE)
+    def create_cp(self, parent, style=None, label="Show", bind=None, **kwargs):
+        self.cp = cp = wx.CollapsiblePane(
+            self.panel, label=self.tt(label), style=style or CP_STYLE
+        )
         if bind:
             self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, bind, cp)
 
@@ -394,8 +407,9 @@ class BaseWindow(wx.Frame, BaseBase):
         wxw.quick_pack(sizer, wgts=[(btn[0], 1) for btn in buttons])
         self.big_buttons = buttons
 
-    def setup_base_ui(self, with_big=True, big_kw={}, main_kw={},
-                      settings_kw={}):
+    def setup_base_ui(
+        self, with_big=True, big_kw={}, main_kw={}, settings_kw={}
+    ):
         self.panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -413,20 +427,20 @@ class BaseWindow(wx.Frame, BaseBase):
         vbox.Fit(self)
         self.panel.Layout()
 
-    def add_base_main_page(self, title='Main', **kwargs):
+    def add_base_main_page(self, title="Main", **kwargs):
         self.main_panel = p = wx.Panel(self.book)
         vbox = wx.BoxSizer(wx.VERTICAL)
         self.fill_main_page(p, vbox, **kwargs)
 
         self.rtc = wxw.add_richtext(p, readonly=True, size=(-1, 450))
 
-        wxw.pack(self.rtc, vbox, prop=1, flag='e,a')
+        wxw.pack(self.rtc, vbox, prop=1, flag="e,a")
 
         p.SetSizer(vbox)
         vbox.Fit(self)
         self.book.AddPage(p, self.tt(title))
 
-    def add_base_settings_page(self, title='Settings', **kwargs):
+    def add_base_settings_page(self, title="Settings", **kwargs):
         self.is_locked = True
         p = wx.Panel(self.book)
         vbox = wx.BoxSizer(wx.VERTICAL)
@@ -434,15 +448,15 @@ class BaseWindow(wx.Frame, BaseBase):
 
         line = wxw.add_line(p)
         wxw.pack(line, vbox)
-        self.unlock_btn = wxw.add_button(p, label='Unlock', size=(-1, 40),
-                                         t=self.t)
-        cancel_btn = wxw.add_button(p, label='Cancel', size=(-1, 40),
-                                    t=self.t)
+        self.unlock_btn = wxw.add_button(
+            p, label="Unlock", size=(-1, 40), t=self.t
+        )
+        cancel_btn = wxw.add_button(p, label="Cancel", size=(-1, 40), t=self.t)
         self.unlock_btn.Bind(wx.EVT_BUTTON, self.on_settings_save)
         cancel_btn.Bind(wx.EVT_BUTTON, self.on_settings_cancel)
 
-        self.add_lang_wgt((self.unlock_btn, 'Unlock'))
-        self.add_lang_wgt((cancel_btn, 'Cancel'))
+        self.add_lang_wgt((self.unlock_btn, "Unlock"))
+        self.add_lang_wgt((cancel_btn, "Cancel"))
 
         wxw.quick_pack(vbox, wgts=[(self.unlock_btn, 1), cancel_btn])
 
@@ -461,7 +475,7 @@ class BaseWindow(wx.Frame, BaseBase):
             if not self.prepare_setting():
                 return
 
-            self.set_label(self.unlock_btn, 'Save')
+            self.set_label(self.unlock_btn, "Save")
             self.enable_wgts(True)
             self.is_locked = False
         else:
@@ -473,7 +487,7 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def on_settings_cancel(self, evt=None):
         self.is_locked = True
-        self.set_label(self.unlock_btn, 'Unlock')
+        self.set_label(self.unlock_btn, "Unlock")
         self.enable_wgts(False)
 
     def enable_wgts(self, enable=True, wgts=[]):
@@ -482,18 +496,20 @@ class BaseWindow(wx.Frame, BaseBase):
     def setup_timers(self, clock_ms=1000, echo_ms=200):
         self.all_timers = []
         if clock_ms:
-            self.clock_timer = wxw.add_timer(self, self.clock_timer_id,
-                                             self.on_clock_tick, clock_ms)
+            self.clock_timer = wxw.add_timer(
+                self, self.clock_timer_id, self.on_clock_tick, clock_ms
+            )
             self.all_timers.append(self.clock_timer)
 
         if echo_ms:
-            self.echo_timer = wxw.add_timer(self, self.echo_timer_id,
-                                            self.on_echoing, echo_ms)
+            self.echo_timer = wxw.add_timer(
+                self, self.echo_timer_id, self.on_echoing, echo_ms
+            )
 
             self.all_timers.append(self.echo_timer)
 
     def stop_timers(self, delete=False):
-        if hasattr(self, 'all_timers'):
+        if hasattr(self, "all_timers"):
             wxu.stop_timers(self.all_timers, delete=delete)
 
     def on_clock_tick(self, evt=None):
@@ -509,15 +525,16 @@ class BaseWindow(wx.Frame, BaseBase):
         if self.is_running:
             time_df = datetime.now() - self.start_ts
             if as_seconds:
-                self.update_status('{}s'.format(time_df.total_seconds()), idx)
+                self.update_status("{}s".format(time_df.total_seconds()), idx)
             else:
-                self.update_status('{}'.format(time_df), idx)
+                self.update_status("{}".format(time_df), idx)
 
     def setup_statusbar(self):
         self.has_sbar = True
         self.sb_count = len(self.get_sb_width())
-        self.sbar = wxw.add_statusbar(self, widths=self.get_sb_width(),
-                                      values=self.get_sb_value())
+        self.sbar = wxw.add_statusbar(
+            self, widths=self.get_sb_width(), values=self.get_sb_value()
+        )
         self.SetStatusBar(self.sbar)
 
     def get_sb_width(self):
@@ -526,42 +543,48 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def get_sb_value(self):
         """Value items for status bar."""
-        return [self.get_copyright(), '', '']
+        return [self.get_copyright(), "", ""]
 
     def get_copyright(self):
         return wdu.get_copy_right()
 
     def update_status(self, text, idx, **kwargs):
-        kwargs.setdefault('t', self.t)
+        kwargs.setdefault("t", self.t)
         try:
             wxu.set_status_text(self.sbar, text, idx, **kwargs)
         except Exception:
-            temp_file = os.path.join(tempfile.gettempdir(), 'wxbugs.txt')
-            with open(temp_file, 'a') as f:
-                f.write('{}\n'.format(traceback.format_ext()))
+            temp_file = os.path.join(tempfile.gettempdir(), "wxbugs.txt")
+            with open(temp_file, "a") as f:
+                f.write("{}\n".format(traceback.format_ext()))
 
     def setup_tray(self, **kwargs):
         import wxbreads.trayicon as wxt
+
         try:
-            args = dict(icon=kwargs.get('icon') or self.logo,
-                        text=kwargs.get('text',
-                                        self.app_title or self.app_name),
-                        t=self.t)
+            args = dict(
+                icon=kwargs.get("icon") or self.logo,
+                text=kwargs.get("text", self.app_title or self.app_name),
+                t=self.t,
+            )
             self.tbicon = wxt.TrayIcon(self, **args)
             self.opened_dlg = 0
             self.has_tray = True
-        except:
+        except Exception:
             raise
             self.tbicon = None
 
     def update_t(self):
-        wdu.update_t(self, lang=self.get_lang(), zh=self.get_zh_mo(),
-                     en=self.get_en_mo())
+        wdu.update_t(
+            self,
+            lang=self.get_lang(),
+            zh=self.get_zh_mo(),
+            en=self.get_en_mo(),
+        )
 
     def refresh_translation(self, wgts=[]):
         font = self.auto_font()
         for lwgt in wgts:
-            tooltip = ''
+            tooltip = ""
             if len(lwgt) == 2:
                 wgt, label = lwgt
             else:
@@ -573,32 +596,34 @@ class BaseWindow(wx.Frame, BaseBase):
 
             wxw.set_font(wgt, font)
 
-        if hasattr(self, 'panel'):
+        if hasattr(self, "panel"):
             self.panel.Layout()
         else:
             self.Layout()
 
         self.Refresh()
 
-    def echo_text(self, text='', **kwargs):
-        kwargs.setdefault('t', self.t)
-        kwargs.setdefault('log_mode', 'a' if six.PY2 else 'ab')
-        kwargs.setdefault('log_files', [])
+    def echo_text(self, text="", **kwargs):
+        kwargs.setdefault("t", self.t)
+        kwargs.setdefault("log_mode", "a" if six.PY2 else "ab")
+        kwargs.setdefault("log_files", [])
         wxu.echo_text(self.rtc, text, **kwargs)
 
-    def add_echo(self, text='', **kwargs):
-        if self.clear_echo_row and kwargs.get('nl', True):
+    def add_echo(self, text="", **kwargs):
+        if self.clear_echo_row and kwargs.get("nl", True):
             self.echoed_row += 1
-            kwargs.setdefault('clear',
-                              self.echoed_row % self.clear_echo_row == 0)
+            kwargs.setdefault(
+                "clear", self.echoed_row % self.clear_echo_row == 0
+            )
 
         self.echo_lines.append((text, kwargs))
 
-    def add_echo3(self, text='', **kwargs):
-        if self.clear_echo_row and kwargs.get('nl', True):
+    def add_echo3(self, text="", **kwargs):
+        if self.clear_echo_row and kwargs.get("nl", True):
             self.echoed_row += 1
-            kwargs.setdefault('clear',
-                              self.echoed_row % self.clear_echo_row == 0)
+            kwargs.setdefault(
+                "clear", self.echoed_row % self.clear_echo_row == 0
+            )
 
         self.echo_text(text, **kwargs)
 
@@ -614,10 +639,10 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def prepare_setting(self):
         if self.is_running:
-            self.popup('Warning', 'Please stop current running task', 'w')
+            self.popup("Warning", "Please stop current running task", "w")
             return False
 
-        if hasattr(self, 'is_root') and self.is_root:
+        if hasattr(self, "is_root") and self.is_root:
             return True
 
         if not self.auth_setting:
@@ -626,8 +651,9 @@ class BaseWindow(wx.Frame, BaseBase):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
-        check_ok = wxw.quick_password_entry(self, root_pass=self.root_pass,
-                                            t=self.t)
+        check_ok = wxw.quick_password_entry(
+            self, root_pass=self.root_pass, t=self.t
+        )
         if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
@@ -644,22 +670,23 @@ class BaseWindow(wx.Frame, BaseBase):
     def get_about_icon(self):
         try:
             return wxi.phoenix.GetIcon()
-        except:
+        except Exception:
             return wxi.phoenix.getIcon()
 
     def get_about_extra_kwargs(self):
         return {}
 
     def get_about_kwargs(self):
-        kw = dict(name=self.app_title or self.app_name,
-                  version=self.app_version,
-                  icon=self.get_about_icon(),
-                  remark=self.app_remark,
-                  t=self.t,
-                  website=getattr(self, 'app_website', ''),
-                  author=getattr(self, 'app_author', ''),
-                  licence=getattr(self, 'app_licence', ''),
-                  )
+        kw = dict(
+            name=self.app_title or self.app_name,
+            version=self.app_version,
+            icon=self.get_about_icon(),
+            remark=self.app_remark,
+            t=self.t,
+            website=getattr(self, "app_website", ""),
+            author=getattr(self, "app_author", ""),
+            licence=getattr(self, "app_licence", ""),
+        )
         kw.update(self.get_about_extra_kwargs())
         return kw
 

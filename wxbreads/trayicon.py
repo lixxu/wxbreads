@@ -22,8 +22,8 @@ class TrayIcon(TaskBarIcon):
     restore_id = wx.NewIdRef()
     quit_id = wx.NewIdRef()
 
-    def __init__(self, frame, icon=None, text='TrayIcon', **kwargs):
-        self.t = kwargs.get('t')
+    def __init__(self, frame, icon=None, text="TrayIcon", **kwargs):
+        self.t = kwargs.get("t")
         TaskBarIcon.__init__(self)
         self.frame = frame
         if icon:
@@ -38,15 +38,15 @@ class TrayIcon(TaskBarIcon):
 
     def CreatePopupMenu(self):
         menu = wx.Menu()
-        menu.Append(self.restore_id, wdu.ttt('Restore', self.t))
+        menu.Append(self.restore_id, wdu.ttt("Restore", self.t))
         menu.AppendSeparator()
-        menu.Append(self.quit_id, wdu.ttt('Quit', self.t))
+        menu.Append(self.quit_id, wdu.ttt("Quit", self.t))
         return menu
 
     def make_icon(self, img):
-        if 'wxMSW' in wx.PlatformInfo:
+        if "wxMSW" in wx.PlatformInfo:
             img = img.Scale(16, 16)
-        elif 'wxGTK' in wx.PlatformInfo:
+        elif "wxGTK" in wx.PlatformInfo:
             img = img.Scale(22, 22)
 
         # wxMac can be any size upto 128x128, so leave the source img alone....

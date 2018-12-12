@@ -8,26 +8,26 @@ from setuptools import setup
 import wxbreads
 
 setup(
-    name='wxbreads',
+    name="wxbreads",
     version=wxbreads.__version__,
-    url='https://github.com/lixxu/wxbreads',
-    license='BSD',
+    url="https://github.com/lixxu/wxbreads",
+    license="BSD",
     author=wxbreads.__author__,
-    author_email='xuzenglin@gmail.com',
-    description='Small handy snippets of wxpython',
+    author_email="xuzenglin@gmail.com",
+    description="Small handy snippets of wxpython",
     long_description=__doc__,
-    packages=['wxbreads'],
+    packages=["wxbreads"],
     zip_safe=False,
-    platforms='any',
-    install_requires=['six'],
+    platforms="any",
+    install_requires=["six"],
     classifiers=[
-        'Environment :: Console',
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 3',
-        'Topic :: Software Development :: Libraries :: Python Modules'
-    ]
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: BSD License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+    ],
 )

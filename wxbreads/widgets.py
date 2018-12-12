@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-import sys
 import six
+import sys
 import threading
 import wx
-import wx.richtext as rt
 import wx.lib.dialogs
+import wx.lib.masked as masked
+import wx.richtext as rt
+
 try:
     from agw import genericmessagedialog as gmd
 except ImportError:
@@ -17,8 +19,6 @@ try:
     import agw.flatnotebook as fnb
 except ImportError:
     import wx.lib.agw.flatnotebook as fnb
-
-import wx.lib.masked as masked
 
 OLD_WX = True
 try:
@@ -37,34 +37,35 @@ except AttributeError:
 import wxbreads.utils as wxu
 import windbreads.utils as wdu
 
-'''Remark:
+"""Remark:
 fsize/fstyle/fkw: 1st widget size/style/kwargs
 ssize/sstyle/skw: 2nd widget size/sstyle/kwargs
 tsize/tstyle/tkw: 3rd widget size/tstyle/kwargs
-'''
+"""
 
-ICONS = dict(info=wx.ICON_INFORMATION,
-             i=wx.ICON_INFORMATION,
-             warn=wx.ICON_WARNING,
-             warning=wx.ICON_WARNING,
-             w=wx.ICON_WARNING,
-             error=wx.ICON_ERROR,
-             e=wx.ICON_ERROR,
-             question=wx.ICON_QUESTION,
-             q=wx.ICON_QUESTION,
-             exclamation=wx.ICON_EXCLAMATION,
-             ex=wx.ICON_EXCLAMATION,
-             )
-DEFAULT_WILDCARD = 'All files|*'
-HIGHLIGHT_RED = '#F75D59'
+ICONS = dict(
+    info=wx.ICON_INFORMATION,
+    i=wx.ICON_INFORMATION,
+    warn=wx.ICON_WARNING,
+    warning=wx.ICON_WARNING,
+    w=wx.ICON_WARNING,
+    error=wx.ICON_ERROR,
+    e=wx.ICON_ERROR,
+    question=wx.ICON_QUESTION,
+    q=wx.ICON_QUESTION,
+    exclamation=wx.ICON_EXCLAMATION,
+    ex=wx.ICON_EXCLAMATION,
+)
+DEFAULT_WILDCARD = "All files|*"
+HIGHLIGHT_RED = "#F75D59"
 if OLD_WX:
-    ABOUT_FORMAT = '{}\n\nPlatform:\n- Python {}\n- wxPython {} ({})\n- {}\n'
+    ABOUT_FORMAT = "{}\n\nPlatform:\n- Python {}\n- wxPython {} ({})\n- {}\n"
 else:
-    ABOUT_FORMAT = '{}\n\nPlatform:\n- Python {}\n- wxPython {}\n  * ({})\
-    \n- {}\n'
+    ABOUT_FORMAT = "{}\n\nPlatform:\n- Python {}\n- wxPython {}\n  * ({})\
+    \n- {}\n"
 
 
-def set_tooltip(wgt, tooltip='', t=None):
+def set_tooltip(wgt, tooltip="", t=None):
     if tooltip:
         func = wgt.SetToolTipString if OLD_WX else wgt.SetToolTip
         func(wdu.ttt(tooltip, t=t))
@@ -94,23 +95,23 @@ def focus_on(wgt, select=False, clear=False):
     wgt.SetFocus()
 
 
-def popup(parent=None, caption='caption', **kwargs):
-    t = kwargs.get('t')
+def popup(parent=None, caption="caption", **kwargs):
+    t = kwargs.get("t")
     font = wxu.auto_get_font(parent, **kwargs)
-    btn = kwargs.pop('btn', wx.OK)
-    need_return = kwargs.pop('need_return', False)
-    size = kwargs.pop('size', (-1, -1))
-    icon = kwargs.pop('icon', 'i')
-    msg = kwargs.pop('msg', '')
-    icon = ICONS.get(icon, ICONS['i'])
+    btn = kwargs.pop("btn", wx.OK)
+    need_return = kwargs.pop("need_return", False)
+    size = kwargs.pop("size", (-1, -1))
+    icon = kwargs.pop("icon", "i")
+    msg = kwargs.pop("msg", "")
+    icon = ICONS.get(icon, ICONS["i"])
     if isinstance(msg, six.string_types):
         if not isinstance(msg, six.text_type):
-            umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
+            umsg = msg.decode(wdu.detect_encoding(msg)["encoding"])
         else:
             umsg = msg
 
     else:
-        umsg = '{}'.format(msg)
+        umsg = "{}".format(msg)
 
     if t:
         umsg = wdu.ttt(umsg, t)
@@ -119,18 +120,18 @@ def popup(parent=None, caption='caption', **kwargs):
         title = caption
 
     dlg_kw = dict()
-    if OLD_WX or threading.currentThread().name == 'MainThread':
+    if OLD_WX or threading.currentThread().name == "MainThread":
         dlg_cls = gmd.GenericMessageDialog
         dlg_kw.update(size=size)
     else:
         dlg_cls = wx.MessageDialog
 
     dlg = dlg_cls(parent, umsg, title, btn | icon, **dlg_kw)
-    help_label = kwargs.get('help_label', 'Help')
-    ok_label = kwargs.get('ok_label', 'OK')
-    cancel_label = kwargs.get('cancel_label', 'Cancel')
-    yes_label = kwargs.get('yes_label', 'Yes')
-    no_label = kwargs.get('no_label', 'No')
+    help_label = kwargs.get("help_label", "Help")
+    ok_label = kwargs.get("ok_label", "OK")
+    cancel_label = kwargs.get("cancel_label", "Cancel")
+    yes_label = kwargs.get("yes_label", "Yes")
+    no_label = kwargs.get("no_label", "No")
     if t:
         help_label = wdu.ttt(help_label, t)
         ok_label = wdu.ttt(ok_label, t)
@@ -150,7 +151,7 @@ def popup(parent=None, caption='caption', **kwargs):
 
     dlg.CenterOnParent()
     opened_dlg = False
-    if parent and hasattr(parent, 'opened_dlg'):
+    if parent and hasattr(parent, "opened_dlg"):
         if parent.opened_dlg is not None:
             opened_dlg = True
 
@@ -165,17 +166,17 @@ def popup(parent=None, caption='caption', **kwargs):
     return result
 
 
-def popup_smd(parent=None, msg='', caption='Message', **kwargs):
-    t = kwargs.get('t')
-    btn_label = kwargs.get('btn_label', 'OK')
+def popup_smd(parent=None, msg="", caption="Message", **kwargs):
+    t = kwargs.get("t")
+    btn_label = kwargs.get("btn_label", "OK")
     if isinstance(msg, six.string_types):
         if not isinstance(msg, six.text_type):
-            umsg = msg.decode(wdu.detect_encoding(msg)['encoding'])
+            umsg = msg.decode(wdu.detect_encoding(msg)["encoding"])
         else:
             umsg = msg
 
     else:
-        umsg = '{}'.format(msg)
+        umsg = "{}".format(msg)
 
     if t:
         btn_label = wdu.ttt(btn_label, t)
@@ -189,16 +190,16 @@ def popup_smd(parent=None, msg='', caption='Message', **kwargs):
     try:
         dlg.GetChildren()[1].SetLabel(btn_label)
         set_font()
-    except:
+    except Exception:
         pass
 
-    if parent and hasattr(parent, 'opened_dlg'):
+    if parent and hasattr(parent, "opened_dlg"):
         if parent.opened_dlg is not None:
             parent.opened_dlg += 1
 
     set_font(dlg, font)
     dlg.ShowModal()
-    if parent and hasattr(parent, 'opened_dlg'):
+    if parent and hasattr(parent, "opened_dlg"):
         if parent.opened_dlg is not None:
             parent.opened_dlg -= 1
 
@@ -206,16 +207,16 @@ def popup_smd(parent=None, msg='', caption='Message', **kwargs):
 
 
 def add_button(parent, id=-1, **kwargs):
-    t = kwargs.pop('t', None)
-    label = kwargs.pop('label', 'Button')
-    size = kwargs.pop('size', (-1, -1))
-    tooltip = kwargs.pop('tooltip', '')
-    font = kwargs.pop('font', None)
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    icon = kwargs.pop('icon', None)
-    style = kwargs.pop('style', wx.NO_BORDER)
-    kw = dict(size=size, name=kwargs.get('name', 'wxButton'))
+    t = kwargs.pop("t", None)
+    label = kwargs.pop("label", "Button")
+    size = kwargs.pop("size", (-1, -1))
+    tooltip = kwargs.pop("tooltip", "")
+    font = kwargs.pop("font", None)
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    icon = kwargs.pop("icon", None)
+    style = kwargs.pop("style", wx.NO_BORDER)
+    kw = dict(size=size, name=kwargs.get("name", "wxButton"))
     if style:
         kw.update(style=style)
 
@@ -225,22 +226,22 @@ def add_button(parent, id=-1, **kwargs):
     set_fg(btn, fg)
     set_bg(btn, bg)
     if icon:
-        btn.SetBitmap(icon, kwargs.get('side', wx.LEFT))
-        btn.SetBitmapMargins(kwargs.get('margins', (2, 2)))
+        btn.SetBitmap(icon, kwargs.get("side", wx.LEFT))
+        btn.SetBitmapMargins(kwargs.get("margins", (2, 2)))
 
     return btn
 
 
 def add_label(parent, id=-1, **kwargs):
-    t = kwargs.get('t')
-    label = kwargs.pop('label', '')
-    font = kwargs.pop('font', None)
-    size = kwargs.pop('size', (-1, -1))
-    tooltip = kwargs.pop('tooltip', '')
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    style = kwargs.pop('style', 0)
-    nargs = dict(size=size, name=kwargs.get('name', 'wxStaticText'))
+    t = kwargs.get("t")
+    label = kwargs.pop("label", "")
+    font = kwargs.pop("font", None)
+    size = kwargs.pop("size", (-1, -1))
+    tooltip = kwargs.pop("tooltip", "")
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    style = kwargs.pop("style", 0)
+    nargs = dict(size=size, name=kwargs.get("name", "wxStaticText"))
     if style:
         nargs.update(style=style)
 
@@ -254,17 +255,17 @@ def add_label(parent, id=-1, **kwargs):
 
 
 def add_textctrl(parent, id=-1, **kwargs):
-    t = kwargs.pop('t', None)
-    value = kwargs.pop('value', '')
-    size = kwargs.pop('size', (-1, -1))
-    style = kwargs.pop('style', 0)
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
-    tooltip = kwargs.pop('tooltip', '')
-    multiline = kwargs.pop('multiline', False)
+    t = kwargs.pop("t", None)
+    value = kwargs.pop("value", "")
+    size = kwargs.pop("size", (-1, -1))
+    style = kwargs.pop("style", 0)
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
+    tooltip = kwargs.pop("tooltip", "")
+    multiline = kwargs.pop("multiline", False)
 
-    nargs = dict(size=size, name=kwargs.get('name', 'wxTextCtrl'))
+    nargs = dict(size=size, name=kwargs.get("name", "wxTextCtrl"))
     sty = wx.TE_MULTILINE if multiline else None
     if style and sty is not None:
         nargs.update(style=style | sty)
@@ -273,7 +274,7 @@ def add_textctrl(parent, id=-1, **kwargs):
     elif sty is not None:
         nargs.update(style=sty)
 
-    wgt = wx.TextCtrl(parent, id, '{}'.format(value), **nargs)
+    wgt = wx.TextCtrl(parent, id, "{}".format(value), **nargs)
     set_tooltip(wgt, tooltip, t)
     set_font(wgt, font)
     set_fg(wgt, fg)
@@ -282,16 +283,17 @@ def add_textctrl(parent, id=-1, **kwargs):
 
 
 def add_spinctrl(parent, id=-1, **kwargs):
-    value = kwargs.pop('value', '')
-    size = kwargs.pop('size', (-1, -1))
-    min_value = kwargs.pop('min_value', 0)
-    max_value = kwargs.pop('max_value', 100)
-    init_value = kwargs.pop('init_value', 0)
-    tooltip = kwargs.pop('tooltip', '')
-    t = kwargs.pop('t', None)
+    value = kwargs.pop("value", "")
+    size = kwargs.pop("size", (-1, -1))
+    min_value = kwargs.pop("min_value", 0)
+    max_value = kwargs.pop("max_value", 100)
+    init_value = kwargs.pop("init_value", 0)
+    tooltip = kwargs.pop("tooltip", "")
+    t = kwargs.pop("t", None)
 
-    sc = wx.SpinCtrl(parent, id, value, size=size,
-                     name=kwargs.pop('name', 'wxSpinCtrl'))
+    sc = wx.SpinCtrl(
+        parent, id, value, size=size, name=kwargs.pop("name", "wxSpinCtrl")
+    )
     sc.SetRange(min_value, max_value)
     sc.SetValue(init_value)
     set_tooltip(sc, tooltip, t)
@@ -299,31 +301,37 @@ def add_spinctrl(parent, id=-1, **kwargs):
 
 
 def add_spinctrl_double(parent, id=-1, **kwargs):
-    value = kwargs.pop('value', '')
-    size = kwargs.pop('size', (-1, -1))
-    inc = kwargs.pop('inc', 1)
-    min_value = kwargs.pop('min_value', 0.0)
-    max_value = kwargs.pop('max_value', 100.0)
-    init_value = kwargs.pop('init_value', 0)
-    sc = wx.SpinCtrlDouble(parent, id, value, size=size, inc=inc,
-                           name=kwargs.pop('name', 'wxSpinCtrlDouble'))
+    value = kwargs.pop("value", "")
+    size = kwargs.pop("size", (-1, -1))
+    inc = kwargs.pop("inc", 1)
+    min_value = kwargs.pop("min_value", 0.0)
+    max_value = kwargs.pop("max_value", 100.0)
+    init_value = kwargs.pop("init_value", 0)
+    sc = wx.SpinCtrlDouble(
+        parent,
+        id,
+        value,
+        size=size,
+        inc=inc,
+        name=kwargs.pop("name", "wxSpinCtrlDouble"),
+    )
     sc.SetRange(min_value, max_value)
     sc.SetValue(init_value)
     return sc
 
 
 def add_richtext(parent, id=-1, **kwargs):
-    value = kwargs.pop('value', '')
-    size = kwargs.pop('size', (-1, -1))
-    readonly = kwargs.pop('readonly', True)
-    style = kwargs.pop('style', wx.TE_MULTILINE)
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
+    value = kwargs.pop("value", "")
+    size = kwargs.pop("size", (-1, -1))
+    readonly = kwargs.pop("readonly", True)
+    style = kwargs.pop("style", wx.TE_MULTILINE)
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
     if readonly:
         style |= wx.TE_READONLY
 
-    kw = dict(size=size, name=kwargs.pop('name', 'wxRichText'), style=style)
+    kw = dict(size=size, name=kwargs.pop("name", "wxRichText"), style=style)
     rtc = rt.RichTextCtrl(parent, id, value, **kw)
     set_font(rtc, font)
     set_fg(rtc, fg)
@@ -332,17 +340,22 @@ def add_richtext(parent, id=-1, **kwargs):
 
 
 def add_checkbox(parent, id=-1, **kwargs):
-    t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    size = kwargs.pop('size', (-1, -1))
-    value = kwargs.pop('value', True)
-    font = kwargs.pop('font', None)
-    tooltip = kwargs.pop('tooltip', '')
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    wgt = wx.CheckBox(parent, id, wdu.ttt(label, t), size=size,
-                      name=kwargs.pop('name', 'wxCheckBox'),
-                      style=kwargs.pop('style', 0))
+    t = kwargs.pop("t", None)
+    label = kwargs.pop("label", "")
+    size = kwargs.pop("size", (-1, -1))
+    value = kwargs.pop("value", True)
+    font = kwargs.pop("font", None)
+    tooltip = kwargs.pop("tooltip", "")
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    wgt = wx.CheckBox(
+        parent,
+        id,
+        wdu.ttt(label, t),
+        size=size,
+        name=kwargs.pop("name", "wxCheckBox"),
+        style=kwargs.pop("style", 0),
+    )
     set_tooltip(wgt, tooltip, t)
     set_font(wgt, font)
     set_fg(wgt, fg)
@@ -351,27 +364,34 @@ def add_checkbox(parent, id=-1, **kwargs):
     return wgt
 
 
-def add_path_picker(parent, id=-1, msg='Select a directory', **kwargs):
-    t = kwargs.pop('t', None)
-    kind = kwargs.pop('kind', 'dir')
-    tooltip = kwargs.pop('tooltip', '')
-    multiline = kwargs.pop('multiline', False)
-    btn_label = kwargs.pop('btn_label', '')
-    size = kwargs.pop('size', (-1, -1))
-    prop = kwargs.pop('prop', 2)
-    use_tc = kwargs.pop('use_tc', True)
-    value = kwargs.pop('value', '')
-    text_editable = kwargs.pop('text_editable', False)
-    btn_enable = kwargs.pop('btn_enable', True)
-    tc_bg = kwargs.pop('tc_bg', 'white')
-    tc_name = kwargs.pop('tc_name', 'wxTextCtrl')
-    btn_name = kwargs.pop('btn_name', 'wxButton')
-    wgt_cls = wx.DirPickerCtrl if kind == 'dir' else wx.FilePickerCtrl
+def add_path_picker(parent, id=-1, msg="Select a directory", **kwargs):
+    t = kwargs.pop("t", None)
+    kind = kwargs.pop("kind", "dir")
+    tooltip = kwargs.pop("tooltip", "")
+    multiline = kwargs.pop("multiline", False)
+    btn_label = kwargs.pop("btn_label", "")
+    size = kwargs.pop("size", (-1, -1))
+    prop = kwargs.pop("prop", 2)
+    use_tc = kwargs.pop("use_tc", True)
+    value = kwargs.pop("value", "")
+    text_editable = kwargs.pop("text_editable", False)
+    btn_enable = kwargs.pop("btn_enable", True)
+    tc_bg = kwargs.pop("tc_bg", "white")
+    tc_name = kwargs.pop("tc_name", "wxTextCtrl")
+    btn_name = kwargs.pop("btn_name", "wxButton")
+    wgt_cls = wx.DirPickerCtrl if kind == "dir" else wx.FilePickerCtrl
     if use_tc:
         kwargs.update(style=wx.DIRP_USE_TEXTCTRL)
 
-    pc = wgt_cls(parent, id, message=wdu.ttt(msg, t), size=size, path=value,
-                 name=kwargs.pop('name', 'wxDirPickerCtrl'), **kwargs)
+    pc = wgt_cls(
+        parent,
+        id,
+        message=wdu.ttt(msg, t),
+        size=size,
+        path=value,
+        name=kwargs.pop("name", "wxDirPickerCtrl"),
+        **kwargs
+    )
     if pc.HasTextCtrl():
         pc.SetTextCtrlProportion(prop)
 
@@ -397,45 +417,49 @@ def add_path_picker(parent, id=-1, msg='Select a directory', **kwargs):
     return pc, tc, btn
 
 
-def add_dir_picker(parent, id=-1, msg='Select a directory', **kwargs):
-    kwargs.setdefault('name', 'wxDirPickerCtrl')
-    return add_path_picker(parent, id, kind='dir', msg=msg, **kwargs)
+def add_dir_picker(parent, id=-1, msg="Select a directory", **kwargs):
+    kwargs.setdefault("name", "wxDirPickerCtrl")
+    return add_path_picker(parent, id, kind="dir", msg=msg, **kwargs)
 
 
-def add_file_picker(parent, id=-1, msg='Select a file', **kwargs):
-    kwargs.setdefault('name', 'wxFilePickerCtrl')
-    return add_path_picker(parent, id, kind='file', msg=msg, **kwargs)
+def add_file_picker(parent, id=-1, msg="Select a file", **kwargs):
+    kwargs.setdefault("name", "wxFilePickerCtrl")
+    return add_path_picker(parent, id, kind="file", msg=msg, **kwargs)
 
 
-def select_open_dir(parent, title='Select a directory', **kwargs):
-    t = kwargs.pop('t', None)
-    style = kwargs.pop('style', wx.DD_DEFAULT_STYLE)
+def select_open_dir(parent, title="Select a directory", **kwargs):
+    t = kwargs.pop("t", None)
+    style = kwargs.pop("style", wx.DD_DEFAULT_STYLE)
     dlg = wx.DirDialog(parent, wdu.ttt(title, t), style=style, **kwargs)
     folder = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None
     dlg.Destroy()
     return folder
 
 
-def select_open_file(parent, msg='Select a file', **kwargs):
-    wildcard = kwargs.pop('wildcard', DEFAULT_WILDCARD)
-    style = kwargs.pop('style', wx.FD_OPEN)
-    multi = kwargs.pop('multi', False)
+def select_open_file(parent, msg="Select a file", **kwargs):
+    wildcard = kwargs.pop("wildcard", DEFAULT_WILDCARD)
+    style = kwargs.pop("style", wx.FD_OPEN)
+    multi = kwargs.pop("multi", False)
     if multi:
         style |= wx.FD_MULTIPLE
 
-    if kwargs.pop('exist', True):
+    if kwargs.pop("exist", True):
         style |= wx.FD_FILE_MUST_EXIST
 
-    if kwargs.pop('change_dir', False):
+    if kwargs.pop("change_dir", False):
         style |= wx.FD_CHANGE_DIR
 
-    t = kwargs.pop('t', None)
-    dlg = wx.FileDialog(parent, message=wdu.ttt(msg, t),
-                        defaultDir=kwargs.pop('default_dir', ''),
-                        defaultFile=kwargs.pop('default_file', ''),
-                        wildcard=wdu.ttt(wildcard, t),
-                        style=style, name=kwargs.pop('name', 'wxFileDialog'),
-                        **kwargs)
+    t = kwargs.pop("t", None)
+    dlg = wx.FileDialog(
+        parent,
+        message=wdu.ttt(msg, t),
+        defaultDir=kwargs.pop("default_dir", ""),
+        defaultFile=kwargs.pop("default_file", ""),
+        wildcard=wdu.ttt(wildcard, t),
+        style=style,
+        name=kwargs.pop("name", "wxFileDialog"),
+        **kwargs
+    )
 
     paths = dlg.GetPaths() if dlg.ShowModal() == wx.ID_OK else []
     dlg.Destroy()
@@ -445,30 +469,38 @@ def select_open_file(parent, msg='Select a file', **kwargs):
     return None
 
 
-def select_save_file(parent, msg='Save file as...', **kwargs):
-    wildcard = kwargs.pop('wildcard', DEFAULT_WILDCARD)
-    style = kwargs.pop('style', wx.FD_SAVE)
-    if kwargs.pop('overwrite_prompt', True):
+def select_save_file(parent, msg="Save file as...", **kwargs):
+    wildcard = kwargs.pop("wildcard", DEFAULT_WILDCARD)
+    style = kwargs.pop("style", wx.FD_SAVE)
+    if kwargs.pop("overwrite_prompt", True):
         style |= wx.FD_OVERWRITE_PROMPT
 
-    if kwargs.pop('change_dir', False):
+    if kwargs.pop("change_dir", False):
         style |= wx.FD_CHANGE_DIR
 
-    t = kwargs.pop('t', None)
-    dlg = wx.FileDialog(parent, message=wdu.ttt(msg, t),
-                        defaultDir=kwargs.pop('default_dir', ''),
-                        defaultFile=kwargs.pop('default_file', ''),
-                        wildcard=wdu.ttt(wildcard, t),
-                        style=style, **kwargs)
+    t = kwargs.pop("t", None)
+    dlg = wx.FileDialog(
+        parent,
+        message=wdu.ttt(msg, t),
+        defaultDir=kwargs.pop("default_dir", ""),
+        defaultFile=kwargs.pop("default_file", ""),
+        wildcard=wdu.ttt(wildcard, t),
+        style=style,
+        **kwargs
+    )
     path = dlg.GetPath() if dlg.ShowModal() == wx.ID_OK else None
     dlg.Destroy()
     return path
 
 
-def add_staticbox(parent, id=-1, label='', orient='v', **kwargs):
-    sbox = wx.StaticBox(parent, id, wdu.ttt(label, kwargs.pop('t', None)),
-                        name=kwargs.pop('name', 'wxStaticBox'))
-    style = wx.VERTICAL if orient == 'v' else wx.HORIZONTAL
+def add_staticbox(parent, id=-1, label="", orient="v", **kwargs):
+    sbox = wx.StaticBox(
+        parent,
+        id,
+        wdu.ttt(label, kwargs.pop("t", None)),
+        name=kwargs.pop("name", "wxStaticBox"),
+    )
+    style = wx.VERTICAL if orient == "v" else wx.HORIZONTAL
     sbsizer = wx.StaticBoxSizer(sbox, style)
     return sbox, sbsizer
 
@@ -478,28 +510,36 @@ def update_widget_kwargs(kw, **kwargs):
 
 
 def add_text_row(parent, sizer=None, **kwargs):
-    t = kwargs.pop('t', None)
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
-    tooltip = kwargs.pop('tooltip', '')
+    t = kwargs.pop("t", None)
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
+    tooltip = kwargs.pop("tooltip", "")
 
     nargs = dict(tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
 
     # new format kwargs
-    kwargs.pop('ttw', None)  # not used here
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', 0),
-                         name=kwargs.pop('fname', 'wxStaticText'),
-                         label=kwargs.pop('label', ''), **nargs)
+    kwargs.pop("ttw", None)  # not used here
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        style=kwargs.pop("fstyle", 0),
+        name=kwargs.pop("fname", "wxStaticText"),
+        label=kwargs.pop("label", ""),
+        **nargs
+    )
 
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         style=kwargs.pop('sstyle', 0),
-                         name=kwargs.pop('sname', 'wxTextCtrl'),
-                         value=kwargs.pop('value', ''),
-                         multiline=kwargs.pop('multiline', False), **nargs)
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        size=kwargs.pop("ssize", (-1, -1)),
+        style=kwargs.pop("sstyle", 0),
+        name=kwargs.pop("sname", "wxTextCtrl"),
+        value=kwargs.pop("value", ""),
+        multiline=kwargs.pop("multiline", False),
+        **nargs
+    )
 
     lbl = add_label(parent, **fkw)
     wgt = add_textctrl(parent, **skw)
@@ -509,26 +549,34 @@ def add_text_row(parent, sizer=None, **kwargs):
 
 
 def add_checkbox_row(parent, sizer=None, **kwargs):
-    t = kwargs.pop('t', None)
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
-    tooltip = kwargs.pop('tooltip', '')
+    t = kwargs.pop("t", None)
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
+    tooltip = kwargs.pop("tooltip", "")
     nargs = dict(tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
 
     # new format kwargs
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', 0),
-                         name=kwargs.pop('fname', 'wxStaticText'),
-                         label=kwargs.pop('label', ''), **nargs)
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         style=kwargs.pop('sstyle', 0),
-                         name=kwargs.pop('sname', 'wxCheckBox'),
-                         value=kwargs.pop('value', True),
-                         label=kwargs.pop('cb_label', ''), **nargs)
-    kwargs.pop('tkw', None)  # not used here
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        style=kwargs.pop("fstyle", 0),
+        name=kwargs.pop("fname", "wxStaticText"),
+        label=kwargs.pop("label", ""),
+        **nargs
+    )
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        size=kwargs.pop("ssize", (-1, -1)),
+        style=kwargs.pop("sstyle", 0),
+        name=kwargs.pop("sname", "wxCheckBox"),
+        value=kwargs.pop("value", True),
+        label=kwargs.pop("cb_label", ""),
+        **nargs
+    )
+    kwargs.pop("tkw", None)  # not used here
 
     lbl = add_label(parent, **fkw)
     wgt = add_checkbox(parent, **skw)
@@ -538,32 +586,42 @@ def add_checkbox_row(parent, sizer=None, **kwargs):
 
 
 def add_combobox(parent, sizer=None, **kwargs):
-    t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
-    tooltip = kwargs.pop('tooltip', '')
-    readonly = kwargs.pop('readonly', False)
+    t = kwargs.pop("t", None)
+    label = kwargs.pop("label", "")
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
+    tooltip = kwargs.pop("tooltip", "")
+    readonly = kwargs.pop("readonly", False)
 
-    kwargs.pop('tkw', None)
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         name=kwargs.pop('fname', 'wxStaticText'),
-                         style=kwargs.pop('fstyle', 0),
-                         t=t, label=label, font=font, fg=fg, bg=bg,
-                         tooltip=tooltip)
+    kwargs.pop("tkw", None)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        name=kwargs.pop("fname", "wxStaticText"),
+        style=kwargs.pop("fstyle", 0),
+        t=t,
+        label=label,
+        font=font,
+        fg=fg,
+        bg=bg,
+        tooltip=tooltip,
+    )
 
-    skw = kwargs.pop('skw', {})
-    sstyle = kwargs.pop('sstyle', wx.CB_DROPDOWN | wx.CB_SORT)
+    skw = kwargs.pop("skw", {})
+    sstyle = kwargs.pop("sstyle", wx.CB_DROPDOWN | wx.CB_SORT)
     if readonly and sstyle:
         sstyle = sstyle | wx.CB_READONLY
 
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         value='{}'.format(kwargs.pop('value', '')),
-                         name=kwargs.pop('sname', 'wxComboBox'),
-                         style=sstyle, choices=kwargs.pop('choices', []),
-                         )
+    update_widget_kwargs(
+        skw,
+        size=kwargs.pop("ssize", (-1, -1)),
+        value="{}".format(kwargs.pop("value", "")),
+        name=kwargs.pop("sname", "wxComboBox"),
+        style=sstyle,
+        choices=kwargs.pop("choices", []),
+    )
 
     lbl = None
     if label is not None:
@@ -576,28 +634,37 @@ def add_combobox(parent, sizer=None, **kwargs):
 
 
 def add_choice(parent, sizer=None, **kwargs):
-    t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
-    value = kwargs.pop('value', '')
-    tooltip = kwargs.pop('tooltip', '')
+    t = kwargs.pop("t", None)
+    label = kwargs.pop("label", "")
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
+    value = kwargs.pop("value", "")
+    tooltip = kwargs.pop("tooltip", "")
 
-    kwargs.pop('tkw', None)
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, label=label, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', 0),
-                         name=kwargs.pop('fname', 'wxStaticText'),
-                         fg=fg, bg=bg, font=font, tooltip=tooltip, t=t,
-                         )
+    kwargs.pop("tkw", None)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        label=label,
+        size=kwargs.pop("fsize", (-1, -1)),
+        style=kwargs.pop("fstyle", 0),
+        name=kwargs.pop("fname", "wxStaticText"),
+        fg=fg,
+        bg=bg,
+        font=font,
+        tooltip=tooltip,
+        t=t,
+    )
 
-    choices = kwargs.pop('choices', [])
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, choices=choices,
-                         size=kwargs.pop('ssize', (-1, -1)),
-                         name=kwargs.pop('sname', 'wxChoice'),
-                         )
+    choices = kwargs.pop("choices", [])
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        choices=choices,
+        size=kwargs.pop("ssize", (-1, -1)),
+        name=kwargs.pop("sname", "wxChoice"),
+    )
 
     lbl = None
     if label is not None:
@@ -613,17 +680,24 @@ def add_choice(parent, sizer=None, **kwargs):
 
 
 def add_radio_box(parent, sizer=None, **kwargs):
-    t = kwargs.pop('t', None)
-    label = kwargs.pop('label', '')
-    size = kwargs.pop('size', (-1, -1))
-    style = kwargs.pop('style', wx.RA_SPECIFY_COLS)
-    choices = kwargs.pop('choices', [])
-    cols = kwargs.pop('cols', 0)
-    tooltip = kwargs.pop('tooltip', '')
-    value = kwargs.pop('value', 0)
-    wgt = wx.RadioBox(parent, -1, wdu.ttt(label, t), size=size,
-                      choices=choices, majorDimension=cols, style=style,
-                      name=kwargs.pop('name', 'wxRadioBox'))
+    t = kwargs.pop("t", None)
+    label = kwargs.pop("label", "")
+    size = kwargs.pop("size", (-1, -1))
+    style = kwargs.pop("style", wx.RA_SPECIFY_COLS)
+    choices = kwargs.pop("choices", [])
+    cols = kwargs.pop("cols", 0)
+    tooltip = kwargs.pop("tooltip", "")
+    value = kwargs.pop("value", 0)
+    wgt = wx.RadioBox(
+        parent,
+        -1,
+        wdu.ttt(label, t),
+        size=size,
+        choices=choices,
+        majorDimension=cols,
+        style=style,
+        name=kwargs.pop("name", "wxRadioBox"),
+    )
     wgt.SetSelection(int(value))
     set_tooltip(wgt, tooltip, t)
     pack(wgt, sizer, **kwargs)
@@ -631,28 +705,32 @@ def add_radio_box(parent, sizer=None, **kwargs):
 
 
 def add_datepicker(parent, sizer=None, **kwargs):
-    t = kwargs.pop('t', None)
+    t = kwargs.pop("t", None)
 
-    tooltip = kwargs.pop('tooltip', '')
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
+    tooltip = kwargs.pop("tooltip", "")
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
     nargs = dict(tooltip=tooltip, font=font, fg=fg, bg=bg, t=t)
 
-    kwargs.pop('tkw', None)
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         style=kwargs.pop('fstyle', 0),
-                         name=kwargs.pop('fname', 'wxStaticText'),
-                         label=kwargs.pop('label', ''), **nargs)
+    kwargs.pop("tkw", None)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        style=kwargs.pop("fstyle", 0),
+        name=kwargs.pop("fname", "wxStaticText"),
+        label=kwargs.pop("label", ""),
+        **nargs
+    )
 
-    sstyle = kwargs.pop('sstyle', 0)
-    style = sstyle or kwargs.pop('style', 0)
+    sstyle = kwargs.pop("sstyle", 0)
+    style = sstyle or kwargs.pop("style", 0)
     if not style:
-        dropdown = kwargs.pop('dropdown', True)
+        dropdown = kwargs.pop("dropdown", True)
         sty1 = wx.DP_DROPDOWN if dropdown else None
 
-        show_century = kwargs.pop('show_century', True)
+        show_century = kwargs.pop("show_century", True)
         sty2 = wx.DP_SHOWCENTURY if show_century else None
 
         if sty1 or sty2:
@@ -666,24 +744,28 @@ def add_datepicker(parent, sizer=None, **kwargs):
         else:
             style = wx.DP_DEFAULT | wx.DP_SHOWCENTURY
 
-    allow_none = kwargs.pop('allow_none', False)
+    allow_none = kwargs.pop("allow_none", False)
     if allow_none:
         style |= wx.DP_ALLOWNONE
 
-    value = kwargs.pop('value', '')
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         name=kwargs.pop('sname', 'wxDatePickerCtrl'),
-                         style=style)
+    value = kwargs.pop("value", "")
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        size=kwargs.pop("ssize", (-1, -1)),
+        name=kwargs.pop("sname", "wxDatePickerCtrl"),
+        style=style,
+    )
 
     lbl = add_label(parent, **fkw)
     if value:
         if isinstance(value, six.string_types):
             try:
                 from dateutil.parser import parse
+
                 value = wxu.pydate2wxdate(parse(value))
                 update_widget_kwargs(skw, dt=value)
-            except:
+            except Exception:
                 pass
 
         else:
@@ -697,37 +779,58 @@ def add_datepicker(parent, sizer=None, **kwargs):
 
 
 def add_timectrl(parent, **kwargs):
-    kwargs['min'] = kwargs.pop('min_value', None)
-    kwargs['max'] = kwargs.pop('max_value', None)
-    kwargs['spinButton'] = kwargs.pop('spin_btn', None)
-    kwargs['fmt24hr'] = kwargs.pop('format_24', True)
+    kwargs["min"] = kwargs.pop("min_value", None)
+    kwargs["max"] = kwargs.pop("max_value", None)
+    kwargs["spinButton"] = kwargs.pop("spin_btn", None)
+    kwargs["fmt24hr"] = kwargs.pop("format_24", True)
     wgt = masked.TimeCtrl(parent, **kwargs)
     return wgt
 
 
-def add_open_dialog(parent, sizer, label='Select folder', **kwargs):
-    t = kwargs.pop('t', None)
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    font = kwargs.pop('font', None)
-    tooltip = kwargs.pop('tooltip', '')
+def add_open_dialog(parent, sizer, label="Select folder", **kwargs):
+    t = kwargs.pop("t", None)
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    font = kwargs.pop("font", None)
+    tooltip = kwargs.pop("tooltip", "")
 
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         label=label, t=t, fg=fg, bg=bg, font=font,
-                         tooltip=tooltip)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        label=label,
+        t=t,
+        fg=fg,
+        bg=bg,
+        font=font,
+        tooltip=tooltip,
+    )
 
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         value=kwargs.pop('value', ''),
-                         multiline=kwargs.pop('multiline', False), t=t,
-                         tooltip=tooltip, fg=fg, bg=bg, font=font)
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        size=kwargs.pop("ssize", (-1, -1)),
+        value=kwargs.pop("value", ""),
+        multiline=kwargs.pop("multiline", False),
+        t=t,
+        tooltip=tooltip,
+        fg=fg,
+        bg=bg,
+        font=font,
+    )
 
-    tkw = kwargs.pop('tkw', {})
-    update_widget_kwargs(tkw, label=kwargs.pop('btn_label', 'Browse'),
-                         id=kwargs.pop('btn_id', None),
-                         size=kwargs.pop('tsize', (-1, -1)),
-                         t=t, tooltip=tooltip, fg=fg, bg=bg, font=font)
+    tkw = kwargs.pop("tkw", {})
+    update_widget_kwargs(
+        tkw,
+        label=kwargs.pop("btn_label", "Browse"),
+        id=kwargs.pop("btn_id", None),
+        size=kwargs.pop("tsize", (-1, -1)),
+        t=t,
+        tooltip=tooltip,
+        fg=fg,
+        bg=bg,
+        font=font,
+    )
 
     lbl = add_label(parent, **fkw)
     txt = add_textctrl(parent, **skw)
@@ -737,25 +840,35 @@ def add_open_dialog(parent, sizer, label='Select folder', **kwargs):
     return lbl, txt, btn
 
 
-def add_line(parent, id=-1, size=(-1, -1), orient='h'):
-    style = wx.LI_HORIZONTAL if orient == 'h' else wx.LI_VERTICAL
+def add_line(parent, id=-1, size=(-1, -1), orient="h"):
+    style = wx.LI_HORIZONTAL if orient == "h" else wx.LI_VERTICAL
     return wx.StaticLine(parent, id, size=(-1, -1), style=style)
 
 
 def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
-    t = kwargs.pop('t', None)
-    pack_line = kwargs.pop('pack_line', True)
+    t = kwargs.pop("t", None)
+    pack_line = kwargs.pop("pack_line", True)
     if pack_line:
         sl = add_line(parent, id)
 
-    kwargs.pop('tkw', None)
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, label=kwargs.pop('ok_text', 'OK'),
-                         size=size, t=t, name=kwargs.pop('fname', 'wxButton'))
+    kwargs.pop("tkw", None)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        label=kwargs.pop("ok_text", "OK"),
+        size=size,
+        t=t,
+        name=kwargs.pop("fname", "wxButton"),
+    )
 
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, label=kwargs.pop('cancel_text', 'Cancel'),
-                         size=size, t=t, name=kwargs.pop('sname', 'wxButton'))
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        label=kwargs.pop("cancel_text", "Cancel"),
+        size=size,
+        t=t,
+        name=kwargs.pop("sname", "wxButton"),
+    )
 
     ok_btn = add_button(parent, wx.ID_OK, **fkw)
     ok_btn.SetDefault()
@@ -767,15 +880,19 @@ def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     btn_sizer.Realize()
 
     if pack_line:
-        pack(sl, sizer, flag='e,t', border=15)
+        pack(sl, sizer, flag="e,t", border=15)
 
-    pack(btn_sizer, sizer, prop=0, flag='ac,a', border=border)
+    pack(btn_sizer, sizer, prop=0, flag="ac,a", border=border)
     return ok_btn, cancel_btn
 
 
-def add_statusbar(parent, widths=[260, -1, 130], values=['', '', ''],
-                  **kwargs):
-    t = kwargs.pop('t', None)
+def add_statusbar(
+    parent,
+    widths=[260, -1, 130],
+    values=["", "", ""],
+    **kwargs
+):
+    t = kwargs.pop("t", None)
     sbar = wx.StatusBar(parent)
     sbar.SetFieldsCount(len(widths), widths)
     for i, v in enumerate(values):
@@ -797,13 +914,13 @@ def add_timer(self, timer_id, timer_func, miliseconds=-1, one_shot=False):
 
 
 def add_fnb(parent, id=-1, **kwargs):
-    style = kwargs.pop('style', 0)
-    active_color = kwargs.pop('active_color', None)
-    no_drag = kwargs.pop('no_drag', True)
-    no_x = kwargs.pop('no_x', True)
-    no_nav = kwargs.pop('no_nav', True)
-    has_bg = kwargs.pop('has_bg', True)
-    tab_style = kwargs.pop('tab_style', 'vc8').strip().upper()
+    style = kwargs.pop("style", 0)
+    active_color = kwargs.pop("active_color", None)
+    no_drag = kwargs.pop("no_drag", True)
+    no_x = kwargs.pop("no_x", True)
+    no_nav = kwargs.pop("no_nav", True)
+    has_bg = kwargs.pop("has_bg", True)
+    tab_style = kwargs.pop("tab_style", "vc8").strip().upper()
 
     style |= wx.TAB_TRAVERSAL
 
@@ -819,8 +936,8 @@ def add_fnb(parent, id=-1, **kwargs):
     if has_bg:
         style |= fnb.FNB_BACKGROUND_GRADIENT
 
-    style |= getattr(fnb, 'FNB_{}'.format(tab_style))
-    if kwargs.pop('bottom', False):
+    style |= getattr(fnb, "FNB_{}".format(tab_style))
+    if kwargs.pop("bottom", False):
         style |= fnb.FNB_BOTTOM
 
     if active_color is None:
@@ -832,40 +949,40 @@ def add_fnb(parent, id=-1, **kwargs):
     return nb
 
 
-def get_sizer_flags(flags=''):
+def get_sizer_flags(flags=""):
     flag = None
-    for text in (flags or '').replace(' ', '').lower().split(','):
-        if text in ('e', 'exp', 'expand'):
+    for text in (flags or "").replace(" ", "").lower().split(","):
+        if text in ("e", "exp", "expand"):
             f = wx.EXPAND
-        elif text in ('l', 'left'):
+        elif text in ("l", "left"):
             f = wx.LEFT
-        elif text in ('r', 'right'):
+        elif text in ("r", "right"):
             f = wx.RIGHT
-        elif text in ('t', 'top'):
+        elif text in ("t", "top"):
             f = wx.TOP
-        elif text in ('b', 'bot', 'bottom'):
+        elif text in ("b", "bot", "bottom"):
             f = wx.BOTTOM
-        elif text in ('a', 'all'):
+        elif text in ("a", "all"):
             f = wx.ALL
-        elif text in ('sh', 'shaped'):
+        elif text in ("sh", "shaped"):
             f = wx.SHAPED
-        elif text in ('fix', 'fixed'):
+        elif text in ("fix", "fixed"):
             f = wx.FIXED_MINSIZE
-        elif text in ('hide', 'hidden'):
+        elif text in ("hide", "hidden"):
             f = wx.RESERVE_SPACE_EVEN_IF_HIDDEN
-        elif text in ('ac', 'center', 'centre'):
+        elif text in ("ac", "center", "centre"):
             f = wx.ALIGN_CENTER
-        elif text in ('al', 'a_left'):
+        elif text in ("al", "a_left"):
             f = wx.ALIGN_LEFT
-        elif text in ('ar', 'a_right'):
+        elif text in ("ar", "a_right"):
             f = wx.ALIGN_RIGHT
-        elif text in ('at', 'a_top'):
+        elif text in ("at", "a_top"):
             f = wx.ALIGN_TOP
-        elif text in ('ab', 'a_bot', 'a_bottom'):
+        elif text in ("ab", "a_bot", "a_bottom"):
             f = wx.ALIGN_BOTTOM
-        elif text in ('acv', 'a_center_v', 'a_centre_v'):
+        elif text in ("acv", "a_center_v", "a_centre_v"):
             f = wx.ALIGN_CENTER_VERTICAL
-        elif text in ('ach', 'a_center_h', 'a_centre_h'):
+        elif text in ("ach", "a_center_h", "a_centre_h"):
             f = wx.ALIGN_CENTER_HORIZONTAL
         else:
             continue
@@ -881,26 +998,26 @@ def get_sizer_flags(flags=''):
     return flag
 
 
-def pack(wgt, sizer='h', **kwargs):
-    if sizer == 'h':
+def pack(wgt, sizer="h", **kwargs):
+    if sizer == "h":
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-    elif sizer == 'v':
+    elif sizer == "v":
         sizer = wx.BoxSizer(wx.VERTICAL)
     elif not sizer:
         return
 
-    kargs = dict(flag=get_sizer_flags(kwargs.get('flag')))
-    border = kwargs.get('border', 3)
+    kargs = dict(flag=get_sizer_flags(kwargs.get("flag")))
+    border = kwargs.get("border", 3)
     if border:
         kargs.update(border=border)
 
-    sizer.Add(wgt, kwargs.get('prop', 0), **kargs)
+    sizer.Add(wgt, kwargs.get("prop", 0), **kargs)
     return sizer
 
 
 def sort_wgts(wgts=[], **kwargs):
     lst = []
-    last_prop = kwargs.get('last_prop', 1)
+    last_prop = kwargs.get("last_prop", 1)
     size = len(wgts)
     for i, wgt in enumerate(wgts, 1):
         if isinstance(wgt, (tuple, list)):
@@ -912,10 +1029,10 @@ def sort_wgts(wgts=[], **kwargs):
 
 
 def about_box(**kwargs):
-    t = kwargs.pop('t', None)
+    t = kwargs.pop("t", None)
     info = AboutDialogInfo()
-    icon = kwargs.pop('icon', None)
-    icon_fmt = kwargs.pop('icon_fmt', None)
+    icon = kwargs.pop("icon", None)
+    icon_fmt = kwargs.pop("icon_fmt", None)
     if icon:
         if isinstance(icon, six.string_types):
             args = [icon]
@@ -926,26 +1043,26 @@ def about_box(**kwargs):
         else:
             info.SetIcon(icon)  # may be PyEmbeddedImage
 
-    name = kwargs.pop('name', 'app name')
-    version = kwargs.pop('version', '0.1')
-    description = kwargs.pop('description', 'description')
-    copyright = kwargs.pop('copyright', 'copyright')
+    name = kwargs.pop("name", "app name")
+    version = kwargs.pop("version", "0.1")
+    description = kwargs.pop("description", "description")
+    copyright = kwargs.pop("copyright", "copyright")
     info.SetName(wdu.ttt(name, t))
     info.SetVersion(wdu.ttt(version, t))
     info.SetDescription(wdu.ttt(description, t))
     info.SetCopyright(wdu.ttt(copyright, t))
-    website = kwargs.pop('website', '')
+    website = kwargs.pop("website", "")
     if website:
         info.SetWebSite(website)
 
-    licence = kwargs.pop('licence', '')
+    licence = kwargs.pop("licence", "")
     if licence:
         info.SetLicence(licence)
 
-    developers = kwargs.pop('developers', [])
-    doc_writers = kwargs.pop('doc_writers', [])
-    artists = kwargs.pop('artists', [])
-    tranlators = kwargs.pop('tranlators', [])
+    developers = kwargs.pop("developers", [])
+    doc_writers = kwargs.pop("doc_writers", [])
+    artists = kwargs.pop("artists", [])
+    tranlators = kwargs.pop("tranlators", [])
     [info.AddDeveloper(developer) for developer in developers]
     [info.AddDocWriter(writer) for writer in doc_writers]
     [info.AddArtist(artist) for artist in artists]
@@ -954,26 +1071,26 @@ def about_box(**kwargs):
 
 
 def adjust_opened_dlg(self, inc=1):
-    if hasattr(self, 'opened_dlg') and self.opened_dlg is not None:
+    if hasattr(self, "opened_dlg") and self.opened_dlg is not None:
         self.opened_dlg += inc
 
 
 def quick_quit(self, **kwargs):
     """Quick handy method to ask for quit."""
-    need_confirm = kwargs.pop('need_confirm', True)
-    need_password = kwargs.pop('need_password', '')
-    other_clean_work = kwargs.pop('other_clean_work', None)
-    if hasattr(self, 'is_running') and self.is_running:
-        caption = kwargs.pop('running_caption', 'Warning')
-        msg = kwargs.pop('running_msg', 'Please stop current running task')
-        icon = kwargs.pop('running_icon', 'w')
+    need_confirm = kwargs.pop("need_confirm", True)
+    need_password = kwargs.pop("need_password", "")
+    other_clean_work = kwargs.pop("other_clean_work", None)
+    if hasattr(self, "is_running") and self.is_running:
+        caption = kwargs.pop("running_caption", "Warning")
+        msg = kwargs.pop("running_msg", "Please stop current running task")
+        icon = kwargs.pop("running_icon", "w")
         popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         return
 
-    if hasattr(self, 'tray') and self.opened_dlg > 0:
-        caption = kwargs.pop('opened_caption', 'Warning')
-        msg = kwargs.pop('opened_msg', 'Please close other dialogs')
-        icon = kwargs.pop('opened_icon', 'w')
+    if hasattr(self, "tray") and self.opened_dlg > 0:
+        caption = kwargs.pop("opened_caption", "Warning")
+        msg = kwargs.pop("opened_msg", "Please close other dialogs")
+        icon = kwargs.pop("opened_icon", "w")
         popup(self, caption=caption, msg=msg, icon=icon, **kwargs)
         return
 
@@ -986,37 +1103,39 @@ def quick_quit(self, **kwargs):
 
     elif need_confirm:
         adjust_opened_dlg(self, 1)
-        answer = popup(self,
-                       caption=kwargs.pop('ask_caption', 'Confirmation'),
-                       msg=kwargs.pop('ask_msg', 'Are you sure to quit?'),
-                       icon=kwargs.pop('ask_icon', 'q'),
-                       btn=kwargs.pop('btn', wx.YES_NO | wx.NO_DEFAULT),
-                       **kwargs)
+        answer = popup(
+            self,
+            caption=kwargs.pop("ask_caption", "Confirmation"),
+            msg=kwargs.pop("ask_msg", "Are you sure to quit?"),
+            icon=kwargs.pop("ask_icon", "q"),
+            btn=kwargs.pop("btn", wx.YES_NO | wx.NO_DEFAULT),
+            **kwargs
+        )
         adjust_opened_dlg(self, -1)
         if answer == wx.ID_NO:
             return
 
     self.Hide()
-    if hasattr(self, 'hm'):
+    if hasattr(self, "hm"):
         try:
             self.hm.UnhookKeyboard()
-        except:
+        except Exception:
             pass
 
         try:
             self.hm.UnhookMouse()
-        except:
+        except Exception:
             pass
 
-    if hasattr(self, 'stop_timers'):
+    if hasattr(self, "stop_timers"):
         self.stop_timers(delete=True)
 
-    if hasattr(self, 'tbicon') and self.tbicon is not None:
+    if hasattr(self, "tbicon") and self.tbicon is not None:
         self.tbicon.Destroy()
 
     if other_clean_work:
         other_clean_work()
-    elif hasattr(self, 'other_clean_work'):
+    elif hasattr(self, "other_clean_work"):
         self.other_clean_work()
 
     self.Destroy()
@@ -1024,15 +1143,19 @@ def quick_quit(self, **kwargs):
 
 
 def quick_about(*args, **kwargs):
-    fmt = kwargs.pop('fmt', ABOUT_FORMAT)
-    t = kwargs.get('t', None)
-    copyright = kwargs.pop('copyright', wdu.get_copy_right())
-    authors = kwargs.pop('author', None)
-    writers = kwargs.pop('writers', None)
-    remark = kwargs.pop('remark', 'about this tool')
-    description = fmt.format(wdu.ttt(remark, t), sys.version.split()[0],
-                             wx.VERSION_STRING, ', '.join(wx.PlatformInfo[1:]),
-                             wdu.get_platform_info())
+    fmt = kwargs.pop("fmt", ABOUT_FORMAT)
+    t = kwargs.get("t", None)
+    copyright = kwargs.pop("copyright", wdu.get_copy_right())
+    authors = kwargs.pop("author", None)
+    writers = kwargs.pop("writers", None)
+    remark = kwargs.pop("remark", "about this tool")
+    description = fmt.format(
+        wdu.ttt(remark, t),
+        sys.version.split()[0],
+        wx.VERSION_STRING,
+        ", ".join(wx.PlatformInfo[1:]),
+        wdu.get_platform_info(),
+    )
     if authors:
         if not isinstance(authors, list):
             authors = [authors]
@@ -1045,17 +1168,20 @@ def quick_about(*args, **kwargs):
 
         kwargs.update(doc_writers=writers)
 
-    about_info = dict(description=description,
-                      copyright=copyright.replace('&', '&&'), **kwargs)
+    about_info = dict(
+        description=description,
+        copyright=copyright.replace("&", "&&"),
+        **kwargs
+    )
     about_box(**about_info)
 
 
-def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
+def quick_pack(sizer=None, wgts=[], orient="h", **kwargs):
     if not sizer:
         return
 
     ws = sort_wgts(wgts, **kwargs)
-    kargs = dict(flag=kwargs.get('flag'), border=kwargs.get('border', 3))
+    kargs = dict(flag=kwargs.get("flag"), border=kwargs.get("border", 3))
     box = pack(ws[0][0], sizer=orient, prop=ws[0][1], **kargs)
     for wgt, pr in ws[1:]:
         pack(wgt, box, prop=pr, **kargs)
@@ -1064,48 +1190,64 @@ def quick_pack(sizer=None, wgts=[], orient='h', **kwargs):
     return box
 
 
-def quick_open_file(parent, sizer=None, label='Select File', **kwargs):
-    value = kwargs.pop('value', '')
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    kwargs.pop('tkw', None)
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         label=label, fg=fg, bg=bg, t=kwargs.get('t'),
-                         name=kwargs.pop('fname', 'wxStaticText'))
+def quick_open_file(parent, sizer=None, label="Select File", **kwargs):
+    value = kwargs.pop("value", "")
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    kwargs.pop("tkw", None)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        label=label,
+        fg=fg,
+        bg=bg,
+        t=kwargs.get("t"),
+        name=kwargs.pop("fname", "wxStaticText"),
+    )
 
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)), **kwargs)
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(skw, size=kwargs.pop("ssize", (-1, -1)), **kwargs)
     lbl = add_label(parent, **fkw)
     fp, tc, btn = add_file_picker(parent, value=value, **skw)
     quick_pack(sizer, wgts=[lbl, fp])
     return lbl, fp, tc, btn
 
 
-def quick_open_folder(parent, sizer=None, label='Select Folder', **kwargs):
-    fg = kwargs.pop('fg', None)
-    bg = kwargs.pop('bg', None)
-    kwargs.pop('tkw', None)
-    fkw = kwargs.pop('fkw', {})
-    update_widget_kwargs(fkw, size=kwargs.pop('fsize', (-1, -1)),
-                         label=label, fg=fg, bg=bg, t=kwargs.get('t'),
-                         name=kwargs.pop('fname', 'wxStaticText'))
+def quick_open_folder(parent, sizer=None, label="Select Folder", **kwargs):
+    fg = kwargs.pop("fg", None)
+    bg = kwargs.pop("bg", None)
+    kwargs.pop("tkw", None)
+    fkw = kwargs.pop("fkw", {})
+    update_widget_kwargs(
+        fkw,
+        size=kwargs.pop("fsize", (-1, -1)),
+        label=label,
+        fg=fg,
+        bg=bg,
+        t=kwargs.get("t"),
+        name=kwargs.pop("fname", "wxStaticText"),
+    )
 
-    skw = kwargs.pop('skw', {})
-    update_widget_kwargs(skw, size=kwargs.pop('ssize', (-1, -1)),
-                         value=kwargs.pop('value', ''), **kwargs)
+    skw = kwargs.pop("skw", {})
+    update_widget_kwargs(
+        skw,
+        size=kwargs.pop("ssize", (-1, -1)),
+        value=kwargs.pop("value", ""),
+        **kwargs
+    )
     lbl = add_label(parent, **fkw)
     fp, tc, btn = add_dir_picker(parent, **skw)
     quick_pack(sizer, wgts=[lbl, fp])
     return lbl, fp, tc, btn
 
 
-def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
+def quick_entry(parent=None, caption="", msg="Enter", password=True, **kwargs):
     entry_cls = wx.PasswordEntryDialog if password else wx.TextEntryDialog
-    t = kwargs.pop('t', None)
-    root_pass = kwargs.pop('root_pass', 'guess')
-    ok_label = kwargs.pop('ok_label', None)
-    cancel_label = kwargs.pop('cancel_label', None)
+    t = kwargs.pop("t", None)
+    root_pass = kwargs.pop("root_pass", "guess")
+    ok_label = kwargs.pop("ok_label", None)
+    cancel_label = kwargs.pop("cancel_label", None)
     font = wxu.auto_get_font(parent, **kwargs)
     dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
     # update button labels for i18n
@@ -1121,13 +1263,13 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
         ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
         c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
         [set_font(wgt, font) for wgt in (msg_wgt, ok_btn, c_btn)]
-    except:
+    except Exception:
         pass
 
     size = dlg.GetClientSize()
     dlg.SetMinClientSize(size)
     dlg.SetMaxClientSize(size)
-    dlg.SetValue(kwargs.pop('value', ''))
+    dlg.SetValue(kwargs.pop("value", ""))
     set_font(dlg, font)
     while 1:
         dlg.SetFocus()
@@ -1144,37 +1286,39 @@ def quick_entry(parent=None, caption='', msg='Enter', password=True, **kwargs):
                     dlg.Destroy()
                     return text
 
-            dlg.SetValue('')
+            dlg.SetValue("")
             dlg.SetFocus()
             continue
 
         dlg.Destroy()
-        return False if password else ''
+        return False if password else ""
 
 
-def quick_password_entry(parent=None, caption='Security Check', **kwargs):
-    msg = kwargs.pop('msg', 'Please enter password:')
+def quick_password_entry(parent=None, caption="Security Check", **kwargs):
+    msg = kwargs.pop("msg", "Please enter password:")
     return quick_entry(parent, caption=caption, msg=msg, **kwargs)
 
 
-def quick_text_entry(parent=None, caption='Enter Something', **kwargs):
-    msg = kwargs.pop('msg', 'Please enter something: ')
-    return quick_entry(parent, caption=caption, msg=msg, password=False,
-                       **kwargs)
+def quick_text_entry(parent=None, caption="Enter Something", **kwargs):
+    msg = kwargs.pop("msg", "Please enter something: ")
+    return quick_entry(
+        parent, caption=caption, msg=msg, password=False, **kwargs
+    )
 
 
-def quick_choice(parent=None, msg='Please select', **kwargs):
-    t = kwargs.pop('t', None)
-    caption = kwargs.pop('caption', 'Please select')
-    choices = kwargs.pop('choices', [])
-    valid_choices = kwargs.pop('valid_choices', [])
-    style = kwargs.pop('style', wx.CHOICEDLG_STYLE)
-    dlg = wx.SingleChoiceDialog(parent, wdu.ttt(msg, t), wdu.ttt(caption, t),
-                                choices, style)
+def quick_choice(parent=None, msg="Please select", **kwargs):
+    t = kwargs.pop("t", None)
+    caption = kwargs.pop("caption", "Please select")
+    choices = kwargs.pop("choices", [])
+    valid_choices = kwargs.pop("valid_choices", [])
+    style = kwargs.pop("style", wx.CHOICEDLG_STYLE)
+    dlg = wx.SingleChoiceDialog(
+        parent, wdu.ttt(msg, t), wdu.ttt(caption, t), choices, style
+    )
     font = wxu.auto_get_font(parent, **kwargs)
     set_font(dlg, font)
-    ok_label = kwargs.pop('ok_label', None)
-    cancel_label = kwargs.pop('cancel_label', None)
+    ok_label = kwargs.pop("ok_label", None)
+    cancel_label = kwargs.pop("cancel_label", None)
     # update button labels for i18n
     try:
         sizers = dlg.Sizer.GetChildren()
@@ -1190,7 +1334,7 @@ def quick_choice(parent=None, msg='Please select', **kwargs):
         set_font(msg_wgt, font)
         set_font(ok_btn, font)
         set_font(c_btn, font)
-    except:
+    except Exception:
         pass
 
     while 1:
@@ -1208,8 +1352,32 @@ def quick_choice(parent=None, msg='Please select', **kwargs):
     return None
 
 
-def quick_big_buttons(self, parent, start=True, setting=True, hide=True,
-                      changes=True, about=True, **kwargs):
+def add_start_button(self, parent, label="Start", size=(-1, 45), **kwargs):
+    font = kwargs.pop("font", None)
+    if not font:
+        font = self.GetFont()
+        font.SetWeight(wx.BOLD)
+
+    kw = dict(size=size, font=font, t=getattr(self, "t", None))
+    kw.update(kwargs)
+    btn = wxw.add_button(
+        parent, label=label, **kw
+    )
+    btn.Bind(wx.EVT_BUTTON, self.on_start)
+    btn.SetFocus()
+    return btn
+
+
+def quick_big_buttons(
+    self,
+    parent,
+    start=True,
+    setting=True,
+    hide=True,
+    changes=True,
+    about=True,
+    **kwargs
+):
     font = wxu.auto_get_font(self, **kwargs)
     if not font:
         font = self.GetFont()
@@ -1219,29 +1387,29 @@ def quick_big_buttons(self, parent, start=True, setting=True, hide=True,
     kw.update(kwargs)
     buttons = []
     if start:
-        start_btn = add_button(parent, label='Start', **kw)
+        start_btn = add_button(parent, label="Start", **kw)
         start_btn.Bind(wx.EVT_BUTTON, self.on_start)
-        buttons.append((start_btn, 'Start'))
+        buttons.append((start_btn, "Start"))
 
     if setting:
-        setting_btn = add_button(parent, label='Settings', **kw)
+        setting_btn = add_button(parent, label="Settings", **kw)
         setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
-        buttons.append((setting_btn, 'Settings'))
+        buttons.append((setting_btn, "Settings"))
 
     if hide:
-        hide_btn = add_button(parent, label='Hide', **kw)
+        hide_btn = add_button(parent, label="Hide", **kw)
         hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
-        buttons.append((hide_btn, 'Hide'))
+        buttons.append((hide_btn, "Hide"))
 
     if changes:
-        changes_btn = add_button(parent, label='Changes', **kw)
+        changes_btn = add_button(parent, label="Changes", **kw)
         changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
-        buttons.append((changes_btn, 'Changes'))
+        buttons.append((changes_btn, "Changes"))
 
     if about:
-        about_btn = add_button(parent, label='About', **kw)
+        about_btn = add_button(parent, label="About", **kw)
         about_btn.Bind(wx.EVT_BUTTON, self.on_about)
-        buttons.append((about_btn, 'About'))
+        buttons.append((about_btn, "About"))
 
     return buttons
 

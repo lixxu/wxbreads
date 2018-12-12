@@ -9,15 +9,31 @@ import wx
 import wx.richtext as rt
 import windbreads.utils as wdu
 
-RTC_ALIGNS = dict(default=wx.TEXT_ALIGNMENT_DEFAULT,
-                  left=wx.TEXT_ALIGNMENT_LEFT,
-                  centre=wx.TEXT_ALIGNMENT_CENTRE,
-                  center=wx.TEXT_ALIGNMENT_CENTER,
-                  right=wx.TEXT_ALIGNMENT_RIGHT,
-                  )
-CHINESE_FONTS = ('微软雅黑', '雅黑', 'microsoft yahei', '黑体', '宋体', '新宋体',
-                 '仿宋', '楷体', 'simhei', 'heiti', 'simsun', 'nsimsun',
-                 'fangsong', 'kaiti', 'mingliu', 'pmingliu')
+RTC_ALIGNS = dict(
+    default=wx.TEXT_ALIGNMENT_DEFAULT,
+    left=wx.TEXT_ALIGNMENT_LEFT,
+    centre=wx.TEXT_ALIGNMENT_CENTRE,
+    center=wx.TEXT_ALIGNMENT_CENTER,
+    right=wx.TEXT_ALIGNMENT_RIGHT,
+)
+CHINESE_FONTS = (
+    "微软雅黑",
+    "雅黑",
+    "microsoft yahei",
+    "黑体",
+    "宋体",
+    "新宋体",
+    "仿宋",
+    "楷体",
+    "simhei",
+    "heiti",
+    "simsun",
+    "nsimsun",
+    "fangsong",
+    "kaiti",
+    "mingliu",
+    "pmingliu",
+)
 
 
 def get_text_width(text, wgt):
@@ -31,7 +47,7 @@ def get_adjust_size(size=(-1, -1), **kwargs):
     if size == (-1, -1):
         return size
 
-    ratio_size = kwargs.get('ratio_size', (1600, 900))
+    ratio_size = kwargs.get("ratio_size", (1600, 900))
     w, h = size
     rw, rh = ratio_size
     dw, dh = wx.GetDisplaySize()
@@ -57,12 +73,12 @@ def require_int(evt, min_value=1, max_value=-1):
 
 
 def auto_get_font(obj=None, **kwargs):
-    if 'font' in kwargs:
-        return kwargs['font']
+    if "font" in kwargs:
+        return kwargs["font"]
 
     try:
         return obj.auto_font()
-    except:
+    except Exception:
         pass
 
     return None
@@ -72,7 +88,7 @@ def get_chinese_fonts():
     e = wx.FontEnumerator()
     e.EnumerateFacenames()
     fonts = []
-    for name in (f for f in e.GetFacenames() if not f.startswith('@')):
+    for name in (f for f in e.GetFacenames() if not f.startswith("@")):
         if name.lower().startswith(CHINESE_FONTS):
             fonts.append(name)
 
@@ -96,23 +112,23 @@ def pydate2wxdate(date):
 
 def wxdate2pydate(date):
     if date.IsValid():
-        return datetime.date(*(map(int, date.FormatISODate().split('-'))))
+        return datetime.date(*(map(int, date.FormatISODate().split("-"))))
 
     return None
 
 
 def cat_echo_text(**kwargs):
-    args = kwargs.get('args')
-    kargs = kwargs.get('kargs')
-    t = kwargs.get('t')
-    text = kwargs.get('text', '')
+    args = kwargs.get("args")
+    kargs = kwargs.get("kargs")
+    t = kwargs.get("t")
+    text = kwargs.get("text", "")
     if text:
         if kargs:
             return wdu.ttt(text, t).format(**kargs)
 
         if args:
             if not isinstance(args, (tuple, list)):
-                args = (args, )
+                args = (args,)
 
             return wdu.ttt(text, t).format(*args)
 
@@ -122,15 +138,15 @@ def cat_echo_text(**kwargs):
 
 
 def write_echo_text(**kwargs):
-    ts_text = kwargs.get('ts_text')
-    if kwargs.get('tff'):  # t for file
+    ts_text = kwargs.get("ts_text")
+    if kwargs.get("tff"):  # t for file
         text = cat_echo_text(**kwargs)
     else:
         kargs = kwargs.copy()
         kargs.update(t=None)
         text = cat_echo_text(**kargs)
 
-    encoding = kwargs.get('encoding', 'utf-8')
+    encoding = kwargs.get("encoding", "utf-8")
     if six.PY2 and isinstance(text, six.text_type):
         text = text.encode(encoding)
     elif six.PY3:
@@ -138,11 +154,11 @@ def write_echo_text(**kwargs):
         if ts_text:
             ts_text = bytes(ts_text, encoding)
 
-    nl = kwargs.get('nl', True)
-    log_mode = kwargs.get('log_mode', 'a' if six.PY2 else 'ab')
+    nl = kwargs.get("nl", True)
+    log_mode = kwargs.get("log_mode", "a" if six.PY2 else "ab")
 
-    log_file = kwargs.get('log_file')
-    log_files = kwargs.get('log_files', [])
+    log_file = kwargs.get("log_file")
+    log_files = kwargs.get("log_files", [])
     if log_file:
         log_files = [log_file]
 
@@ -156,30 +172,45 @@ def write_echo_text(**kwargs):
                 f.write(wdu.NEW_LINE)
 
 
-def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
-              align=None, underline=False, bold=False, ts_style=False,
-              font=None, size=None, clear=False, keep_date=True, **kwargs):
+def echo_text(
+    rtc,
+    text="",
+    fg=None,
+    bg=None,
+    ts=True,
+    nl=True,
+    italic=False,
+    align=None,
+    underline=False,
+    bold=False,
+    ts_style=False,
+    font=None,
+    size=None,
+    clear=False,
+    keep_date=True,
+    **kwargs
+):
     if ts:
         now = datetime.now()
         if keep_date:
-            ts_text = '[{}] '.format(now)
+            ts_text = "[{}] ".format(now)
         else:
-            ts_text = '[{}] '.format(str(now).split(' ', 1)[-1])
+            ts_text = "[{}] ".format(str(now).split(" ", 1)[-1])
 
     else:
-        ts_text = ''
+        ts_text = ""
 
     if text and isinstance(text, six.string_types):
         if not isinstance(text, six.text_type):
-            utext = text.decode(wdu.detect_encoding(text)['encoding'])
+            utext = text.decode(wdu.detect_encoding(text)["encoding"])
         else:
             utext = text
 
     else:
-        utext = '{}'.format(text)
+        utext = "{}".format(text)
 
     write_echo_text(ts_text=ts_text, text=utext, nl=nl, **kwargs)
-    if kwargs.get('no_echo', False):
+    if kwargs.get("no_echo", False):
         if clear:
             rtc.Clear()
 
@@ -187,9 +218,9 @@ def echo_text(rtc, text='', fg=None, bg=None, ts=True, nl=True, italic=False,
 
     rtc.SetInsertionPointEnd()
     rta = rt.RichTextAttr()
-    rta.SetAlignment(RTC_ALIGNS['default'])
-    rta.SetTextColour('black')
-    rta.SetBackgroundColour('white')
+    rta.SetAlignment(RTC_ALIGNS["default"])
+    rta.SetTextColour("black")
+    rta.SetBackgroundColour("white")
     rta.SetFontStyle(wx.FONTSTYLE_NORMAL)
     rta.SetFontWeight(wx.FONTWEIGHT_NORMAL)
     rta.SetFontUnderlined(False)
@@ -252,7 +283,7 @@ def on_echoing(self, **kwargs):
 
     self.is_echoing = True
     i = 0
-    batch = kwargs.get('batch', 100)
+    batch = kwargs.get("batch", 100)
     while i < batch and self.echo_lines:
         line = self.echo_lines.pop(0)
         self.echo_text(line[0], **line[1])
@@ -279,7 +310,7 @@ def stop_timers(timers=[], delete=False):
     [stop_timer(timer, delete) for timer in timers]
 
 
-def update_clock_statusbar(sbar, ts_fmt='%Y/%b/%d %H:%M', idx=2):
+def update_clock_statusbar(sbar, ts_fmt="%Y/%b/%d %H:%M", idx=2):
     set_status_text(sbar, strftime(ts_fmt), idx)
 
 
@@ -288,7 +319,7 @@ def set_status_text(sbar, text, idx, t=None):
 
 
 def on_popup_lang(self, evt):
-    if not hasattr(self, 'english_id'):
+    if not hasattr(self, "english_id"):
         self.english_id = wx.NewIdRef()
         self.chinese_id = wx.NewIdRef()
 
@@ -296,9 +327,9 @@ def on_popup_lang(self, evt):
         self.Bind(wx.EVT_MENU, self.popup_lang, id=self.chinese_id)
 
     menu = wx.Menu()
-    menu.Append(self.english_id, 'English', '', wx.ITEM_RADIO)
-    menu.Append(self.chinese_id, 'Chinese - 简体中文', '', wx.ITEM_RADIO)
-    if self.lang == 'zh':
+    menu.Append(self.english_id, "English", "", wx.ITEM_RADIO)
+    menu.Append(self.chinese_id, "Chinese - 简体中文", "", wx.ITEM_RADIO)
+    if self.lang == "zh":
         menu.Check(self.chinese_id, True)
     else:
         menu.Check(self.english_id, True)
@@ -308,7 +339,7 @@ def on_popup_lang(self, evt):
 
 
 def popup_lang(self, evt):
-    lang = 'zh' if evt.GetId() == self.chinese_id else 'en'
+    lang = "zh" if evt.GetId() == self.chinese_id else "en"
     if lang != self.lang:
         self.lang = lang
         self.update_t()
@@ -319,9 +350,9 @@ def popup_lang(self, evt):
 
 
 def update_ui_lang(self, refresh=True):
-    if hasattr(self, 'lang_wgts'):
+    if hasattr(self, "lang_wgts"):
         for lwgt in self.lang_wgts:
-            tooltip = ''
+            tooltip = ""
             if len(lwgt) == 2:
                 wgt, label = lwgt
             else:
@@ -333,7 +364,7 @@ def update_ui_lang(self, refresh=True):
             wgt.SetLabel(self.tt(label))
 
     if refresh:
-        if getattr(self, 'panel'):
+        if getattr(self, "panel"):
             self.panel.Layout()
 
         self.Refresh()
