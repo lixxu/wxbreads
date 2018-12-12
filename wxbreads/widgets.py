@@ -1360,9 +1360,7 @@ def add_start_button(self, parent, label="Start", size=(-1, 45), **kwargs):
 
     kw = dict(size=size, font=font, t=getattr(self, "t", None))
     kw.update(kwargs)
-    btn = wxw.add_button(
-        parent, label=label, **kw
-    )
+    btn = add_button(parent, label=label, **kw)
     btn.Bind(wx.EVT_BUTTON, self.on_start)
     btn.SetFocus()
     return btn
