@@ -1248,8 +1248,24 @@ def quick_entry(parent=None, caption="", msg="Enter", password=True, **kwargs):
     root_pass = kwargs.pop("root_pass", "guess")
     ok_label = kwargs.pop("ok_label", None)
     cancel_label = kwargs.pop("cancel_label", None)
+    style = kwargs.pop("style", None)
+    pos = kwargs.pop("pos", None)
+    size = kwargs.pop("size", None)
+    show_help = kwargs.pop("show_help", None)
+    help_extra = kwargs.pop("help_extra", {})
+    kw = {}
+    if style is not None:
+        kw.update(style=style)
+
+    if pos is not None:
+        kw.update(pos=pos)
+
+    kw.update(value=kwargs.pop("value", ""))
     font = wxu.auto_get_font(parent, **kwargs)
-    dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t))
+    dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t), **kw)
+    if font is not None:
+        set_font(dlg, font)
+
     # update button labels for i18n
     try:
         sizers = dlg.Sizer.GetChildren()
@@ -1262,16 +1278,28 @@ def quick_entry(parent=None, caption="", msg="Enter", password=True, **kwargs):
         ok_btn, c_btn = items[1].GetWindow(), items[2].GetWindow()
         ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
         c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
-        [set_font(wgt, font) for wgt in (msg_wgt, ok_btn, c_btn)]
+        if show_help:
+            help_label = help_extra.get("label", wdu.ttt("Help", t))
+            help_btn = add_button(
+                dlg, label=help_label, size=(-1, ok_btn.GetSize().height),
+            )
+            pack(help_btn, btn_sizer)
+            help_func = help_extra.get("event_func")
+            if help_func:
+                dlg.Bind(wx.EVT_BUTTON, help_func, help_btn)
+
+        if font is not None:
+            [set_font(wgt, font) for wgt in (msg_wgt, ok_btn, c_btn)]
+
     except Exception:
         pass
 
-    size = dlg.GetClientSize()
+    if not size:
+        size = dlg.GetClientSize()
+
     dlg.SetMinClientSize(size)
     dlg.SetMaxClientSize(size)
-    dlg.SetValue(kwargs.pop("value", ""))
-    set_font(dlg, font)
-    while 1:
+    while True:
         dlg.SetFocus()
         if dlg.ShowModal() == wx.ID_OK:
             text = dlg.GetValue()
