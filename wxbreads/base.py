@@ -345,7 +345,7 @@ class BaseDialog(wx.Dialog, BaseBase):
         self, sizer, parent=None, ok_text="Save", cancel_text="Cancel"
     ):
         ok_btn, cancel_btn = wxw.add_ok_buttons(
-            parent or self, vbox, ok_text=ok_text, cancel_text=cancel_text
+            parent or self, sizer, ok_text=ok_text, cancel_text=cancel_text
         )
         ok_btn.Bind(wx.EVT_BUTTON, self.on_save)
         cancel_btn.Bind(wx.EVT_BUTTON, self.on_quit)
