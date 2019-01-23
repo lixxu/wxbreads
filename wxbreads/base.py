@@ -293,6 +293,26 @@ class BaseBase(object):
     def start_delay_work(self, c_func, w_func, **kwargs):
         delayedresult.startWorker(c_func, w_func, **kwargs)
 
+    def create_scrolled_panel(self, parent=None, id=-1, style=None, **kwargs):
+        return scrolled.ScrolledPanel(
+            parent or self, id, style=style or SCROLLED_STYLE, **kwargs
+        )
+
+    def create_cp(self, parent, style=None, label="Show", bind=None, **kwargs):
+        self.cp = cp = wx.CollapsiblePane(
+            parent, label=self.tt(label), style=style or CP_STYLE
+        )
+        if bind:
+            self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, bind, cp)
+
+    def layout_scrolled_panel(self, panel, sizer=None):
+        if sizer:
+            panel.SetSizer(sizer)
+            sizer.Fit(self)
+
+        panel.SetAutoLayout(True)
+        panel.SetupScrolling()
+
 
 class BaseDialog(wx.Dialog, BaseBase):
     app_name = "Dialog"
@@ -381,26 +401,6 @@ class BaseWindow(wx.Frame, BaseBase):
     def on_changes(self, evt):
         if evt:
             evt.Skip()
-
-    def create_scrolled_panel(self, parent=None, id=-1, style=None, **kwargs):
-        return scrolled.ScrolledPanel(
-            parent or self, id, style=style or SCROLLED_STYLE, **kwargs
-        )
-
-    def create_cp(self, parent, style=None, label="Show", bind=None, **kwargs):
-        self.cp = cp = wx.CollapsiblePane(
-            self.panel, label=self.tt(label), style=style or CP_STYLE
-        )
-        if bind:
-            self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, bind, cp)
-
-    def layout_scrolled_panel(self, panel, sizer=None):
-        if sizer:
-            panel.SetSizer(sizer)
-            sizer.Fit(self)
-
-        panel.SetAutoLayout(True)
-        panel.SetupScrolling()
 
     def setup_base_big_buttons(self, parent, sizer, **kwargs):
         buttons = wxw.quick_big_buttons(self, parent, t=self.t, **kwargs)
@@ -570,7 +570,6 @@ class BaseWindow(wx.Frame, BaseBase):
             self.opened_dlg = 0
             self.has_tray = True
         except Exception:
-            raise
             self.tbicon = None
 
     def update_t(self):
@@ -704,6 +703,9 @@ class BaseWindow(wx.Frame, BaseBase):
 
     def update_ui_lang(self, refresh=True):
         wxu.update_ui_lang(self, refresh)
+
+
+BaseFrame = BaseWindow
 
 
 def run_app(window_class, *args, **kwargs):
