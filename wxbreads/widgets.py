@@ -1260,7 +1260,11 @@ def quick_entry(parent=None, caption="", msg="Enter", password=True, **kwargs):
     if pos is not None:
         kw.update(pos=pos)
 
-    kw.update(value=kwargs.pop("value", ""))
+    if password:
+        kw.update(defaultValue=kwargs.pop("value", ""))
+    else:
+        kw.update(value=kwargs.pop("value", ""))
+
     font = wxu.auto_get_font(parent, **kwargs)
     dlg = entry_cls(parent, wdu.ttt(msg, t), wdu.ttt(caption, t), **kw)
     if font is not None:
