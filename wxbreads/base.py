@@ -336,15 +336,19 @@ class BaseDialog(wx.Dialog, BaseBase):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.setup_other_ui(vbox)
+        self.setup_ok_cancel_buttons(parent, ok_text, cancel_text)
 
+        self.SetSizer(vbox)
+        vbox.Fit(self)
+
+    def setup_ok_cancel_buttons(
+        self, sizer, parent=None, ok_text="Save", cancel_text="Cancel"
+    ):
         ok_btn, cancel_btn = wxw.add_ok_buttons(
             parent or self, vbox, ok_text=ok_text, cancel_text=cancel_text
         )
         ok_btn.Bind(wx.EVT_BUTTON, self.on_save)
         cancel_btn.Bind(wx.EVT_BUTTON, self.on_quit)
-
-        self.SetSizer(vbox)
-        vbox.Fit(self)
 
     def on_save(self, evt):
         pass
