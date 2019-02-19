@@ -494,15 +494,19 @@ def select_save_file(parent, msg="Save file as...", **kwargs):
 
 
 def add_staticbox(parent, id=-1, label="", orient="v", **kwargs):
-    sbox = wx.StaticBox(
+    box = wx.StaticBox(
         parent,
         id,
         wdu.ttt(label, kwargs.pop("t", None)),
         name=kwargs.pop("name", "wxStaticBox"),
     )
-    style = wx.VERTICAL if orient == "v" else wx.HORIZONTAL
-    sbsizer = wx.StaticBoxSizer(sbox, style)
-    return sbox, sbsizer
+    top_bd, other_bd = box.GetBordersForSizer()
+    sizer = wx.BoxSizer(wx.VERTICAL if orient == "v" else wx.HORIZONTAL)
+    sizer.AddSpacer(top_bd)
+    box.SetSizer(sizer)
+    # style = wx.VERTICAL if orient == "v" else wx.HORIZONTAL
+    # sizer = wx.StaticBoxSizer(box, style)
+    return box, sizer
 
 
 def update_widget_kwargs(kw, **kwargs):
@@ -909,6 +913,9 @@ def add_timer(self, timer_id, timer_func, miliseconds=-1, one_shot=False):
     self.Bind(wx.EVT_TIMER, timer_func, id=timer_id)
     if miliseconds > 0:
         wxu.start_timer(timer, miliseconds, one_shot)
+
+    if hasattr(self, "all_timers") and timer not in self.all_timers:
+        self.all_timers.append(timer)
 
     return timer
 

@@ -4,15 +4,24 @@ wxbreads
 
 Small handy snippets of wxpython
 """
+import os.path
 from setuptools import setup
-import wxbreads
+
+folder = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(folder, "wxbreads/__init__.py")) as f:
+    for line in f:
+        if line.startswith("__version__ = "):
+            version = line.split("=")[-1].strip().replace('"', "")
+        elif line.startswith("__author__ = "):
+            author = line.split("=")[-1].strip().replace('"', "")
+            break
 
 setup(
     name="wxbreads",
-    version=wxbreads.__version__,
+    version=version.replace("'", ""),
     url="https://github.com/lixxu/wxbreads",
     license="BSD",
-    author=wxbreads.__author__,
+    author=author.replace("'", ""),
     author_email="xuzenglin@gmail.com",
     description="Small handy snippets of wxpython",
     long_description=__doc__,
@@ -29,5 +38,7 @@ setup(
         "Programming Language :: Python :: 2",
         "Programming Language :: Python :: 3",
         "Topic :: Software Development :: Libraries :: Python Modules",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
     ],
 )

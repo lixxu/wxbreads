@@ -302,8 +302,9 @@ def start_timer(timer, miliseconds=1000, one_shot=False):
 def stop_timer(timer, delete=False):
     if timer.IsRunning():
         timer.Stop()
-        if delete:
-            del timer
+
+    if delete:
+        del timer
 
 
 def stop_timers(timers=[], delete=False):
