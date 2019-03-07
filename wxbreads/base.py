@@ -336,7 +336,9 @@ class BaseDialog(wx.Dialog, BaseBase):
         vbox = wx.BoxSizer(wx.VERTICAL)
 
         self.setup_other_ui(vbox)
-        self.setup_ok_cancel_buttons(parent, ok_text, cancel_text)
+        self.setup_ok_cancel_buttons(
+            vbox, parent=parent, ok_text=ok_text, cancel_text=cancel_text
+        )
 
         self.SetSizer(vbox)
         vbox.Fit(self)
