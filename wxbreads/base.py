@@ -299,11 +299,13 @@ class BaseBase(object):
         )
 
     def create_cp(self, parent, style=None, label="Show", bind=None, **kwargs):
-        self.cp = cp = wx.CollapsiblePane(
+        cp = wx.CollapsiblePane(
             parent, label=self.tt(label), style=style or CP_STYLE
         )
         if bind:
             self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, bind, cp)
+
+        return cp
 
     def layout_scrolled_panel(self, panel, sizer=None):
         if sizer:
