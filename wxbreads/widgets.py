@@ -339,6 +339,14 @@ def add_richtext(parent, id=-1, **kwargs):
     return rtc
 
 
+def quick_add_rtc(
+    parent, sizer, size=(-1, 200), readonly=True, prop=1, flag="e,a"
+):
+    rtc = add_richtext(parent, size=(-1, 200), readonly=readonly)
+    pack(rtc, sizer, prop=1, flag=flag)
+    return rtc
+
+
 def add_checkbox(parent, id=-1, **kwargs):
     t = kwargs.pop("t", None)
     label = kwargs.pop("label", "")
@@ -891,10 +899,7 @@ def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
 
 
 def add_statusbar(
-    parent,
-    widths=[260, -1, 130],
-    values=["", "", ""],
-    **kwargs
+    parent, widths=[260, -1, 130], values=["", "", ""], **kwargs
 ):
     t = kwargs.pop("t", None)
     sbar = wx.StatusBar(parent)
@@ -1292,7 +1297,7 @@ def quick_entry(parent=None, caption="", msg="Enter", password=True, **kwargs):
         if show_help:
             help_label = help_extra.get("label", wdu.ttt("Help", t))
             help_btn = add_button(
-                dlg, label=help_label, size=(-1, ok_btn.GetSize().height),
+                dlg, label=help_label, size=(-1, ok_btn.GetSize().height)
             )
             pack(help_btn, btn_sizer)
             help_func = help_extra.get("event_func")
