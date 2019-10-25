@@ -1420,6 +1420,7 @@ def quick_big_buttons(
     about=True,
     **kwargs
 ):
+    labels = kwargs.pop("labels", {})
     font = wxu.auto_get_font(self, **kwargs)
     if not font:
         font = self.GetFont()
@@ -1429,29 +1430,34 @@ def quick_big_buttons(
     kw.update(kwargs)
     buttons = []
     if start:
-        start_btn = add_button(parent, label="Start", **kw)
+        label = labels.get("start", "Start")
+        start_btn = add_button(parent, label=label, **kw)
         start_btn.Bind(wx.EVT_BUTTON, self.on_start)
-        buttons.append((start_btn, "Start"))
+        buttons.append((start_btn, label))
 
     if setting:
-        setting_btn = add_button(parent, label="Settings", **kw)
+        label = labels.get("settings", "Settings")
+        setting_btn = add_button(parent, label=label, **kw)
         setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
-        buttons.append((setting_btn, "Settings"))
+        buttons.append((setting_btn, label))
 
     if hide:
-        hide_btn = add_button(parent, label="Hide", **kw)
+        label = labels.get("hide", "Hide")
+        hide_btn = add_button(parent, label=label, **kw)
         hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
-        buttons.append((hide_btn, "Hide"))
+        buttons.append((hide_btn, label))
 
     if changes:
-        changes_btn = add_button(parent, label="Changes", **kw)
+        label = labels.get("changes", "Changes")
+        changes_btn = add_button(parent, label=label, **kw)
         changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
-        buttons.append((changes_btn, "Changes"))
+        buttons.append((changes_btn, label))
 
     if about:
-        about_btn = add_button(parent, label="About", **kw)
+        label = labels.get("about", "About")
+        about_btn = add_button(parent, label=label, **kw)
         about_btn.Bind(wx.EVT_BUTTON, self.on_about)
-        buttons.append((about_btn, "About"))
+        buttons.append((about_btn, label))
 
     return buttons
 

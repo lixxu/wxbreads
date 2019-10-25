@@ -309,11 +309,16 @@ class BaseBase(object):
 
     def layout_scrolled_panel(self, panel, sizer=None):
         if sizer:
-            panel.SetSizer(sizer)
-            sizer.Fit(self)
+            self.base_layout(panel, sizer)
 
         panel.SetAutoLayout(True)
         panel.SetupScrolling()
+
+    def base_layout(self, panel, sizer, with_layout=False):
+        panel.SetSizer(sizer)
+        sizer.Fit(self)
+        if with_layout:
+            panel.Layout()
 
 
 class BaseDialog(wx.Dialog, BaseBase):
@@ -342,8 +347,7 @@ class BaseDialog(wx.Dialog, BaseBase):
             vbox, parent=parent, ok_text=ok_text, cancel_text=cancel_text
         )
 
-        self.SetSizer(vbox)
-        vbox.Fit(self)
+        self.base_layout(self, vbox)
 
     def setup_ok_cancel_buttons(
         self, sizer, parent=None, ok_text="Save", cancel_text="Cancel"
@@ -430,10 +434,7 @@ class BaseWindow(wx.Frame, BaseBase):
         self.enable_wgts(False)
 
         wxw.pack(self.book, vbox, prop=1)
-
-        self.panel.SetSizer(vbox)
-        vbox.Fit(self)
-        self.panel.Layout()
+        self.base_layout(self.panel, vbox, with_layout=True)
 
     def add_base_main_page(self, title="Main", **kwargs):
         self.main_panel = p = wx.Panel(self.book)
@@ -444,8 +445,7 @@ class BaseWindow(wx.Frame, BaseBase):
 
         wxw.pack(self.rtc, vbox, prop=1, flag="e,a")
 
-        p.SetSizer(vbox)
-        vbox.Fit(self)
+        self.base_layout(p, vbox)
         self.book.AddPage(p, self.tt(title))
 
     def add_base_settings_page(self, title="Settings", **kwargs):
@@ -468,8 +468,7 @@ class BaseWindow(wx.Frame, BaseBase):
 
         wxw.quick_pack(vbox, wgts=[(self.unlock_btn, 1), cancel_btn])
 
-        p.SetSizer(vbox)
-        vbox.Fit(self)
+        self.base_layout(p, vbox)
         self.book.AddPage(p, self.tt(title))
 
     def fill_main_page(self, parent, sizer=None, **kwargs):
