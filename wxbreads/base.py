@@ -562,7 +562,7 @@ class BaseWindow(wx.Frame, BaseBase):
         except Exception:
             temp_file = os.path.join(tempfile.gettempdir(), "wxbugs.txt")
             with open(temp_file, "a") as f:
-                f.write("{}\n".format(traceback.format_ext()))
+                f.write("{}\n".format(traceback.format_exc()))
 
     def setup_tray(self, **kwargs):
         import wxbreads.trayicon as wxt
