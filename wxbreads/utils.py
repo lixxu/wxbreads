@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals, division
+import sys
 from datetime import datetime
 from time import strftime
 import six
@@ -34,6 +35,7 @@ CHINESE_FONTS = (
     "mingliu",
     "pmingliu",
 )
+FS_ENCODING = sys.getfilesystemencoding()
 
 
 def get_text_width(text, wgt):
@@ -311,8 +313,10 @@ def stop_timers(timers=[], delete=False):
     [stop_timer(timer, delete) for timer in timers]
 
 
-def update_clock_statusbar(sbar, ts_fmt="%Y/%b/%d %H:%M", idx=2):
-    set_status_text(sbar, strftime(ts_fmt), idx)
+def update_clock_statusbar(sbar, ts_fmt="%Y/%m/%d %H:%M", idx=2):
+    set_status_text(
+        sbar, strftime(ts_fmt).decode(FS_ENCODING).encode("utf-8"), idx
+    )
 
 
 def set_status_text(sbar, text, idx, t=None):
