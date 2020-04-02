@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-from datetime import datetime
-from functools import partial
 import os.path
 import tempfile
 import traceback
+from datetime import datetime
+from functools import partial
+
 import six
 import wx
 import wx.lib.scrolledpanel as scrolled
