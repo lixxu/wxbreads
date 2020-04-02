@@ -5,7 +5,9 @@ from __future__ import unicode_literals
 import six
 import sys
 import threading
+
 import wx
+import wx.lib.agw.flatmenu as FM
 import wx.lib.dialogs
 import wx.lib.masked as masked
 import wx.richtext as rt
@@ -63,6 +65,17 @@ if OLD_WX:
 else:
     ABOUT_FORMAT = "{}\n\nPlatform:\n- Python {}\n- wxPython {}\n  * ({})\
     \n- {}\n"
+
+FLAT_MENU_EVENTS = dict(
+    selected=FM.EVT_FLAT_MENU_SELECTED,
+    dismissed=FM.EVT_FLAT_MENU_DISMISSED,
+    mouse_out=FM.EVT_FLAT_MENU_ITEM_MOUSE_OUT,
+    mouse_over=FM.EVT_FLAT_MENU_ITEM_MOUSE_OVER,
+)
+
+
+def create_id():
+    return wx.NewIdRef()
 
 
 def set_tooltip(wgt, tooltip="", t=None):
@@ -511,7 +524,7 @@ def add_staticbox(parent, id=-1, label="", orient="v", **kwargs):
     top_bd, other_bd = box.GetBordersForSizer()
     sizer = wx.BoxSizer(wx.VERTICAL if orient == "v" else wx.HORIZONTAL)
     sizer.AddSpacer(top_bd)
-    box.SetSizer(sizer)
+    # box.SetSizer(sizer)
     # style = wx.VERTICAL if orient == "v" else wx.HORIZONTAL
     # sizer = wx.StaticBoxSizer(box, style)
     return box, sizer
@@ -1410,6 +1423,28 @@ def add_start_button(self, parent, label="Start", size=(-1, 45), **kwargs):
     return btn
 
 
+def add_flat_menu():
+    return FM.FlatMenu()
+
+
+def add_flat_menu_separator(menu):
+    menu.AppendSeparator()
+
+
+def bind_flat_menu(obj, handler, menu_id, name="selected"):
+    obj.Bind(FLAT_MENU_EVENTS[name.lower()], handler, id=menu_id)
+
+
+def add_flat_menu_item(parent, menu_id, label, add_sep=True, **kwargs):
+    t = kwargs.pop("t", None)
+    item = FM.FlatMenuItem(parent, menu_id, wdu.ttt(label, t), **kwargs)
+    parent.AppendItem(item)
+    if add_sep:
+        parent.AppendSeparator()
+
+    return item
+
+
 def quick_big_buttons(
     self,
     parent,
@@ -1418,6 +1453,7 @@ def quick_big_buttons(
     hide=True,
     changes=True,
     about=True,
+    return_dict=False,
     **kwargs
 ):
     labels = kwargs.pop("labels", {})
@@ -1428,36 +1464,51 @@ def quick_big_buttons(
     font.SetWeight(wx.BOLD)
     kw = dict(size=(-1, 45), font=font)
     kw.update(kwargs)
-    buttons = []
+    buttons = {} if return_dict else []
     if start:
         label = labels.get("start", "Start")
         start_btn = add_button(parent, label=label, **kw)
         start_btn.Bind(wx.EVT_BUTTON, self.on_start)
-        buttons.append((start_btn, label))
+        if return_dict:
+            buttons.update(start=(start_btn, label))
+        else:
+            buttons.append((start_btn, label))
 
     if setting:
         label = labels.get("settings", "Settings")
         setting_btn = add_button(parent, label=label, **kw)
         setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
-        buttons.append((setting_btn, label))
+        if return_dict:
+            buttons.update(settings=(setting_btn, label))
+        else:
+            buttons.append((setting_btn, label))
 
     if hide:
         label = labels.get("hide", "Hide")
         hide_btn = add_button(parent, label=label, **kw)
         hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
-        buttons.append((hide_btn, label))
+        if return_dict:
+            buttons.update(hide=(hide_btn, label))
+        else:
+            buttons.append((hide_btn, label))
 
     if changes:
         label = labels.get("changes", "Changes")
         changes_btn = add_button(parent, label=label, **kw)
         changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
-        buttons.append((changes_btn, label))
+        if return_dict:
+            buttons.update(changes=(changes_btn, label))
+        else:
+            buttons.append((changes_btn, label))
 
     if about:
         label = labels.get("about", "About")
         about_btn = add_button(parent, label=label, **kw)
         about_btn.Bind(wx.EVT_BUTTON, self.on_about)
-        buttons.append((about_btn, label))
+        if return_dict:
+            buttons.update(about=(about_btn, label))
+        else:
+            buttons.append((about_btn, label))
 
     return buttons
 

@@ -43,6 +43,7 @@ class BaseBase(object):
         fonts = wxu.get_chinese_fonts()
         self.lang_wgts = []
         self.setting_wgts = []
+        self.flat_menu = None
         self.support_chinese = len(fonts) >= self.min_chinese_fonts
 
     @property
@@ -226,6 +227,13 @@ class BaseBase(object):
             need_confirm=self.quit_confirm,
             need_password=self.quit_password,
         )
+
+    def on_flat_menu(self, evt):
+        btn = evt.GetEventObject()
+        size = btn.GetSize()
+        pos = btn.GetParent().ClientToScreen(btn.GetPosition())
+        self.flat_menu.SetOwnerHeight(size.y)
+        self.flat_menu.Popup(wx.Point(pos.x, pos.y), self)
 
     def need_adjust_opened_dlg(self):
         return self.has_tray or self.opened_dlg is not None
@@ -610,10 +618,13 @@ class BaseWindow(wx.Frame, BaseBase):
         self.Refresh()
 
     def echo_text(self, text="", **kwargs):
+        wxu.echo_text(self.rtc, text, **self.set_echo_defaults(kwargs))
+
+    def set_echo_defaults(self, kwargs):
         kwargs.setdefault("t", self.t)
         kwargs.setdefault("log_mode", "a" if six.PY2 else "ab")
         kwargs.setdefault("log_files", [])
-        wxu.echo_text(self.rtc, text, **kwargs)
+        return kwargs
 
     def add_echo(self, text="", **kwargs):
         if self.clear_echo_row and kwargs.get("nl", True):
@@ -622,7 +633,7 @@ class BaseWindow(wx.Frame, BaseBase):
                 "clear", self.echoed_row % self.clear_echo_row == 0
             )
 
-        self.echo_lines.append((text, kwargs))
+        self.echo_lines.append((text, self.set_echo_defaults(kwargs)))
 
     def add_echo3(self, text="", **kwargs):
         if self.clear_echo_row and kwargs.get("nl", True):

@@ -5,10 +5,12 @@ from __future__ import unicode_literals, division
 import sys
 from datetime import datetime
 from time import strftime
+
 import six
+import windbreads.utils as wdu
 import wx
 import wx.richtext as rt
-import windbreads.utils as wdu
+import wxbreads.widgets as wxw
 
 RTC_ALIGNS = dict(
     default=wx.TEXT_ALIGNMENT_DEFAULT,
@@ -314,9 +316,13 @@ def stop_timers(timers=[], delete=False):
 
 
 def update_clock_statusbar(sbar, ts_fmt="%Y/%m/%d %H:%M", idx=2):
-    set_status_text(
-        sbar, strftime(ts_fmt).decode(FS_ENCODING).encode("utf-8"), idx
-    )
+    text = strftime(ts_fmt)
+    try:
+        text = text.decode(FS_ENCODING)
+    except AttributeError:
+        pass
+
+    set_status_text(sbar, text.encode("utf-8"), idx)
 
 
 def set_status_text(sbar, text, idx, t=None):
@@ -363,9 +369,7 @@ def update_ui_lang(self, refresh=True):
             else:
                 wgt, label, tooltip = lwgt
 
-            if tooltip:
-                wgt.SetToolTipString(self.tt(tooltip))
-
+            wxw.set_tooltip(wgt, tooltip, self.t)
             wgt.SetLabel(self.tt(label))
 
     if refresh:
