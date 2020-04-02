@@ -373,7 +373,7 @@ def update_ui_lang(self, refresh=True):
             wgt.SetLabel(self.tt(label))
 
     if refresh:
-        if getattr(self, "panel"):
+        if hasattr(self, "panel"):
             self.panel.Layout()
 
         self.Refresh()
