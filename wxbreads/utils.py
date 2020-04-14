@@ -10,7 +10,6 @@ import six
 import windbreads.utils as wdu
 import wx
 import wx.richtext as rt
-import wxbreads.widgets as wxw
 
 RTC_ALIGNS = dict(
     default=wx.TEXT_ALIGNMENT_DEFAULT,
@@ -361,6 +360,8 @@ def popup_lang(self, evt):
 
 
 def update_ui_lang(self, refresh=True):
+    import wxbreads.widgets as wxw
+
     if hasattr(self, "lang_wgts"):
         for lwgt in self.lang_wgts:
             tooltip = ""

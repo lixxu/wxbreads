@@ -2,25 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-import six
 import sys
 import threading
 
+import six
 import wx
 import wx.lib.agw.flatmenu as FM
+import wx.lib.agw.flatnotebook as fnb
+import wx.lib.agw.genericmessagedialog as gmd
 import wx.lib.dialogs
 import wx.lib.masked as masked
 import wx.richtext as rt
-
-try:
-    from agw import genericmessagedialog as gmd
-except ImportError:
-    import wx.lib.agw.genericmessagedialog as gmd
-
-try:
-    import agw.flatnotebook as fnb
-except ImportError:
-    import wx.lib.agw.flatnotebook as fnb
 
 OLD_WX = True
 try:
