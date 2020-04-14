@@ -108,6 +108,21 @@ def focus_on(wgt, select=False, clear=False):
     wgt.SetFocus()
 
 
+def cat_msg_with_args(msg, **kwargs):
+    kargs = kwargs.pop("kargs", {})
+    if kargs:
+        msg = msg.format(**kargs)
+
+    args = kwargs.pop("args", None)
+    if args:
+        if not isinstance(args, (tuple, list)):
+            args = (args,)
+
+        msg = msg.format(*args)
+
+    return msg
+
+
 def popup(parent=None, caption="caption", **kwargs):
     t = kwargs.get("t")
     font = wxu.auto_get_font(parent, **kwargs)
@@ -132,6 +147,7 @@ def popup(parent=None, caption="caption", **kwargs):
     else:
         title = caption
 
+    umsg = cat_msg_with_args(umsg, **kwargs)
     dlg_kw = dict()
     if OLD_WX or threading.currentThread().name == "MainThread":
         dlg_cls = gmd.GenericMessageDialog
@@ -198,6 +214,7 @@ def popup_smd(parent=None, msg="", caption="Message", **kwargs):
     else:
         title = caption
 
+    umsg = cat_msg_with_args(umsg, **kwargs)
     font = wxu.auto_get_font(parent, **kwargs)
     dlg = wx.lib.dialogs.ScrolledMessageDialog(parent, umsg, title)
     try:
@@ -355,8 +372,8 @@ def add_richtext(parent, id=-1, **kwargs):
 def quick_add_rtc(
     parent, sizer, size=(-1, 200), readonly=True, prop=1, flag="e,a"
 ):
-    rtc = add_richtext(parent, size=(-1, 200), readonly=readonly)
-    pack(rtc, sizer, prop=1, flag=flag)
+    rtc = add_richtext(parent, size=size, readonly=readonly)
+    pack(rtc, sizer, prop=prop, flag=flag)
     return rtc
 
 
@@ -1378,14 +1395,8 @@ def quick_choice(parent=None, msg="Please select", **kwargs):
     cancel_label = kwargs.pop("cancel_label", None)
     # update button labels for i18n
     try:
-        sizers = dlg.Sizer.GetChildren()
-        msg_wgt = sizers[0].Sizer.GetChildren()[0].GetWindow()
-        # listbox = sizers[1].GetWindow()
-        sizers2 = sizers[0].Sizer.GetChildren()
-        # line = sizers2[0].GetWindow()
-        btn_sizer = sizers2[1].Sizer
-        items = btn_sizer.GetChildren()
-        ok_btn, c_btn = items[1].GetWindow(), items[2].GetWindow()
+        wgt_list = dlg.GetChildren()
+        msg_wgt, ok_btn, c_btn = wgt_list[0], wgt_list[2], wgt_list[3]
         ok_btn.SetLabel(wdu.ttt(ok_label or ok_btn.GetLabel(), t))
         c_btn.SetLabel(wdu.ttt(cancel_label or c_btn.GetLabel(), t))
         set_font(msg_wgt, font)

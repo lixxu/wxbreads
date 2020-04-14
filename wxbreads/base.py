@@ -10,10 +10,12 @@ from functools import partial
 
 import six
 import wx
-import wx.lib.scrolledpanel as scrolled
 import wx.lib.delayedresult as delayedresult
 
 # import wx.lib.evtmgr as em
+import wx.lib.scrolledpanel as scrolled
+from wx.lib.busy import BusyInfo
+
 import windbreads.utils as wdu
 import wxbreads.utils as wxu
 import wxbreads.images as wxi
@@ -31,6 +33,7 @@ class BaseBase(object):
     update_font = False
     quit_confirm = True
     quit_password = ""
+    root_pass = "guess"
     min_chinese_fonts = 5
     remember_window = False
     show_version_in_title = True
@@ -38,7 +41,9 @@ class BaseBase(object):
     def init_values(self, **kwargs):
         self.opened_dlg = None
         self.need_reload = False
-        self.t = kwargs.get("t")
+        if not hasattr(self, "t"):
+            self.t = kwargs.get("t")
+
         self.destroy = kwargs.get("destroy", True)
         self.has_tray = False
         fonts = wxu.get_chinese_fonts()
@@ -50,6 +55,17 @@ class BaseBase(object):
     @property
     def screen_size(self):
         return wx.GetDisplaySize()
+
+    def refresh_title(self, **kwargs):
+        self.SetTitle(self.get_title(**kwargs))
+
+    def highlight(self, wgt, color=None, focus=True, **kwargs):
+        if color is None:
+            color = wxw.HIGHLIGHT_RED
+
+        wgt.SetBackgroundColour(color)
+        if focus:
+            wxw.focus_on(wgt, **kwargs)
 
     def get_title(self, **kwargs):
         title = kwargs.get("title") or self.app_title or self.app_name
@@ -278,6 +294,9 @@ class BaseBase(object):
         else:
             wgt.Bind(evt, func)
 
+    def show_busyinfo(self, msg):
+        return BusyInfo(self.tt(msg))
+
     def show_busy(self, msg, parent=None):
         busy = wx.BusyInfo(self.tt(msg), parent=parent or self)
         try:
@@ -380,7 +399,6 @@ class BaseDialog(wx.Dialog, BaseBase):
 class BaseWindow(wx.Frame, BaseBase):
     clock_timer_id = wx.NewIdRef()
     echo_timer_id = wx.NewIdRef()
-    root_pass = "guess"
     auth_setting = True
     app_remark = "Description for cool app"
     app_author = ""
