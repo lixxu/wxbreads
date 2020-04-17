@@ -2,39 +2,35 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+import ldap3
 import wx
-
-try:
-    from pyldaplite import ldap, PyLDAPLite as LDAP
-
-    SERVER_DOWN_ERROR = ldap.SERVER_DOWN
-    INVALID_CREDENTIALS_ERROR = ldap.INVALID_CREDENTIALS
-except ImportError:
-    from ldap3tool import ldap3, LDAPTool as LDAP
-
-    SERVER_DOWN_ERROR = ldap3.core.exceptions.LDAPSocketOpenError
-    INVALID_CREDENTIALS_ERROR = ldap3.core.exceptions.LDAPBindError
-
-from wxbreads.base import BaseDialog
 import windbreads.utils as wdu
 import wxbreads.widgets as wxw
 
+from ldap3tool import LDAPTool
+from wxbreads.base import BaseDialog
 
-def ldap_login(server, base_dn, login_name, password, close=True):
-    p = LDAP(server=server, base_dn=base_dn)
+
+def ldap_login(server, base_dn, login_name, password, close=True, **kwargs):
+    ldap = LDAPTool(server=server, base_dn=base_dn)
     try:
-        p.connect(login_name, password)
-    except SERVER_DOWN_ERROR as e:
-        return 100, e
-    except INVALID_CREDENTIALS_ERROR:
+        use_ssl = kwargs.pop("use_ssl", False)
+        kw = kwargs.copy()
+        if use_ssl:
+            kw.update(server=ldap.open_server(use_ssl=use_ssl))
+
+        ldap.connect(login_name, password, **kw)
+    except ldap3.core.exceptions.LDAPSocketOpenError as ex:
+        return 100, ex
+    except ldap3.core.exceptions.LDAPBindError:
         return 200, None
-    except Exception as e:
-        return 300, e
+    except Exception as ex:
+        return 300, ex
     else:
         if close:
-            p.close()
+            ldap.close()
         else:
-            return 0, p
+            return 0, ldap
 
     return 0, None
 
@@ -44,6 +40,7 @@ class LoginWindow(BaseDialog):
 
     def __init__(self, **kwargs):
         self.enable_cancel = kwargs.get("enable_cancel", True)
+        self.ldap_kwargs = kwargs.pop("ldap_kwargs", {})
         super(LoginWindow, self).__init__(**kwargs)
         self.panel = wx.Panel(self)
         self.parent = parent = kwargs.get("parent")
@@ -198,6 +195,7 @@ class LoginWindow(BaseDialog):
             self.base_dn,
             "{}\\{}".format(self.domain, self.login_name),
             self.password,
+            **self.ldap_kwargs
         )
         if ec in (100, 300):
             self.popup("Error", msg, "e")
