@@ -298,12 +298,9 @@ class BaseBase(object):
         return BusyInfo(self.tt(msg))
 
     def show_busy(self, msg, parent=None):
+        wx.WindowDisabler()
         busy = wx.BusyInfo(self.tt(msg), parent=parent or self)
-        try:
-            wx.AppConsole.Yield()
-        except Exception:
-            wx.Yield()
-
+        wx.YieldIfNeeded()
         return busy
 
     def hide_busy(self, busy):

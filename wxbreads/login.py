@@ -41,6 +41,8 @@ class LoginWindow(BaseDialog):
     def __init__(self, **kwargs):
         self.enable_cancel = kwargs.get("enable_cancel", True)
         self.ldap_kwargs = kwargs.pop("ldap_kwargs", {})
+        self.need_busy = kwargs.pop("need_busy", False)
+
         super(LoginWindow, self).__init__(**kwargs)
         self.panel = wx.Panel(self)
         self.parent = parent = kwargs.get("parent")
@@ -190,6 +192,9 @@ class LoginWindow(BaseDialog):
         if "\\" in self.login_name:
             self.domain, self.login_name = self.login_name.split("\\", 1)
 
+        if self.need_busy:
+            busy = self.show_busy("connecting to server...")
+
         ec, msg = ldap_login(
             self.server,
             self.base_dn,
@@ -197,6 +202,9 @@ class LoginWindow(BaseDialog):
             self.password,
             **self.ldap_kwargs
         )
+        if self.need_busy:
+            del busy
+
         if ec in (100, 300):
             self.popup("Error", msg, "e")
             return
