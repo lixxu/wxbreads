@@ -42,6 +42,7 @@ class LoginWindow(BaseDialog):
         self.enable_cancel = kwargs.get("enable_cancel", True)
         self.ldap_kwargs = kwargs.pop("ldap_kwargs", {})
         self.need_busy = kwargs.pop("need_busy", False)
+        self.allowed_names = kwargs.pop("allowed_names", None)
 
         super(LoginWindow, self).__init__(**kwargs)
         self.panel = wx.Panel(self)
@@ -49,6 +50,7 @@ class LoginWindow(BaseDialog):
         root_user = kwargs.get("root_user")
         root_pass = kwargs.get("root_pass")
         last_user = kwargs.get("last_user")
+        self.domain = kwargs.get("domain", "")
         if parent:
             if not root_user:
                 root_user = getattr(parent, "root_user", "root")
@@ -64,8 +66,8 @@ class LoginWindow(BaseDialog):
         self.last_user = last_user or ""
         self.pwd = kwargs.get("password", "")
         self.current_user = None
+        self.ldap_obj = None
 
-        self.domains = kwargs.get("domains") or [""]
         self.server = kwargs.get("server", "ldap-server")
         self.base_dn = kwargs.get("base_dn", "dc=corp,dc=company,dc=org")
         self.destroy = kwargs.get("destroy", True)
@@ -75,7 +77,8 @@ class LoginWindow(BaseDialog):
         self.setup_ui()
         self.Bind(wx.EVT_BUTTON, self.on_login, id=wx.ID_OK)
         self.Bind(wx.EVT_BUTTON, self.on_quit, id=wx.ID_CANCEL)
-        self.show()
+        if kwargs.get("show_win", True):
+            self.show()
 
     def setup_ui(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -87,10 +90,12 @@ class LoginWindow(BaseDialog):
 
         # Name field
         _, self.name_tc = wxw.add_text_row(
-            self.panel, sizer, label="NT Name", value=self.last_user, **kwargs
+            self.panel,
+            sizer,
+            label="Login Name",
+            value=self.last_user,
+            **kwargs
         )
-        # wxw.set_fg(self.name_tc, 'black')
-        self.name_tc.Bind(wx.EVT_TEXT, self.on_enter_name)
         wxw.focus_on(self.name_tc)
 
         # Password
@@ -102,21 +107,9 @@ class LoginWindow(BaseDialog):
             sstyle=wx.TE_PASSWORD,
             **kwargs
         )
-        # wxw.set_fg(self.pwd_tc, 'black')
-        _, wgt = wxw.add_combobox(
-            self.panel,
-            sizer,
-            label="Domain",
-            readonly=self.domains[0],
-            value=self.domains[0],
-            choices=self.domains,
-            **kwargs
-        )
-        # wxw.set_fg(wgt, 'black')
-        self.domain_cb = wgt
 
         ok_btn, cancel_btn = wxw.add_ok_buttons(
-            self.panel, sizer, size=(100, -1), ok_text="Login", t=self.t
+            self.panel, sizer, size=(100, 30), ok_text="Login", t=self.t
         )
 
         self.ok_btn = ok_btn
@@ -127,10 +120,6 @@ class LoginWindow(BaseDialog):
         self.panel.Layout()
         sizer.Fit(self)
 
-    def on_enter_name(self, evt=None):
-        self.domain_cb.Enable("\\" not in self.name_tc.GetValue())
-        evt.Skip()
-
     def high_light(self, wgt, focus=True):
         wgt.Clear()
         wgt.SetBackgroundColour(wxw.HIGHLIGHT_RED)
@@ -140,13 +129,13 @@ class LoginWindow(BaseDialog):
     def get_field_values(self):
         self.login_name = self.name_tc.GetValue().strip().lower()
         self.password = self.pwd_tc.GetValue()
-        self.domain = self.domain_cb.GetValue().strip().lower()
 
     def on_login(self, event):
         self.ok_btn.Enable(False)
         self.cancel_btn.Enable(False)
         self.is_login = True
         self.current_user = None
+        self.ldap_obj = None
         self.start_delay_work(self.after_submit, self.do_submit)
 
     def after_submit(self, delay_result):
@@ -161,6 +150,7 @@ class LoginWindow(BaseDialog):
         if self.current_user:
             if self.parent and hasattr(self.parent, "login_user"):
                 self.parent.login_user = self.current_user
+                self.parent.ldap_obj = self.ldap_obj
 
             self.can_exit = True
             self.destroy = True
@@ -180,9 +170,17 @@ class LoginWindow(BaseDialog):
             self.Refresh()
             return
 
-        if self.login_name == self.root_user:
-            if self.password == self.root_pass:
+        if self.parent:
+            root_user = getattr(self.parent, "root_user", "root")
+            root_pass = getattr(self.parent, "root_pass", "")
+        else:
+            root_user = self.root_user
+            root_pass = self.root_pass
+
+        if self.login_name == root_user:
+            if self.password == root_pass:
                 self.current_user = self.login_name
+                self.ldap_obj = None
                 return
 
             self.high_light(self.pwd_tc)
@@ -190,15 +188,22 @@ class LoginWindow(BaseDialog):
             return
 
         if "\\" in self.login_name:
-            self.domain, self.login_name = self.login_name.split("\\", 1)
+            domain, username = self.login_name.split("\\", 1)
+        else:
+            domain, username = self.domain, self.login_name
 
+        if self.allowed_names and username not in self.allowed_names:
+            self.popup("Error", "This user is not allowed to login", "e")
+            return
+
+        busy = None
         if self.need_busy:
             busy = self.show_busy("connecting to server...")
 
         ec, msg = ldap_login(
             self.server,
             self.base_dn,
-            "{}\\{}".format(self.domain, self.login_name),
+            "{}\\{}".format(domain, username) if domain else username,
             self.password,
             **self.ldap_kwargs
         )
@@ -216,10 +221,15 @@ class LoginWindow(BaseDialog):
             self.Refresh()
             return
 
-        self.current_user = self.login_name
+        if self.parent and getattr(self.parent, "extra_login_check"):
+            if not self.parent.extra_login_check(username, msg):
+                return
+
+        self.current_user = username
+        self.ldap_obj = msg
 
     def on_quit(self, event=None):
-        if not self.is_login and self.can_exit:
+        if self.can_exit and (not self.is_login):
             if self.destroy:
                 self.Destroy()
             else:
@@ -228,7 +238,7 @@ class LoginWindow(BaseDialog):
 
 def test_run():
     app = wx.App()
-    LoginWindow(domains=["domain"], last_user="username", password="password")
+    LoginWindow(last_user="domain\\username", password="password")
     app.MainLoop()
 
 
@@ -240,7 +250,7 @@ def test_i18n_run():
     zh.setdefault("User Login", "用户登录")
     t = partial(wdu.tt, lang="zh", po=dict(zh=zh))
     app = wx.App()
-    LoginWindow(domains=["domain"], last_user="test", password="password", t=t)
+    LoginWindow(last_user="domain\\test", password="password", t=t)
     app.MainLoop()
 
 

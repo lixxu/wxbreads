@@ -684,9 +684,13 @@ class BaseWindow(wx.Frame, BaseBase):
         if self.need_adjust_opened_dlg():
             self.opened_dlg += 1
 
-        check_ok = wxw.quick_password_entry(
-            self, root_pass=self.root_pass, t=self.t
-        )
+        if hasattr(self, "own_security_check"):
+            check_ok = self.own_security_check()
+        else:
+            check_ok = wxw.quick_password_entry(
+                self, root_pass=self.root_pass, t=self.t
+            )
+
         if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
 
