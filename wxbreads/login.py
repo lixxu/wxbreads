@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
-import ldap3
-import wx
-import windbreads.utils as wdu
-import wxbreads.widgets as wxw
 
+import ldap3
+import windbreads.utils as wdu
+import wx
 from ldap3tool import LDAPTool
+
+import wxbreads.widgets as wxw
 from wxbreads.base import BaseDialog
 
 
@@ -152,8 +153,6 @@ class LoginWindow(BaseDialog):
                 self.parent.login_user = self.current_user
                 self.parent.ldap_obj = self.ldap_obj
 
-            self.can_exit = True
-            self.destroy = True
             self.on_quit()
 
     def do_submit(self):
@@ -208,7 +207,7 @@ class LoginWindow(BaseDialog):
             **self.ldap_kwargs
         )
         if self.need_busy:
-            del busy
+            self.hide_busy(busy)
 
         if ec in (100, 300):
             self.popup("Error", msg, "e")
@@ -244,6 +243,7 @@ def test_run():
 
 def test_i18n_run():
     from functools import partial
+
     import windbreads.common_i18n as wdi18n
 
     zh = wdi18n.zh

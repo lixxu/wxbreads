@@ -2,5 +2,5 @@
 Small handy snippets of wxpython
 
 ```html
-Still in developing phase, functions names and arguments may change very often.
+Still under development, function names and arguments may change very often.
 ```

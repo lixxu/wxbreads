@@ -5,9 +5,11 @@ wxbreads
 Small handy snippets of wxpython
 """
 import os.path
+
 from setuptools import setup
 
 folder = os.path.dirname(os.path.abspath(__file__))
+version = author = ""
 with open(os.path.join(folder, "wxbreads/__init__.py")) as f:
     for line in f:
         if line.startswith("__version__ = "):
