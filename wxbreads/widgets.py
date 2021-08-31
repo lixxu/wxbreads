@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+
 import sys
 import threading
 
@@ -28,8 +29,9 @@ except AttributeError:
 
     OLD_WX = False
 
-import wxbreads.utils as wxu
 import windbreads.utils as wdu
+
+import wxbreads.utils as wxu
 
 """Remark:
 fsize/fstyle/fkw: 1st widget size/style/kwargs
@@ -254,7 +256,7 @@ def add_button(parent, id=-1, **kwargs):
     return btn
 
 
-def add_label(parent, id=-1, **kwargs):
+def add_label(parent, id=-1, sizer=None, **kwargs):
     t = kwargs.get("t")
     label = kwargs.pop("label", "")
     font = kwargs.pop("font", None)
@@ -272,6 +274,8 @@ def add_label(parent, id=-1, **kwargs):
     set_font(lbl, font)
     set_fg(lbl, fg)
     set_bg(lbl, bg)
+    if sizer:
+        pack(lbl, sizer, **kwargs.get("pack_kw", {}))
 
     return lbl
 
@@ -874,9 +878,13 @@ def add_open_dialog(parent, sizer, label="Select folder", **kwargs):
     return lbl, txt, btn
 
 
-def add_line(parent, id=-1, size=(-1, -1), orient="h"):
+def add_line(parent, id=-1, size=(-1, -1), orient="h", sizer=None, **pack_kw):
     style = wx.LI_HORIZONTAL if orient == "h" else wx.LI_VERTICAL
-    return wx.StaticLine(parent, id, size=(-1, -1), style=style)
+    line = wx.StaticLine(parent, id, size=size, style=style)
+    if sizer:
+        pack(line, sizer, **pack_kw)
+
+    return line
 
 
 def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):

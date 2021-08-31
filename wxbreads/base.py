@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+
 import os.path
 import tempfile
 import traceback
@@ -9,6 +10,7 @@ from datetime import datetime
 from functools import partial
 
 import six
+import windbreads.utils as wdu
 import wx
 import wx.lib.delayedresult as delayedresult
 
@@ -16,9 +18,8 @@ import wx.lib.delayedresult as delayedresult
 import wx.lib.scrolledpanel as scrolled
 from wx.lib.busy import BusyInfo
 
-import windbreads.utils as wdu
-import wxbreads.utils as wxu
 import wxbreads.images as wxi
+import wxbreads.utils as wxu
 import wxbreads.widgets as wxw
 
 SCROLLED_STYLE = wx.TAB_TRAVERSAL  # | wx.SUNKEN_BORDER
@@ -37,6 +38,7 @@ class BaseBase(object):
     min_chinese_fonts = 5
     remember_window = False
     show_version_in_title = True
+    clear_echo_row = 0
 
     def init_values(self, **kwargs):
         self.opened_dlg = None
@@ -51,6 +53,9 @@ class BaseBase(object):
         self.setting_wgts = []
         self.flat_menu = None
         self.support_chinese = len(fonts) >= self.min_chinese_fonts
+        self.echo_lines = []
+        self.is_echoing = False
+        self.echoed_row = 0  # lines that echoed
 
     @property
     def screen_size(self):
@@ -345,6 +350,36 @@ class BaseBase(object):
         if with_layout:
             panel.Layout()
 
+    def echo_text(self, text="", **kwargs):
+        wxu.echo_text(self.rtc, text, **self.set_echo_defaults(kwargs))
+
+    def set_echo_defaults(self, kwargs):
+        kwargs.setdefault("t", self.t)
+        kwargs.setdefault("log_mode", "a" if six.PY2 else "ab")
+        kwargs.setdefault("log_files", [])
+        return kwargs
+
+    def add_echo(self, text="", **kwargs):
+        if self.clear_echo_row and kwargs.get("nl", True):
+            self.echoed_row += 1
+            kwargs.setdefault(
+                "clear", self.echoed_row % self.clear_echo_row == 0
+            )
+
+        self.echo_lines.append((text, self.set_echo_defaults(kwargs)))
+
+    def add_echo3(self, text="", **kwargs):
+        if self.clear_echo_row and kwargs.get("nl", True):
+            self.echoed_row += 1
+            kwargs.setdefault(
+                "clear", self.echoed_row % self.clear_echo_row == 0
+            )
+
+        self.echo_text(text, **kwargs)
+
+    def on_echoing(self, evt=None):
+        wxu.on_echoing(self)
+
 
 class BaseDialog(wx.Dialog, BaseBase):
     app_name = "Dialog"
@@ -401,7 +436,6 @@ class BaseWindow(wx.Frame, BaseBase):
     app_author = ""
     reset_copyright = True
     reset_copyright_seconds = (0, 1, 30, 31)
-    clear_echo_row = 0
     sbar_width = [260, -1, 130]
 
     def __init__(self, **kwargs):
@@ -418,9 +452,6 @@ class BaseWindow(wx.Frame, BaseBase):
         super(BaseWindow, self).__init__(kwargs.get("parent"), **kw)
         self.english_font_name = self.get_english_font()
         self.is_running = False
-        self.echo_lines = []
-        self.is_echoing = False
-        self.echoed_row = 0  # lines that echoed
         self.logo = img = wxi.logo.GetImage()
         try:
             icon = wx.IconFromBitmap(img.ConvertToBitmap())
@@ -632,36 +663,6 @@ class BaseWindow(wx.Frame, BaseBase):
             self.Layout()
 
         self.Refresh()
-
-    def echo_text(self, text="", **kwargs):
-        wxu.echo_text(self.rtc, text, **self.set_echo_defaults(kwargs))
-
-    def set_echo_defaults(self, kwargs):
-        kwargs.setdefault("t", self.t)
-        kwargs.setdefault("log_mode", "a" if six.PY2 else "ab")
-        kwargs.setdefault("log_files", [])
-        return kwargs
-
-    def add_echo(self, text="", **kwargs):
-        if self.clear_echo_row and kwargs.get("nl", True):
-            self.echoed_row += 1
-            kwargs.setdefault(
-                "clear", self.echoed_row % self.clear_echo_row == 0
-            )
-
-        self.echo_lines.append((text, self.set_echo_defaults(kwargs)))
-
-    def add_echo3(self, text="", **kwargs):
-        if self.clear_echo_row and kwargs.get("nl", True):
-            self.echoed_row += 1
-            kwargs.setdefault(
-                "clear", self.echoed_row % self.clear_echo_row == 0
-            )
-
-        self.echo_text(text, **kwargs)
-
-    def on_echoing(self, evt=None):
-        wxu.on_echoing(self)
 
     def on_setting(self, evt=None):
         if self.prepare_setting():
