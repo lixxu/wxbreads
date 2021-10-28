@@ -13,7 +13,6 @@ import six
 import windbreads.utils as wdu
 import wx
 import wx.lib.delayedresult as delayedresult
-
 # import wx.lib.evtmgr as em
 import wx.lib.scrolledpanel as scrolled
 from wx.lib.busy import BusyInfo
@@ -31,6 +30,7 @@ class BaseBase(object):
     app_title = ""
     app_size = (-1, -1)
     app_version = ""
+    app_copyright = ""
     update_font = False
     quit_confirm = True
     quit_password = ""
@@ -608,7 +608,7 @@ class BaseWindow(wx.Frame, BaseBase):
         return [self.get_copyright(), "", ""]
 
     def get_copyright(self):
-        return wdu.get_copy_right()
+        return self.app_copyright or wdu.get_copy_right()
 
     def update_status(self, text, idx, **kwargs):
         kwargs.setdefault("t", self.t)

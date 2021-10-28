@@ -207,10 +207,11 @@ class LoginWindow(BaseDialog):
             **self.ldap_kwargs
         )
         if self.need_busy:
-            self.hide_busy(busy)
+            del busy
 
         if ec in (100, 300):
             self.popup("Error", msg, "e")
+            self.Refresh()
             return
         elif ec == 200:
             self.popup(
@@ -220,7 +221,7 @@ class LoginWindow(BaseDialog):
             self.Refresh()
             return
 
-        if self.parent and getattr(self.parent, "extra_login_check"):
+        if self.parent and hasattr(self.parent, "extra_login_check"):
             if not self.parent.extra_login_check(username, msg):
                 return
 
