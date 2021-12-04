@@ -13,6 +13,7 @@ import six
 import windbreads.utils as wdu
 import wx
 import wx.lib.delayedresult as delayedresult
+
 # import wx.lib.evtmgr as em
 import wx.lib.scrolledpanel as scrolled
 from wx.lib.busy import BusyInfo
@@ -465,9 +466,16 @@ class BaseWindow(wx.Frame, BaseBase):
         if evt:
             evt.Skip()
 
+    def get_changes(self):
+        return {}
+
     def on_changes(self, evt):
         if evt:
             evt.Skip()
+
+        changes = self.get_changes()
+        if changes:
+            wxw.popup_smd(self, **changes)
 
     def setup_base_big_buttons(self, parent, sizer, **kwargs):
         buttons = wxw.quick_big_buttons(self, parent, t=self.t, **kwargs)
@@ -724,6 +732,7 @@ class BaseWindow(wx.Frame, BaseBase):
             website=getattr(self, "app_website", ""),
             author=getattr(self, "app_author", ""),
             licence=getattr(self, "app_licence", ""),
+            copyright=self.get_copyright(),
         )
         kw.update(self.get_about_extra_kwargs())
         return kw

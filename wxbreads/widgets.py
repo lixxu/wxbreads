@@ -1088,11 +1088,11 @@ def about_box(**kwargs):
     name = kwargs.pop("name", "app name")
     version = kwargs.pop("version", "0.1")
     description = kwargs.pop("description", "description")
-    copyright = kwargs.pop("copyright", "copyright")
+    copy_right = kwargs.pop("copyright", "copyright")
     info.SetName(wdu.ttt(name, t))
     info.SetVersion(wdu.ttt(version, t))
     info.SetDescription(wdu.ttt(description, t))
-    info.SetCopyright(wdu.ttt(copyright, t))
+    info.SetCopyright(wdu.ttt(copy_right, t))
     website = kwargs.pop("website", "")
     if website:
         info.SetWebSite(website)
@@ -1187,7 +1187,7 @@ def quick_quit(self, **kwargs):
 def quick_about(*args, **kwargs):
     fmt = kwargs.pop("fmt", ABOUT_FORMAT)
     t = kwargs.get("t", None)
-    copyright = kwargs.pop("copyright", wdu.get_copy_right())
+    copy_right = kwargs.pop("copyright", wdu.get_copy_right())
     authors = kwargs.pop("author", None)
     writers = kwargs.pop("writers", None)
     remark = kwargs.pop("remark", "about this tool")
@@ -1212,7 +1212,7 @@ def quick_about(*args, **kwargs):
 
     about_info = dict(
         description=description,
-        copyright=copyright.replace("&", "&&"),
+        copyright=copy_right.replace("&", "&&"),
         **kwargs
     )
     about_box(**about_info)
@@ -1468,6 +1468,7 @@ def quick_big_buttons(
     **kwargs
 ):
     labels = kwargs.pop("labels", {})
+    sizer = kwargs.pop("sizer", None)
     font = wxu.auto_get_font(self, **kwargs)
     if not font:
         font = self.GetFont()
@@ -1476,10 +1477,12 @@ def quick_big_buttons(
     kw = dict(size=(-1, 45), font=font)
     kw.update(kwargs)
     buttons = {} if return_dict else []
+    wgts = []
     if start:
         label = labels.get("start", "Start")
         start_btn = add_button(parent, label=label, **kw)
         start_btn.Bind(wx.EVT_BUTTON, self.on_start)
+        wgts.append(start_btn)
         if return_dict:
             buttons.update(start=(start_btn, label))
         else:
@@ -1489,6 +1492,7 @@ def quick_big_buttons(
         label = labels.get("settings", "Settings")
         setting_btn = add_button(parent, label=label, **kw)
         setting_btn.Bind(wx.EVT_BUTTON, self.on_setting)
+        wgts.append(setting_btn)
         if return_dict:
             buttons.update(settings=(setting_btn, label))
         else:
@@ -1498,6 +1502,7 @@ def quick_big_buttons(
         label = labels.get("hide", "Hide")
         hide_btn = add_button(parent, label=label, **kw)
         hide_btn.Bind(wx.EVT_BUTTON, self.on_hide)
+        wgts.append(hide_btn)
         if return_dict:
             buttons.update(hide=(hide_btn, label))
         else:
@@ -1507,6 +1512,7 @@ def quick_big_buttons(
         label = labels.get("changes", "Changes")
         changes_btn = add_button(parent, label=label, **kw)
         changes_btn.Bind(wx.EVT_BUTTON, self.on_changes)
+        wgts.append(changes_btn)
         if return_dict:
             buttons.update(changes=(changes_btn, label))
         else:
@@ -1516,10 +1522,14 @@ def quick_big_buttons(
         label = labels.get("about", "About")
         about_btn = add_button(parent, label=label, **kw)
         about_btn.Bind(wx.EVT_BUTTON, self.on_about)
+        wgts.append(about_btn)
         if return_dict:
             buttons.update(about=(about_btn, label))
         else:
             buttons.append((about_btn, label))
+
+    if sizer:
+        quick_pack(sizer, wgts=[(btn, 1) for btn in wgts])
 
     return buttons
 
