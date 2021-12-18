@@ -1476,6 +1476,7 @@ def quick_big_buttons(
     font.SetWeight(wx.BOLD)
     kw = dict(size=(-1, 45), font=font)
     kw.update(kwargs)
+    kw.setdefault("t", getattr(self, "t", None))
     buttons = {} if return_dict else []
     wgts = []
     if start:
