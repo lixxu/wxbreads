@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals, division
+from __future__ import division, unicode_literals
+
 import sys
 from datetime import datetime
 from time import strftime
@@ -165,6 +166,12 @@ def write_echo_text(**kwargs):
     if log_file:
         log_files = [log_file]
 
+    newline = wdu.NEW_LINE
+    if six.PY3:
+        ts_text = six.ensure_str(ts_text)
+        text = six.ensure_str(text)
+        newline = six.ensure_str(wdu.NEW_LINE)
+
     for log_file in log_files:
         with open(log_file, log_mode) as f:
             if ts_text:
@@ -172,7 +179,7 @@ def write_echo_text(**kwargs):
 
             f.write(text)
             if nl:
-                f.write(wdu.NEW_LINE)
+                f.write(newline)
 
 
 def echo_text(
