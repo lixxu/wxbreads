@@ -5,6 +5,7 @@ __pycache__/
 *.pkl
 # C extensions
 *.so
+*.cfg
 
 # Distribution / packaging
 .Python

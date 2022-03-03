@@ -26,6 +26,14 @@ SCROLLED_STYLE = wx.TAB_TRAVERSAL  # | wx.SUNKEN_BORDER
 CP_STYLE = wx.CP_DEFAULT_STYLE | wx.CP_NO_TLW_RESIZE
 
 
+class MenuItem(wx.MenuItem):
+    def GetLabel(self):
+        return self.GetItemLabel()
+
+    def SetLabel(self, label):
+        self.SetItemLabel(label)
+
+
 class BaseBase(object):
     app_name = "App"
     app_title = ""
@@ -381,6 +389,29 @@ class BaseBase(object):
     def on_echoing(self, evt=None):
         wxu.on_echoing(self)
 
+    def create_menu_item(
+        self,
+        parent=None,
+        id=None,
+        text="",
+        help_string="",
+        kind=wx.ITEM_NORMAL,
+        sub_menu=None,
+    ):
+        if id is None:
+            id = wx.NewIdRef()
+
+        menu = MenuItem(
+            parent, id, self.tt(text), self.tt(help_string), kind, sub_menu
+        )
+        if parent:
+            parent.Append(menu)
+
+        return menu, id
+
+    def append_menu(self, parent, menu, text):
+        parent.Append(menu, self.tt(text))
+
 
 class BaseDialog(wx.Dialog, BaseBase):
     app_name = "Dialog"
@@ -453,7 +484,7 @@ class BaseWindow(wx.Frame, BaseBase):
         super(BaseWindow, self).__init__(kwargs.get("parent"), **kw)
         self.english_font_name = self.get_english_font()
         self.is_running = False
-        self.logo = img = wxi.logo.GetImage()
+        self.logo = img = self.get_logo()
         try:
             icon = wx.IconFromBitmap(img.ConvertToBitmap())
         except AttributeError:
@@ -465,6 +496,9 @@ class BaseWindow(wx.Frame, BaseBase):
     def on_start(self, evt):
         if evt:
             evt.Skip()
+
+    def get_logo(self):
+        return wxi.logo.GetImage()
 
     def get_changes(self):
         return {}

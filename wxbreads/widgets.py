@@ -79,17 +79,17 @@ def set_tooltip(wgt, tooltip="", t=None):
 
 
 def set_fg(wgt, fg=None):
-    if fg:
+    if fg is not None:
         wgt.SetForegroundColour(fg)
 
 
 def set_bg(wgt, bg=None):
-    if bg:
+    if bg is not None:
         wgt.SetBackgroundColour(bg)
 
 
 def set_font(wgt, font=None):
-    if font:
+    if font is not None:
         wgt.SetFont(font)
 
 

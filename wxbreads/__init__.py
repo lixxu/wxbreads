@@ -3,5 +3,5 @@
 
 from __future__ import unicode_literals
 
-__version__ = "2022.1.20"
+__version__ = "2022.3.2"
 __author__ = "Lix Xu"
