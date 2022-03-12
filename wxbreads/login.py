@@ -44,6 +44,8 @@ class LoginWindow(BaseDialog):
         self.ldap_kwargs = kwargs.pop("ldap_kwargs", {})
         self.need_busy = kwargs.pop("need_busy", False)
         self.allowed_names = kwargs.pop("allowed_names", None)
+        self.is_local = kwargs.pop("is_local", False)
+        self.login_func = kwargs.pop("login_func", None)
 
         super(LoginWindow, self).__init__(**kwargs)
         self.panel = wx.Panel(self)
@@ -196,16 +198,29 @@ class LoginWindow(BaseDialog):
             return
 
         busy = None
-        if self.need_busy:
-            busy = self.show_busy("connecting to server...")
+        busy_msg = "connecting to server..."
+        if self.is_local:
+            busy_msg = "authenticating user..."
 
-        ec, msg = ldap_login(
-            self.server,
-            self.base_dn,
-            "{}\\{}".format(domain, username) if domain else username,
-            self.password,
-            **self.ldap_kwargs
-        )
+        if self.need_busy:
+            busy = self.show_busy(busy_msg)
+
+        if self.is_local:
+            try:
+                ec, msg = self.login_func(self.login_name, self.password)
+            except Exception as ex:
+                ec = 300
+                msg = ex
+
+        else:
+            ec, msg = ldap_login(
+                self.server,
+                self.base_dn,
+                "{}\\{}".format(domain, username) if domain else username,
+                self.password,
+                **self.ldap_kwargs
+            )
+
         if self.need_busy:
             del busy
 
