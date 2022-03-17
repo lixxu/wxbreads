@@ -412,6 +412,12 @@ class BaseBase(object):
     def append_menu(self, parent, menu, text):
         parent.Append(menu, self.tt(text))
 
+    def popup_with_image(
+        self, parent=None, img=None, caption="Caption", msg="", **kwargs
+    ):
+        kwargs.setdefault("t", self.t)
+        return wxw.popup_with_image(parent, img, caption, msg, **kwargs)
+
 
 class BaseDialog(wx.Dialog, BaseBase):
     app_name = "Dialog"

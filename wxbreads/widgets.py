@@ -230,6 +230,99 @@ def popup_smd(parent=None, msg="", caption="Message", **kwargs):
     dlg.Destroy()
 
 
+def popup_with_image(parent=None, img=None, caption="", msg="", **kwargs):
+    t = kwargs.get("t")
+    font = wxu.auto_get_font(parent, **kwargs)
+    if parent and not font:
+        font = parent.get_font(bold=True, size=15)
+
+    btn = kwargs.pop("btn", wx.YES | wx.NO)
+    need_return = kwargs.pop("need_return", False)
+    size = kwargs.pop("size", None)
+    if isinstance(msg, six.string_types):
+        if not isinstance(msg, six.text_type):
+            umsg = msg.decode(wdu.detect_encoding(msg)["encoding"])
+        else:
+            umsg = msg
+
+    else:
+        umsg = "{}".format(msg)
+
+    if t:
+        umsg = wdu.ttt(umsg, t)
+        title = wdu.ttt(caption, t)
+    else:
+        title = caption
+
+    umsg = cat_msg_with_args(umsg, **kwargs)
+    dlg_kw = dict()
+    if kwargs.get("style"):
+        dlg_kw.update(style=kwargs["style"])
+
+    if img:
+        if size is not None:
+            sw, sh = size[0] - 10, size[1] - 150
+        else:
+            sw, sh = 800, 600
+            size = (sw + 20, sh + 150)
+
+        image = img.GetImage().Scale(sw, sh).ConvertToBitmap()
+    else:
+        image = None
+        size = (800, 600)
+
+    dlg = wx.Dialog(parent, title=title, size=size)
+    set_font(dlg, font)
+    vbox = wx.BoxSizer(wx.VERTICAL)
+
+    # image area
+    if image:
+        bmp = wx.StaticBitmap(dlg, -1, image)
+        quick_pack(vbox, wgts=[bmp])
+
+    # message area
+    lbl = add_label(dlg, label=umsg, sizer=vbox, font=font)
+    set_fg(lbl, kwargs.pop("fg", wx.BLUE))
+
+    add_line(dlg, sizer=vbox)
+    sz = dlg.CreateButtonSizer(btn)
+
+    def _closing_button(evt):
+        id = evt.GetEventObject().GetId()
+        dlg.EndModal(id)
+        return id
+
+    for ch in sz.GetChildren():
+        w = ch.GetWindow()
+        if w and w.GetClassName() == "wxButton":
+            w.Bind(wx.EVT_BUTTON, _closing_button)
+
+    quick_pack(vbox, wgts=[sz])
+    dlg.SetSizer(vbox)
+    if need_return:
+        return dlg
+
+    dlg.Center()
+    opened_dlg = False
+    if parent and hasattr(parent, "opened_dlg"):
+        if parent.opened_dlg is not None:
+            opened_dlg = True
+
+    if opened_dlg:
+        parent.opened_dlg += 1
+
+    if kwargs.get("show_model", True):
+        result = dlg.ShowModal()
+    else:
+        result = dlg.Show()
+
+    dlg.Destroy()
+    if opened_dlg:
+        parent.opened_dlg -= 1
+
+    return result
+
+
 def add_button(parent, id=-1, **kwargs):
     t = kwargs.pop("t", None)
     label = kwargs.pop("label", "Button")
