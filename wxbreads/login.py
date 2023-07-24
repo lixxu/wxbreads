@@ -87,17 +87,11 @@ class LoginWindow(BaseDialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         size = (120, -1)
         label_style = wx.ALIGN_RIGHT
-        kwargs = dict(
-            fsize=size, ssize=(200, -1), fstyle=label_style, t=self.t
-        )
+        kwargs = dict(fsize=size, ssize=(200, -1), fstyle=label_style, t=self.t)
 
         # Name field
         _, self.name_tc = wxw.add_text_row(
-            self.panel,
-            sizer,
-            label="Login Name",
-            value=self.last_user,
-            **kwargs
+            self.panel, sizer, label="Login Name", value=self.last_user, **kwargs
         )
         wxw.focus_on(self.name_tc)
 
@@ -229,9 +223,7 @@ class LoginWindow(BaseDialog):
             self.Refresh()
             return
         elif ec == 200:
-            self.popup(
-                "Authentication Error", "Username/password not match", "e"
-            )
+            self.popup("Authentication Error", "Username/password not match", "e")
             self.high_light(self.pwd_tc)
             self.Refresh()
             return

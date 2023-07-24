@@ -167,9 +167,7 @@ class BaseBase(object):
         if self.can_remember_window():
             w, h = self.GetSize()
             x, y = self.GetPosition()
-            self.config.update(
-                app_w=str(w), app_h=str(h), app_x=str(x), app_y=str(y)
-            )
+            self.config.update(app_w=str(w), app_h=str(h), app_x=str(x), app_y=str(y))
             self.dump_config()
 
     def get_lang(self):
@@ -188,7 +186,7 @@ class BaseBase(object):
         wxw.set_font(wgt, font)
 
     def set_label(self, wgt, label="", tooltip=""):
-        wgt.SetLabel(self.tt(label))
+        wxw.set_label(wgt, label, self.t)
         self.set_tooltip(wgt, tooltip)
 
     def set_fg(self, wgt, fg=None):
@@ -197,8 +195,14 @@ class BaseBase(object):
     def set_bg(self, wgt, bg=None):
         wxw.set_bg(wgt, bg)
 
+    def set_focus(self, wgt):
+        wxw.focus_on(wgt)
+
     def set_tooltip(self, wgt, tooltip=""):
         wxw.set_tooltip(wgt, tooltip, self.t)
+
+    def set_hint(self, wgt, hint=""):
+        wxw.set_hint(wgt, hint, self.t)
 
     def set_min_size(self, size=None):
         self.SetMinSize(size or self.GetSize())
@@ -285,11 +289,7 @@ class BaseBase(object):
 
         kwargs.setdefault("t", self.t)
         result = wxw.popup(
-            kwargs.pop("parent", self),
-            caption=caption,
-            msg=msg,
-            icon=icon,
-            **kwargs
+            kwargs.pop("parent", self), caption=caption, msg=msg, icon=icon, **kwargs
         )
         if self.need_adjust_opened_dlg():
             self.opened_dlg -= 1
@@ -338,9 +338,7 @@ class BaseBase(object):
         )
 
     def create_cp(self, parent, style=None, label="Show", bind=None, **kwargs):
-        cp = wx.CollapsiblePane(
-            parent, label=self.tt(label), style=style or CP_STYLE
-        )
+        cp = wx.CollapsiblePane(parent, label=self.tt(label), style=style or CP_STYLE)
         if bind:
             self.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED, bind, cp)
 
@@ -371,18 +369,14 @@ class BaseBase(object):
     def add_echo(self, text="", **kwargs):
         if self.clear_echo_row and kwargs.get("nl", True):
             self.echoed_row += 1
-            kwargs.setdefault(
-                "clear", self.echoed_row % self.clear_echo_row == 0
-            )
+            kwargs.setdefault("clear", self.echoed_row % self.clear_echo_row == 0)
 
         self.echo_lines.append((text, self.set_echo_defaults(kwargs)))
 
     def add_echo3(self, text="", **kwargs):
         if self.clear_echo_row and kwargs.get("nl", True):
             self.echoed_row += 1
-            kwargs.setdefault(
-                "clear", self.echoed_row % self.clear_echo_row == 0
-            )
+            kwargs.setdefault("clear", self.echoed_row % self.clear_echo_row == 0)
 
         self.echo_text(text, **kwargs)
 
@@ -401,9 +395,7 @@ class BaseBase(object):
         if id is None:
             id = wx.NewIdRef()
 
-        menu = MenuItem(
-            parent, id, self.tt(text), self.tt(help_string), kind, sub_menu
-        )
+        menu = MenuItem(parent, id, self.tt(text), self.tt(help_string), kind, sub_menu)
         if parent:
             parent.Append(menu)
 
@@ -522,9 +514,7 @@ class BaseWindow(wx.Frame, BaseBase):
         wxw.quick_pack(sizer, wgts=[(btn[0], 1) for btn in buttons])
         self.big_buttons = buttons
 
-    def setup_base_ui(
-        self, with_big=True, big_kw={}, main_kw={}, settings_kw={}
-    ):
+    def setup_base_ui(self, with_big=True, big_kw={}, main_kw={}, settings_kw={}):
         self.panel = wx.Panel(self)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
@@ -559,9 +549,7 @@ class BaseWindow(wx.Frame, BaseBase):
 
         line = wxw.add_line(p)
         wxw.pack(line, vbox)
-        self.unlock_btn = wxw.add_button(
-            p, label="Unlock", size=(-1, 40), t=self.t
-        )
+        self.unlock_btn = wxw.add_button(p, label="Unlock", size=(-1, 40), t=self.t)
         cancel_btn = wxw.add_button(p, label="Cancel", size=(-1, 40), t=self.t)
         self.unlock_btn.Bind(wx.EVT_BUTTON, self.on_settings_save)
         cancel_btn.Bind(wx.EVT_BUTTON, self.on_settings_cancel)

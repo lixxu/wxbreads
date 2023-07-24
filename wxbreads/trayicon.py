@@ -2,9 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+
 import six
-import wx
 import windbreads.utils as wdu
+import wx
 
 try:
     TaskBarIcon = wx.TaskBarIcon

@@ -7,6 +7,7 @@ import sys
 import threading
 
 import six
+import windbreads.utils as wdu
 import wx
 import wx.lib.agw.flatmenu as FM
 import wx.lib.agw.flatnotebook as fnb
@@ -14,6 +15,8 @@ import wx.lib.agw.genericmessagedialog as gmd
 import wx.lib.dialogs
 import wx.lib.masked as masked
 import wx.richtext as rt
+
+import wxbreads.utils as wxu
 
 OLD_WX = True
 try:
@@ -28,10 +31,6 @@ except AttributeError:
     DatePickerCtrl = wx.adv.DatePickerCtrl
 
     OLD_WX = False
-
-import windbreads.utils as wdu
-
-import wxbreads.utils as wxu
 
 """Remark:
 fsize/fstyle/fkw: 1st widget size/style/kwargs
@@ -76,6 +75,15 @@ def set_tooltip(wgt, tooltip="", t=None):
     if tooltip:
         func = wgt.SetToolTipString if OLD_WX else wgt.SetToolTip
         func(wdu.ttt(tooltip, t=t))
+
+
+def set_hint(wgt, hint="", t=None):
+    if hint:
+        wgt.SetHint(wdu.ttt(hint, t=t))
+
+
+def set_label(wgt, label="", t=None):
+    wgt.SetLabel(wdu.ttt(label, t=t))
 
 
 def set_fg(wgt, fg=None):
@@ -383,6 +391,7 @@ def add_textctrl(parent, id=-1, **kwargs):
     font = kwargs.pop("font", None)
     tooltip = kwargs.pop("tooltip", "")
     multiline = kwargs.pop("multiline", False)
+    hint = kwargs.pop("hint", None)
 
     nargs = dict(size=size, name=kwargs.get("name", "wxTextCtrl"))
     sty = wx.TE_MULTILINE if multiline else None
@@ -394,6 +403,9 @@ def add_textctrl(parent, id=-1, **kwargs):
         nargs.update(style=sty)
 
     wgt = wx.TextCtrl(parent, id, "{}".format(value), **nargs)
+    if hint:
+        set_hint(wgt, hint, t)
+
     set_tooltip(wgt, tooltip, t)
     set_font(wgt, font)
     set_fg(wgt, fg)
@@ -458,9 +470,7 @@ def add_richtext(parent, id=-1, **kwargs):
     return rtc
 
 
-def quick_add_rtc(
-    parent, sizer, size=(-1, 200), readonly=True, prop=1, flag="e,a"
-):
+def quick_add_rtc(parent, sizer, size=(-1, 200), readonly=True, prop=1, flag="e,a"):
     rtc = add_richtext(parent, size=size, readonly=readonly)
     pack(rtc, sizer, prop=prop, flag=flag)
     return rtc
@@ -983,8 +993,7 @@ def add_line(parent, id=-1, size=(-1, -1), orient="h", sizer=None, **pack_kw):
 def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     t = kwargs.pop("t", None)
     pack_line = kwargs.pop("pack_line", True)
-    if pack_line:
-        sl = add_line(parent, id)
+    sl = add_line(parent, id) if pack_line else None
 
     kwargs.pop("tkw", None)
     fkw = kwargs.pop("fkw", {})
@@ -1021,9 +1030,7 @@ def add_ok_buttons(parent, sizer, id=-1, size=(100, 40), border=5, **kwargs):
     return ok_btn, cancel_btn
 
 
-def add_statusbar(
-    parent, widths=[260, -1, 130], values=["", "", ""], **kwargs
-):
+def add_statusbar(parent, widths=[260, -1, 130], values=["", "", ""], **kwargs):
     t = kwargs.pop("t", None)
     sbar = wx.StatusBar(parent)
     sbar.SetFieldsCount(len(widths), widths)
@@ -1304,9 +1311,7 @@ def quick_about(*args, **kwargs):
         kwargs.update(doc_writers=writers)
 
     about_info = dict(
-        description=description,
-        copyright=copy_right.replace("&", "&&"),
-        **kwargs
+        description=description, copyright=copy_right.replace("&", "&&"), **kwargs
     )
     about_box(**about_info)
 
@@ -1366,10 +1371,7 @@ def quick_open_folder(parent, sizer=None, label="Select Folder", **kwargs):
 
     skw = kwargs.pop("skw", {})
     update_widget_kwargs(
-        skw,
-        size=kwargs.pop("ssize", (-1, -1)),
-        value=kwargs.pop("value", ""),
-        **kwargs
+        skw, size=kwargs.pop("ssize", (-1, -1)), value=kwargs.pop("value", ""), **kwargs
     )
     lbl = add_label(parent, **fkw)
     fp, tc, btn = add_dir_picker(parent, **skw)
@@ -1468,9 +1470,7 @@ def quick_password_entry(parent=None, caption="Security Check", **kwargs):
 
 def quick_text_entry(parent=None, caption="Enter Something", **kwargs):
     msg = kwargs.pop("msg", "Please enter something: ")
-    return quick_entry(
-        parent, caption=caption, msg=msg, password=False, **kwargs
-    )
+    return quick_entry(parent, caption=caption, msg=msg, password=False, **kwargs)
 
 
 def quick_choice(parent=None, msg="Please select", **kwargs):

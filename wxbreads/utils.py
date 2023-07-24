@@ -374,19 +374,19 @@ def update_ui_lang(self, refresh=True):
             label = None
             tooltip = ""
             hint = None
-            if len(lwgt) == 2:
-                wgt, label = lwgt
-            elif len(lwgt) == 3:
+            if len(lwgt) == 3:
                 wgt, label, tooltip = lwgt
             elif len(lwgt) == 4:
                 wgt, label, tooltip, hint = lwgt
+            else:
+                wgt, label = lwgt
 
             wxw.set_tooltip(wgt, tooltip, self.t)
             if label is not None:
-                wgt.SetLabel(self.tt(label))
+                wxw.set_label(wgt, label, self.t)
 
             if hint is not None:
-                wgt.SetHint(self.tt(hint))
+                wxw.set_hint(wgt, hint, self.t)
 
     if refresh:
         if hasattr(self, "panel"):
