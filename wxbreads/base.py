@@ -195,8 +195,8 @@ class BaseBase(object):
     def set_bg(self, wgt, bg=None):
         wxw.set_bg(wgt, bg)
 
-    def set_focus(self, wgt):
-        wxw.focus_on(wgt)
+    def set_focus(self, wgt, **kwargs):
+        wxw.focus_on(wgt, **kwargs)
 
     def set_tooltip(self, wgt, tooltip=""):
         wxw.set_tooltip(wgt, tooltip, self.t)

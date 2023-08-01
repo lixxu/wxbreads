@@ -357,6 +357,22 @@ def add_button(parent, id=-1, **kwargs):
     return btn
 
 
+def add_radio_button(parent, id=-1, **kwargs):
+    t = kwargs.pop("t", None)
+    label = kwargs.pop("label", "RadioButton")
+    size = kwargs.pop("size", (-1, -1))
+    tooltip = kwargs.pop("tooltip", "")
+    style = kwargs.pop("style", None)
+    kw = dict(size=size, name=kwargs.get("name", "wxRadioButton"))
+    if style is not None:
+        kw.update(style=style)
+
+    btn = wx.RadioButton(parent, id, wdu.ttt(label, t), **kw)
+    set_tooltip(btn, tooltip, t=t)
+
+    return btn
+
+
 def add_label(parent, id=-1, sizer=None, **kwargs):
     t = kwargs.get("t")
     label = kwargs.pop("label", "")
